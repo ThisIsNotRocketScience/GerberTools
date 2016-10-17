@@ -176,6 +176,7 @@ namespace GerberLibrary
             List<String> lines = SanitizeInputLines(inputlines, State.SanitizedFile);
 
             ParsedGerber Gerb = new ParsedGerber();
+            
             Gerb.State = State;
             ParseGerber274_Lines(forcezerowidth, State, lines);
 
@@ -1567,13 +1568,17 @@ namespace GerberLibrary
                 {
                     State.SanitizedFile = gerberfile + ".sanitized.gerber";
                 };
-                return ParseGerber274x(lines, false, forcezerowidth, State);
+
+                var G = ParseGerber274x(lines, false, forcezerowidth, State); ;
+                G.Name = gerberfile;
+                return G;
             }
         }
 
         public static ParsedGerber LoadExcellonDrillFile(string drillfile, bool Precombine = false)
         {
             ParsedGerber Gerb = new ParsedGerber();
+            Gerb.Name = drillfile;
             Gerb.Shapes.Clear();
             Gerb.DisplayShapes.Clear();
             GerberParserState State = new GerberParserState();

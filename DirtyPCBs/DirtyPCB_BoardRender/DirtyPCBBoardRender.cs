@@ -10,7 +10,7 @@ using GerberLibrary.Core;
 
 namespace DirtyPCB_BoardRender
 {
-    class DirtyPCBBoardRender
+    class DirtyPCBBoardRender: ProgressLog
     {
         enum Arguments
         {
@@ -19,7 +19,6 @@ namespace DirtyPCB_BoardRender
             Copper,
             None
         }
-
        
         static void Main(string[] args)
         {
@@ -75,19 +74,38 @@ namespace DirtyPCB_BoardRender
                 return;
             }
 
-            var InputFiles = Directory.GetFiles(InputFolder);
-            GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
-            GerberImageCreator.AA = true;
-            Gerber.BoardRenderColor = SolderMaskColor;
-            Gerber.BoardRenderSilkColor = SilkScreenColor;
-            Gerber.BoardRenderPadColor = CopperColor ;
-
-            GIC.AddBoardsToSet(InputFiles.ToList());
-            GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Top, 200, false);
-            GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Bottom, 200, false);
-            GIC.DrawAllFiles(OutputFolder + "/Layer", 200);
+            Console.WriteLine("Progress: Input parameters OK, All systems go");
+            try
+            {
+                var InputFiles = Directory.GetFiles(InputFolder);
+                GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
+                GerberImageCreator.AA = true;
+                Gerber.BoardRenderColor = SolderMaskColor;
+                Gerber.BoardRenderSilkColor = SilkScreenColor;
+                Gerber.BoardRenderPadColor = CopperColor;
 
 
+                GIC.AddBoardsToSet(InputFiles.ToList());
+                Console.WriteLine("Progress: Rendering top side bitmap.");
+                GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Top, 200, false);
+                Console.WriteLine("Progress: Done rendering top side bitmap.");
+                Console.WriteLine("Progress: Rendering bottom side bitmap.");
+                GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Bottom, 200, false);
+                Console.WriteLine("Progress: Done rendering bottom side bitmap.");
+                Console.WriteLine("Progress: Rendering individual layers to bitmaps");
+                GIC.DrawAllFiles(OutputFolder + "/Layer", 200, new DirtyPCBBoardRender());
+                Console.WriteLine("Progress: Done rendering individual files to bitmap.");
+
+            }
+            catch (Exception E)
+            {
+                Console.WriteLine("Error: {0}", E.Message);
+            }
+        }
+
+        public void AddString(string text, float progress = -1F)
+        {
+            Console.WriteLine("Progress: {0}", text);
         }
     }
 }

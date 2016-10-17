@@ -75,7 +75,7 @@ namespace GerberLibrary
             PLS.CalcPathBounds();
             BoundingBox.AddBox(PLS.BoundingBox);
             
-            Console.WriteLine("adding {0}: {1:N1} x {2:N1} mm", Path.GetFileName(a), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
+            Console.WriteLine("Progress: Loaded {0}: {1:N1} x {2:N1} mm", Path.GetFileName(a), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
             PLSs.Add(PLS);
             //     }
             //     catch (Exception)
@@ -447,9 +447,11 @@ namespace GerberLibrary
                 int Shapes = 0;
                 
                 Shapes += DrawLayerToGraphics(Color.Black, true, G2, P, L, false);
+
+                string FileName = v1 + "_" + L.Layer.ToString() + "_" + L.Side.ToString() + ".png";
+                if (Logger != null) Logger.AddString(String.Format("Rendering {0}-{1} to bitmap {2}",L.Layer.ToString(), L.Side.ToString(), FileName));
                 
-                
-                B2.Save(v1 + "_"+L.Layer.ToString()+"_" + L.Side.ToString()+ ".png");
+                B2.Save(FileName);
             }
 
         }
