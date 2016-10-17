@@ -1,0 +1,30 @@
+﻿
+05/11/2011 - Added TransformToCurrentOrthogProjection option
+06/11/2011 - Fixed bug whereby it was not possible to set the opacity of the drop shadow
+24/11/2011 - Fixed bug in RetargetGlyphRectangleInwards causing an invalid pointer dereference
+17/12/2011 - Added UseDefaultBlendFunction option
+18/12/2011 - Added PushOptions(), and PopOptions()
+22/12/2011 - Added LockToPixelRatio render option 
+27/12/2011 - Simplified ProjectionStack
+27/12/2011 - Added RefreshViewport
+30/12/2011 - Fixed bug where fonts with empty glyphs caused QFont to crash
+30/12/2011 - Added TextGenerationRenderHint option to QFontBuilderConfiguration (see below for new default configuration)
+30/12/2011 - by default, ttf fonts smaller than 12.0 are now generated with TextRenderingHint.ClearTypeGridFit, giving much sharper results
+30/12/2011 - Underscore, quote and double quote characters will now kern properly
+30/12/2011 - Added kerning character configuration to manually configure kerning rules for particular characters
+30/12/2011 - QFontShadowConfiguration is now a member of QFontBuilderConfiguration, simplifying the QFont constructors
+30/12/2011 - QFont.FromQFontFile now takes a QFontLoaderConfiguration. This contains a QFontShadowConfiguration.
+30/12/2011 - Added alphaEmptyPixelTolerance config value
+31/12/2011 - Fixed limitation on downscaling texture fonts (previously glyphs could overlap, throwing an exception)
+
+----- 1.0.1 released
+
+07/01/2011 - Removed RefreshViewport
+07/01/2011 - Added InvalidateViewport(), ForceViewportRefresh(), PushSoftwareViewport(Viewport viewport), PopSoftwareViewport()
+14/04/2012 - When TransformToViewport is enabled for a font, but QFont.Begin/End are not called, the font will now be rendered at the correct size (not tested for all alignments!)
+18/07/2012 - Measuring text no longer sets the color and binds the texture, nor does it set a blend function
+14/08/2012 - Reload() method added for reloading a qfont object. 
+14/08/2012 - QFont now correctly implements IDisposable
+
+
+----- 1.0.2 released

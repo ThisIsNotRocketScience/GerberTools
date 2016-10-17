@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Welcome</title>
+    <style>
+
+        html, body
+        {
+            margin: 0px;
+            font-family: Arial;
+            font-size: 11pt;
+            background-color: lightgray;
+
+        }
+        h1
+        {
+            margin: 0px;
+            padding: 0px;
+        }
+        .block
+        {
+            background-color: white;
+            border: 1px solid gray;
+            padding: 14px;
+            margin: 8px;
+        }
+        .warning {
+            background-color: white;
+            border: 1px solid red;
+            padding: 14px;
+            margin: 8px;
+        }
+        li
+        {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="warning">
+        <h1>Welcome!</h1><br />
+        ALPHA/BETA WARNING!<br /><br />
+        NO WARRANTIES!<br /><br />
+        NO BATTERIES INCLUDED!<br /><br />
+        SOURCE ON REQUEST!<br /><br />
+        (eventually the source will end up on github, but I am trying to prevent early noise in the project)<br /><br />
+    </div>
+    <div class="block">
+        <h1>If you have enjoyed this tool</h1><br />
+        Please send me pictures (or actual pcbs for on my wall of fame!) of the things you have made with it! :-)<br /><br />
+        I am available for consultancy. Contact me for details.<br /><br />
+        Stijn Kuipers <br />
+        Witte de Withstraat 20hs<br />
+        1057XW Amsterdam<br />
+        The Netherlands<br />
+        <a href="mailto:stijnkuipers@gmail.com">stijnkuipers@gmail.com</a>  / <a href="http://www.thisisnotrocketscience.nl" target="_blank">www.thisisnotrocketscience.nl</a> / <a href="http://www.twitter.com/rocket_not" target="_blank">@rocket_not</a> / <a href="http://www.twitter.com/blok2009" target="_blank">@blok2009</a><br />
+    </div>
+    <div class="block">
+        <h1>Notes on usage:</h1>
+        <ul>
+            <li>
+                Make sure your gerber files are in order. The program uses a "1 pcb = 1 folder" rule. Do not put files from different boards in the same folder - this will end in tears.
+                <ul>
+                    <li>.txt or .xln = excellon drill file.</li>
+                    <li>
+                        .gko = outline file.
+                    </li>
+                    <li>
+                        .gml = mill file. MAKE SURE YOU DO NOT INCLUDE THE BOARD OUTLINE IN THE MILL FILE AGAIN!!!
+                    </li>
+                    <li>
+                        gbl/gbo/gbs/gtl/gto/gts and the above will be used for image generation
+                    </li>
+                    <li>
+                        all other files (if gerber) will be combined with files with matching extension (case insensitive!)
+                    </li>
+
+                </ul>
+            </li>
+
+            <li>Start a new document or load an older one (this can also be done by dragging folders to the main area - this will start a new document and add all the folders)</li>
+
+            <li>Add folders that contain the files for -1- PCB at a time.  (or drag a folder to the board - this will add an instance)</li>
+
+            <li>Drag instances around until you are happy. PLEASE MAKE SURE TO KEEP AT LEAST 2 MM BETWEEN THE BOARDS - the mill the boardhouse uses to separate the boards is not infinitely thin!</li>
+
+            <li>Add tabs breaktabs by rightclicking and adding tabs. A good guideline for tabs is to keep them about 3 or 4 mm wide, and have one about once every 3 cm on a shared side. Try using 2 tabs as a minimum for each connected board or you might get a handful of separated boards back from the post because they broke off (this happened to one of my tryouts)</li>
+
+            <li>Edit instances in the treeview or numerically</li>
+
+            <li>Make sure you dont have crosses or floating stuff that might end up loose.</li>
+
+            <li>Export the combined thing and enjoy your new gerbers/images.</li>
+        </ul>
+    </div>
+    <div class="block">
+   
+        <h1>Issues/bugs/known things:</h1>
+        <ul>
+            <li>geometry is not always perfect.. always use sanity and check the exported gerbers like you would usually do before sending anything to a factory.</li>
+            <li>interface does not always directly update after a number-edit. drag something to make it recalculate the output.</li>
+            <li>yes the userinterface could do with zooming/moving/3d/partrendering/autorouting and all that stuff... my time is not infinite.</li>
+            <li>merge is currently slow but acceptable. boardimages are slower. (but the merged files should be done before the images anyway.)</li>
+            <li>paths saved in the set-files are absolute.</li>
+            <li>boardhouses might reject your generated boards. I have exclusively tested this tool in combination with the services provided by DirtyPCBs.</li>
+        </ul>
+    </div>
+</body>
+</html>
