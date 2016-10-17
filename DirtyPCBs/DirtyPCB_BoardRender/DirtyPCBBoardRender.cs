@@ -74,7 +74,7 @@ namespace DirtyPCB_BoardRender
                 return;
             }
 
-            Console.WriteLine("Progress: Input parameters OK, All systems go");
+            Console.WriteLine("Progress: Input parameters validated");
             try
             {
                 var InputFiles = Directory.GetFiles(InputFolder);
@@ -83,20 +83,13 @@ namespace DirtyPCB_BoardRender
                 Gerber.BoardRenderColor = SolderMaskColor;
                 Gerber.BoardRenderSilkColor = SilkScreenColor;
                 Gerber.BoardRenderPadColor = CopperColor;
-
-
                 GIC.AddBoardsToSet(InputFiles.ToList());
-                Console.WriteLine("Progress: Rendering top side bitmap.");
+                Console.WriteLine("Progress: Rendering Top");
                 GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Top, 200, false);
-                Console.WriteLine("Progress: Done rendering top side bitmap.");
-                Console.WriteLine("Progress: Rendering bottom side bitmap.");
+                Console.WriteLine("Progress: Rendering Bottom");
                 GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Bottom, 200, false);
-                Console.WriteLine("Progress: Done rendering bottom side bitmap.");
-                Console.WriteLine("Progress: Rendering individual layers to bitmaps");
                 GIC.DrawAllFiles(OutputFolder + "/Layer", 200, new DirtyPCBBoardRender());
-                Console.WriteLine("Progress: Done rendering individual files to bitmap.");
                 Console.WriteLine("Progress: Done!");
-
             }
             catch (Exception E)
             {

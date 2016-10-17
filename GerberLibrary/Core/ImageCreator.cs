@@ -436,7 +436,10 @@ namespace GerberLibrary
 
             foreach (var L in PLSs)
             {
-                //if (L.Count() == 0) return null;
+
+                string FileName = v1 + "_" + L.Layer.ToString() + "_" + L.Side.ToString() + ".png";
+                if (Logger != null) Logger.AddString(String.Format("Rendering {0}-{1}", L.Layer.ToString(), L.Side.ToString()));
+                
                 Bitmap B2 = new Bitmap(w + 3, h + 3);
                 Graphics G2 = Graphics.FromImage(B2);
                 ApplyAASettings(G2);
@@ -448,9 +451,6 @@ namespace GerberLibrary
                 
                 Shapes += DrawLayerToGraphics(Color.Black, true, G2, P, L, false);
 
-                string FileName = v1 + "_" + L.Layer.ToString() + "_" + L.Side.ToString() + ".png";
-                if (Logger != null) Logger.AddString(String.Format("Rendering {0}-{1} to bitmap {2}",L.Layer.ToString(), L.Side.ToString(), Path.GetFileName(FileName)));
-                
                 B2.Save(FileName);
             }
 
@@ -661,7 +661,7 @@ namespace GerberLibrary
             }
             catch(Exception)
             {
-                Console.WriteLine("Failed to create image of size {0}x{1}", w, h);
+                Console.WriteLine("Error: Failed to create image of size {0}x{1}", w, h);
                 return null;
             }
 
@@ -826,7 +826,7 @@ namespace GerberLibrary
                 // Check if bpp (Bits Per Pixel) is 8, 24, or 32
                 if (Depth != 8 && Depth != 24 && Depth != 32)
                 {
-                    throw new ArgumentException("Only 8, 24 and 32 bpp images are supported.");
+                    throw new ArgumentException("Error: Only 8, 24 and 32 bpp images are supported.");
                 }
 
                 // Lock bitmap and return bitmap data
@@ -843,8 +843,8 @@ namespace GerberLibrary
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine("{0},{1}", source.Width, source.Height);
+                Console.WriteLine("Error: {0}", ex.Message);
+                Console.WriteLine("Error: {0},{1}", source.Width, source.Height);
                 throw ex;
             }
         }

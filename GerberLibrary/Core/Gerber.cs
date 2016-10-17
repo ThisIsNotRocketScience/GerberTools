@@ -51,7 +51,7 @@ namespace GerberLibrary
         {
             if (color == null)
             {
-                Console.WriteLine("Null color! Defaulting to lime!");
+                Console.WriteLine("Error: Null color! Defaulting to lime!");
                 return Color.Lime;
             }
 
@@ -117,7 +117,7 @@ namespace GerberLibrary
                 Diff = E - S;
 
                 // while (Diff < 0) Diff += Math.PI * 2.0;
-                Console.WriteLine("counterclock: {0:N2}", Gerber.RadToDeg(Diff));
+//                Console.WriteLine("counterclock: {0:N2}", Gerber.RadToDeg(Diff));
 
             }
 
@@ -126,7 +126,7 @@ namespace GerberLibrary
                 //       while (S < E) S += Math.PI * 2;
                 Diff = S - E;
                 while (Diff > Math.PI) Diff -= Math.PI * 2;
-                Console.WriteLine("clock: {0:N2}", Gerber.RadToDeg(Diff));
+  //              Console.WriteLine("clock: {0:N2}", Gerber.RadToDeg(Diff));
             }
         }
 
@@ -642,7 +642,7 @@ namespace GerberLibrary
             int Width = (int)(Math.Ceiling((WidthInMM) * (dpi / 25.4)));
             int Height = (int)(Math.Ceiling((HeightInMM) * (dpi / 25.4)));
 
-            Console.WriteLine("Exporting {0} ({2},{3}mm) to {1} ({4},{5})", GerberFilename, BitmapFilename, WidthInMM, HeightInMM, Width, Height);
+            Console.WriteLine("Progress: Exporting {0} ({2},{3}mm) to {1} ({4},{5})", GerberFilename, BitmapFilename, WidthInMM, HeightInMM, Width, Height);
             GerberImageCreator GIC = new GerberImageCreator();
             GIC.scale = dpi / 25.4f; // dpi
             GIC.BoundingBox.AddBox(PLS.BoundingBox);
@@ -681,7 +681,7 @@ namespace GerberLibrary
                         double I = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("I"));
                         double J = PLS.State.CoordinateFormat.ScaleFileToMM(GS.Get("J"));
 
-                        Console.WriteLine("Counterclockwise Curve {0},{1} -> {2},{3}", LastX, LastY, X, Y);
+                        //Console.WriteLine("Counterclockwise Curve {0},{1} -> {2},{3}", LastX, LastY, X, Y);
                         DrawCross(G2, X, Y, Color.Blue);
                         DrawCross(G2, LastX, LastY, Color.Red);
 
@@ -747,7 +747,7 @@ namespace GerberLibrary
                 int Width = (int)(Math.Ceiling((WidthInMM) * (dpi / 25.4)));
                 int Height = (int)(Math.Ceiling((HeightInMM) * (dpi / 25.4)));
 
-                Console.WriteLine("Exporting {0} ({2},{3}mm) to {1} ({4},{5})", GerberFilename, BitmapFilename, WidthInMM, HeightInMM, Width, Height);
+                Console.WriteLine("Progress: Exporting {0} ({2},{3}mm) to {1} ({4},{5})", GerberFilename, BitmapFilename, WidthInMM, HeightInMM, Width, Height);
                 GerberImageCreator GIC = new GerberImageCreator();
                 GIC.scale = dpi / 25.4f; // dpi
                 GIC.BoundingBox.AddBox(PLS.BoundingBox);
@@ -760,10 +760,10 @@ namespace GerberLibrary
             }
             catch (Exception E)
             {
-                Console.WriteLine("Errors while writing bitmap {0} for gerberfile {1} at dpi {2}:", BitmapFilename, GerberFilename, dpi);
+                Console.WriteLine("Error: Errors while writing bitmap {0} for gerberfile {1} at dpi {2}:", BitmapFilename, GerberFilename, dpi);
                 while (E != null)
                 {
-                    Console.WriteLine("\t{0}", E.Message);
+                    Console.WriteLine("Error: \t{0}", E.Message);
                     E = E.InnerException;
                 }
                 return false;
