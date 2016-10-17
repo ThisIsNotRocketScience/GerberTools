@@ -449,7 +449,7 @@ namespace GerberLibrary
                 Shapes += DrawLayerToGraphics(Color.Black, true, G2, P, L, false);
 
                 string FileName = v1 + "_" + L.Layer.ToString() + "_" + L.Side.ToString() + ".png";
-                if (Logger != null) Logger.AddString(String.Format("Rendering {0}-{1} to bitmap {2}",L.Layer.ToString(), L.Side.ToString(), FileName));
+                if (Logger != null) Logger.AddString(String.Format("Rendering {0}-{1} to bitmap {2}",L.Layer.ToString(), L.Side.ToString(), Path.GetFileName(FileName)));
                 
                 B2.Save(FileName);
             }

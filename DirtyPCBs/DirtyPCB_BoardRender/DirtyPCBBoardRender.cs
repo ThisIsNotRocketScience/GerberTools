@@ -95,6 +95,7 @@ namespace DirtyPCB_BoardRender
                 Console.WriteLine("Progress: Rendering individual layers to bitmaps");
                 GIC.DrawAllFiles(OutputFolder + "/Layer", 200, new DirtyPCBBoardRender());
                 Console.WriteLine("Progress: Done rendering individual files to bitmap.");
+                Console.WriteLine("Progress: Done!");
 
             }
             catch (Exception E)
