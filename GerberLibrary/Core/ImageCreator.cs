@@ -31,18 +31,13 @@ namespace GerberLibrary
 
             if (FileType == BoardFileType.Unsupported)
             {
-                //                Console.WriteLine("{1}: files with extension {0} are not supported!", ext, Path.GetFileName(a));
+                if (Gerber.ExtremelyVerbose) Console.WriteLine("Warning: {1}: files with extension {0} are not supported!", ext, Path.GetFileName(a));
                 return;
-
             }
 
 
-            //    try
-            //   {
             ParsedGerber PLS;
-            GerberParserState State = new GerberParserState() { 
-             PreCombinePolygons = precombinepolygons
-            };
+            GerberParserState State = new GerberParserState() {PreCombinePolygons = precombinepolygons};
             
             if (FileType == BoardFileType.Drill)
             {
@@ -410,7 +405,7 @@ namespace GerberLibrary
 
                 if (_Copper != null && Gerber.GerberRenderBumpMapOutput)
                 {
-                    ApplyBumpMapping(_Final, _Copper);
+                    ApplyBumpMapping(_Final, _Copper,w,h);
                 }
                 // if (OutlineBase != null) G.DrawImage(OutlineBase, new Rectangle(0, 0, w, h), 0, 0, w, h, GraphicsUnit.Pixel);                
             }
@@ -420,11 +415,84 @@ namespace GerberLibrary
             //            return B;
         }
 
-        private void ApplyBumpMapping(Bitmap _Final, Bitmap _Copper)
+        private void ApplyBumpMapping(Bitmap _Target, Bitmap _Bump, int w, int h)
         {
-            throw new NotImplementedException();
-        }
+            LockBitmap Target = new LockBitmap(_Target);
+            Target.LockBits();
+            LockBitmap BumpMap = new LockBitmap(_Bump);
 
+            BumpMap.LockBits();
+
+            for(int x =0;x<w;x++)
+            {
+                for(int y = 0;y<h;y++)
+                {
+                    Color TargetPixel = Target.GetPixel(x, y);
+                    Color B1 = BumpMap.GetPixel(x, y);
+
+                    if (true)//B1.A > 0)
+                    {
+                        Color B2 = B1;
+                        Color B4 = B1;
+                        if (x < w - 1)
+                        {
+                            B2 = BumpMap.GetPixel(x + 1, y);
+                            B4 = B2;
+                        }
+                        Color B3 = B1;
+                        if (y < h - 1) B3 = BumpMap.GetPixel(x, y + 1);
+                        if (y < h - 1 && x < w - 1)
+                        {
+                            B4 = BumpMap.GetPixel(x + 1, y + 1);
+                        }
+                        float dx1 = (B1.GetBrightness() - B2.GetBrightness());
+                        float dx2 = (B3.GetBrightness() - B4.GetBrightness());
+                        float dy1 = (B1.GetBrightness() - B3.GetBrightness());
+                        float dy2 = (B2.GetBrightness() - B4.GetBrightness());
+                        float dx = dx1 + dx2;
+                        float dy = dy1 + dy2;
+
+                        if (dx == 0 && dy == 0)
+                        {
+                            //skip
+                        }
+                        else
+                        {
+                            double ang = Math.Atan2(dy, dx);
+                            double dist = Math.Sqrt(dx * dx + dy * dy);
+                            double L = Math.Sin(ang - 1.4);
+                            if (L > 0) Target.SetPixel(x, y, Lighter(TargetPixel, L * 0.04));
+                            else
+                            {
+                                Target.SetPixel(x, y, Darker(TargetPixel, Math.Abs(L * 0.04)));
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            BumpMap.UnlockBits();
+            Target.UnlockBits();
+            
+                        
+        }
+        public static Color Lighter(Color color, double Fac)
+        {
+            float correctionFactor = (float)Fac;
+            float red = (255 - color.R) * correctionFactor + color.R;
+            float green = (255 - color.G) * correctionFactor + color.G;
+            float blue = (255 - color.B) * correctionFactor + color.B;
+            return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
+        }
+        public static Color Darker(Color color, double Fac)
+        {
+            float correctionFactor =1.0f- (float)Fac;
+            float red = (color.R) * correctionFactor;
+            float green = (color.G) * correctionFactor;
+            float blue = (color.B) * correctionFactor;  
+            return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
+        }
         public void DrawAllFiles(string v1, double dpi, ProgressLog Logger = null)
         {
 

@@ -68,10 +68,5 @@ namespace WindowsFormsApplication1
             GIC.WriteImageFiles(Path.GetDirectoryName(s[0]) + ".png");
             GIC.DrawAllFiles(Path.GetDirectoryName(s[0]) + "_Layer", 200);
         }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }
