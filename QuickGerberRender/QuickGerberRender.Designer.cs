@@ -29,134 +29,163 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(QuickGerberRender));
-            this.label1 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.SolderMaskColor = new System.Windows.Forms.TextBox();
-            this.SilkScreenColor = new System.Windows.Forms.TextBox();
-            this.CopperColor = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.SolderMaskColor = new System.Windows.Forms.ComboBox();
+            this.SilkScreenColor = new System.Windows.Forms.ComboBox();
+            this.CopperColor = new System.Windows.Forms.ComboBox();
+            this.splitter1 = new System.Windows.Forms.Splitter();
             this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // label1
-            // 
-            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label1.Font = new System.Drawing.Font("Arial", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.ForeColor = System.Drawing.Color.Black;
-            this.label1.Location = new System.Drawing.Point(0, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(607, 383);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Drop GerberFolder Here!";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tableLayoutPanel1
             // 
+            this.tableLayoutPanel1.BackColor = System.Drawing.SystemColors.Control;
             this.tableLayoutPanel1.ColumnCount = 3;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 187F));
+            this.tableLayoutPanel1.Controls.Add(this.CopperColor, 2, 1);
+            this.tableLayoutPanel1.Controls.Add(this.SilkScreenColor, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.SolderMaskColor, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.label4, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.label3, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.SolderMaskColor, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.SilkScreenColor, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.CopperColor, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.label2, 0, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 302);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 131);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 56F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(607, 81);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 43F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(607, 78);
             this.tableLayoutPanel1.TabIndex = 5;
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(423, 0);
+            this.label4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label4.Location = new System.Drawing.Point(428, 8);
+            this.label4.Margin = new System.Windows.Forms.Padding(8);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(40, 17);
+            this.label4.Size = new System.Drawing.Size(171, 19);
             this.label4.TabIndex = 5;
             this.label4.Text = "Pads";
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(213, 0);
+            this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label3.Location = new System.Drawing.Point(218, 8);
+            this.label3.Margin = new System.Windows.Forms.Padding(8);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(30, 17);
+            this.label3.Size = new System.Drawing.Size(194, 19);
             this.label3.TabIndex = 4;
             this.label3.Text = "Silk";
+            // 
+            // label2
+            // 
+            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label2.Location = new System.Drawing.Point(8, 8);
+            this.label2.Margin = new System.Windows.Forms.Padding(8);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(194, 19);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Soldermask";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(607, 98);
+            this.pictureBox1.TabIndex = 6;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            this.pictureBox1.Resize += new System.EventHandler(this.pictureBox1_Resize);
             // 
             // SolderMaskColor
             // 
             this.SolderMaskColor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SolderMaskColor.Location = new System.Drawing.Point(3, 28);
+            this.SolderMaskColor.FormattingEnabled = true;
+            this.SolderMaskColor.Location = new System.Drawing.Point(8, 43);
+            this.SolderMaskColor.Margin = new System.Windows.Forms.Padding(8);
             this.SolderMaskColor.Name = "SolderMaskColor";
-            this.SolderMaskColor.Size = new System.Drawing.Size(204, 22);
-            this.SolderMaskColor.TabIndex = 0;
-            this.SolderMaskColor.Text = "blue";
+            this.SolderMaskColor.Size = new System.Drawing.Size(194, 24);
+            this.SolderMaskColor.TabIndex = 7;
+            this.SolderMaskColor.Text = "Green";
+            this.SolderMaskColor.SelectedIndexChanged += new System.EventHandler(this.SolderMaskColor_SelectedIndexChanged);
+            this.SolderMaskColor.TextUpdate += new System.EventHandler(this.SolderMaskColor_TextUpdate);
             // 
             // SilkScreenColor
             // 
             this.SilkScreenColor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SilkScreenColor.Location = new System.Drawing.Point(213, 28);
+            this.SilkScreenColor.FormattingEnabled = true;
+            this.SilkScreenColor.Location = new System.Drawing.Point(218, 43);
+            this.SilkScreenColor.Margin = new System.Windows.Forms.Padding(8);
             this.SilkScreenColor.Name = "SilkScreenColor";
-            this.SilkScreenColor.Size = new System.Drawing.Size(204, 22);
-            this.SilkScreenColor.TabIndex = 1;
-            this.SilkScreenColor.Text = "white";
+            this.SilkScreenColor.Size = new System.Drawing.Size(194, 24);
+            this.SilkScreenColor.TabIndex = 8;
+            this.SilkScreenColor.Text = "White";
+            this.SilkScreenColor.SelectedIndexChanged += new System.EventHandler(this.SilkScreenColor_SelectedIndexChanged);
+            this.SilkScreenColor.TextUpdate += new System.EventHandler(this.SilkScreenColor_TextUpdate);
             // 
             // CopperColor
             // 
             this.CopperColor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.CopperColor.Location = new System.Drawing.Point(423, 28);
+            this.CopperColor.FormattingEnabled = true;
+            this.CopperColor.Location = new System.Drawing.Point(428, 43);
+            this.CopperColor.Margin = new System.Windows.Forms.Padding(8);
             this.CopperColor.Name = "CopperColor";
-            this.CopperColor.Size = new System.Drawing.Size(181, 22);
-            this.CopperColor.TabIndex = 2;
-            this.CopperColor.Text = "gold";
+            this.CopperColor.Size = new System.Drawing.Size(171, 24);
+            this.CopperColor.TabIndex = 9;
+            this.CopperColor.Text = "Gold";
+            this.CopperColor.SelectedIndexChanged += new System.EventHandler(this.CopperColor_SelectedIndexChanged);
+            this.CopperColor.TextUpdate += new System.EventHandler(this.CopperColor_TextUpdate);
             // 
-            // label2
+            // splitter1
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(82, 17);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Soldermask";
+            this.splitter1.Cursor = System.Windows.Forms.Cursors.HSplit;
+            this.splitter1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.splitter1.Location = new System.Drawing.Point(0, 104);
+            this.splitter1.Name = "splitter1";
+            this.splitter1.Size = new System.Drawing.Size(607, 27);
+            this.splitter1.TabIndex = 7;
+            this.splitter1.TabStop = false;
             // 
             // QuickGerberRender
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.Gold;
-            this.ClientSize = new System.Drawing.Size(607, 383);
+            this.BackColor = System.Drawing.SystemColors.Control;
+            this.ClientSize = new System.Drawing.Size(607, 209);
+            this.Controls.Add(this.splitter1);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.pictureBox1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "QuickGerberRender";
-            this.Text = "QuickImageCreator";
+            this.Text = "TINRS - Quick Gerber Renderer";
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
             this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.TextBox SolderMaskColor;
-        private System.Windows.Forms.TextBox SilkScreenColor;
-        private System.Windows.Forms.TextBox CopperColor;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.ComboBox SolderMaskColor;
+        private System.Windows.Forms.ComboBox CopperColor;
+        private System.Windows.Forms.ComboBox SilkScreenColor;
+        private System.Windows.Forms.Splitter splitter1;
     }
 }
 
