@@ -86,6 +86,11 @@ namespace GerberLibrary
 
         public class Bounds
         {
+            public override string ToString()
+            {
+                return String.Format("({0:N2}, {1:N2}) - ({2:N2}, {3:N2}) -> {4:N2} x {5:N2} mm", TopLeft.X, TopLeft.Y, BottomRight.X, BottomRight.Y, Width(), Height() );
+            }
+
             public void FitPoint(PointD P)
             {
                 if (!Valid)
@@ -151,8 +156,17 @@ namespace GerberLibrary
             }
         }
 
+        public static ParsedGerber LoadGerberFileFromStream(StreamReader sr,string originalfilename, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
+        {
+            if (State == null) State = new GerberParserState();
+            
+            Gerber.DetermineBoardSideAndLayer (originalfilename, out State.Side, out State.Layer);
+            return ProcessStream(originalfilename, forcezerowidth, writesanitized, State, sr);
+            
+        }
 
-        
+
+
         //      public GerberParserState State = new GerberParserState();
 
         public class GerberBlock
@@ -1554,25 +1568,30 @@ namespace GerberLibrary
 
             using (StreamReader sr = new StreamReader(gerberfile))
             {
-                List<String> lines = new List<string>();
-                while (sr.EndOfStream == false)
-                {
-                    String line = sr.ReadLine();
-                    if (line.Length > 0)
-                    {
-                        lines.Add(line);
-                    }
-                }
-
-                if (writesanitized)
-                {
-                    State.SanitizedFile = gerberfile + ".sanitized.gerber";
-                };
-
-                var G = ParseGerber274x(lines, false, forcezerowidth, State); ;
-                G.Name = gerberfile;
-                return G;
+                return ProcessStream(gerberfile, forcezerowidth, writesanitized, State, sr);
             }
+        }
+
+        private static ParsedGerber ProcessStream(string gerberfile, bool forcezerowidth, bool writesanitized, GerberParserState State, StreamReader sr)
+        {
+            List<String> lines = new List<string>();
+            while (sr.EndOfStream == false)
+            {
+                String line = sr.ReadLine();
+                if (line.Length > 0)
+                {
+                    lines.Add(line);
+                }
+            }
+
+            if (writesanitized)
+            {
+                State.SanitizedFile = gerberfile + ".sanitized.gerber";
+            };
+
+            var G = ParseGerber274x(lines, false, forcezerowidth, State); ;
+            G.Name = gerberfile;
+            return G;
         }
 
         public static ParsedGerber LoadExcellonDrillFile(string drillfile, bool Precombine = false)

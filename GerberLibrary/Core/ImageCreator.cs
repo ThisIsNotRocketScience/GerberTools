@@ -17,9 +17,8 @@ namespace GerberLibrary
     {
        public double scale = 25.0f / 25.4f; // dpi
        List<ParsedGerber> PLSs = new List<ParsedGerber>();
-       // public PointD TopLeft = new PointD(100000, 100000);
-        //public PointD BottomRight = new PointD(-100000, -100000);
-       public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
+
+        public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
 
         public static bool AA = true;
 
@@ -132,37 +131,46 @@ namespace GerberLibrary
             }
 
             if (Logger != null) Logger.AddString("Drawing outline files");
-            Bitmap _OutlineBase = DrawIfExists(width, height, TransformCopy, Color.LightYellow, BoardLayer.Outline, BoardSide.Both, basefilename, true, 1, true);
+            Bitmap _OutlineBase = DrawIfExists(width, height, TransformCopy, Gerber.BoardRenderBaseMaterialColor, BoardLayer.Outline, BoardSide.Both, basefilename, true, 1, true);
             if (Logger != null) Logger.AddString("Drawing mill files");
-            Bitmap _OutlineMill = DrawIfExists(width, height, TransformCopy, Color.LightYellow, BoardLayer.Mill, BoardSide.Both, basefilename, true, 1, true);
+            Bitmap _OutlineMill = DrawIfExists(width, height, TransformCopy, Gerber.BoardRenderBaseMaterialColor, BoardLayer.Mill, BoardSide.Both, basefilename, true, 1, true);
 
 
 
             if (Logger != null) Logger.AddString("Drawing copper files");
-
             Bitmap _Copper = DrawIfExists(width, height, TransformCopy, Color.FromArgb(80, 80, 0), BoardLayer.Copper, CurrentLayer, basefilename, true);
+
             if (Logger != null) Logger.AddString("Drawing silk files");
             Bitmap _Silk = DrawIfExists(width, height, TransformCopy, Gerber.BoardRenderSilkColor, BoardLayer.Silk, CurrentLayer, basefilename, true, 0.2f);
+
             if (Logger != null) Logger.AddString("Drawing soldermask files");
-
             Bitmap _SolderMaskHoles = DrawIfExists(width, height, TransformCopy, Gerber.BoardRenderPadColor, BoardLayer.SolderMask, CurrentLayer, basefilename, true, 0.2f);
-            if (Logger != null) Logger.AddString("Drawing drill files");
 
+            if (Logger != null) Logger.AddString("Drawing drill files");
             Bitmap _DrillHoles = DrawIfExists(width, height, TransformCopy, Color.Black, BoardLayer.Drill, BoardSide.Both, basefilename, true, 1.0f);
 
+
+            if (Gerber.SaveIntermediateImages == true)
+            {
+                if (_Copper != null) _Copper.Save(CurrentLayer.ToString() + "_copper.png");
+                if (_SolderMaskHoles != null) _SolderMaskHoles.Save(CurrentLayer.ToString() + "_soldermaskholes.png");
+                if (_DrillHoles != null) _DrillHoles.Save(CurrentLayer.ToString() + "_drill.png");
+                if (_OutlineBase != null) _OutlineBase.Save(CurrentLayer.ToString() + "_base.png");
+                if (_OutlineMill!=null) _OutlineMill.Save(CurrentLayer.ToString() + "_mill.png");
+            }
             //DrawIfExists(width, height, G, Color.Black, BoardLayer.Mill, BoardSide.Both, basefilename);
-            //      DrawIfExists(filename, width, height, G, Color.Blue, BoardLayer.Drill, BoardSide.Both, false);
+            //DrawIfExists(filename, width, height, G, Color.Blue, BoardLayer.Drill, BoardSide.Both, false);
             //DrawIfExists(width, height, G, Color.White, BoardLayer.Outline, BoardSide.Both, basefilename, false);
             //DrawIfExists(width, height, G, Color.White, BoardLayer.Mill, BoardSide.Both, basefilename, false);
 
-            //     LockBitmap OutlineBase = new LockBitmap(_OutlineBase);
-            //     LockBitmap OutlineMill = new LockBitmap(_OutlineMill);
-            //    LockBitmap Copper = new LockBitmap(_Copper);
-            //   LockBitmap SolderMaskHoles = new LockBitmap(_SolderMaskHoles);
-            //    LockBitmap Silk = new LockBitmap(_Silk);
+            //LockBitmap OutlineBase = new LockBitmap(_OutlineBase);
+            //LockBitmap OutlineMill = new LockBitmap(_OutlineMill);
+            //LockBitmap Copper = new LockBitmap(_Copper);
+            //LockBitmap SolderMaskHoles = new LockBitmap(_SolderMaskHoles);
+            //LockBitmap Silk = new LockBitmap(_Silk);
 
-            //    LockBitmap Final = new LockBitmap(_Final);
-            //    LockBitmap SilkMask = new LockBitmap(_SilkMask);
+            //LockBitmap Final = new LockBitmap(_Final);
+            //LockBitmap SilkMask = new LockBitmap(_SilkMask);
 
             {
                 {
@@ -311,7 +319,7 @@ namespace GerberLibrary
                             }
 
                             Color newC = O;
-                            float OA2 = (Mask.A / 255.0f) * 0.7f + 0.3f;
+                            float OA2 = (Mask.A / 255.0f) * 0.9f + 0.1f;
                             //float DA = O.A / 255.0f;
 
                             float IOA = 1.0f - OA2;
@@ -360,31 +368,32 @@ namespace GerberLibrary
                     {
                         for (int y = 0; y < h; y++)
                         {
-                            var S = Silk.GetPixel(x, y);
-                            float AS = S.A / 255.0f;
+
+                            var SilkPixel = Silk.GetPixel(x, y);
+                            float AS = SilkPixel.A / 255.0f;
                             if (AS > 0)
                             {
-                                var O = Final.GetPixel(x, y);
+                                var OutputPixel = Final.GetPixel(x, y);
                                 var Mask = SilkMask.GetPixel(x, y);
 
                                 //    float AO = O.A / 255.0f;
                                 float AM = (Mask.A / 255.0f) * (1 - AS);
                                 if (Mask.A < 255 && Copper != null)
                                 {
-                                    var C = Copper.GetPixel(x, y);
-                                    if (C.A > 0)
+                                    var CopperPixel = Copper.GetPixel(x, y);
+                                    if (CopperPixel.A > 0)
                                     {
-                                        AM = AM * (1 - (C.A / 255.0f)) + 1 * (C.A / 255.0f);
+                                        AM = AM * (1 - (CopperPixel.A / 255.0f)) + 1 * (CopperPixel.A / 255.0f);
                                         //               AM = 1; 
                                     }
                                     //         O = Color.FromArgb(C.A, 200, 200);
                                 }
 
                                 float iAM = 1.0f - AM;
-                                Color newC = Color.FromArgb(O.A,
-                                  (byte)Math.Round(O.R * AM + S.R * iAM),
-                                  (byte)Math.Round(O.G * AM + S.G * iAM),
-                                  (byte)Math.Round(O.B * AM + S.B * iAM));
+                                Color newC = Color.FromArgb(OutputPixel.A,
+                                  (byte)Math.Round(OutputPixel.R * AM + SilkPixel.R * iAM),
+                                  (byte)Math.Round(OutputPixel.G * AM + SilkPixel.G * iAM),
+                                  (byte)Math.Round(OutputPixel.B * AM + SilkPixel.B * iAM));
                                 Final.SetPixel(x, y, newC);
                             }
                         }
@@ -398,12 +407,22 @@ namespace GerberLibrary
                     SilkMask.UnlockBits();
                     Silk.UnlockBits();
                 }
+
+                if (_Copper != null && Gerber.GerberRenderBumpMapOutput)
+                {
+                    ApplyBumpMapping(_Final, _Copper);
+                }
                 // if (OutlineBase != null) G.DrawImage(OutlineBase, new Rectangle(0, 0, w, h), 0, 0, w, h, GraphicsUnit.Pixel);                
             }
 
             return _Final;
 
             //            return B;
+        }
+
+        private void ApplyBumpMapping(Bitmap _Final, Bitmap _Copper)
+        {
+            throw new NotImplementedException();
         }
 
         public void DrawAllFiles(string v1, double dpi, ProgressLog Logger = null)

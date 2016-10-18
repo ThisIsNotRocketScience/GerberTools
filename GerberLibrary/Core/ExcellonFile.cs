@@ -30,6 +30,16 @@ namespace GerberLibrary
             ParseExcellon(lines.ToList());
         }
 
+        public void Load(StreamReader stream)
+        {
+            List<string> lines = new List<string>();
+            while (!stream.EndOfStream)
+            {
+                lines.Add(stream.ReadLine());
+            }
+            ParseExcellon(lines);
+        }
+
         public static void MergeAll(List<string> Files, string output, ProgressLog Log)
         {
             if (Files.Count >= 2)
@@ -260,6 +270,17 @@ namespace GerberLibrary
             Gerber.WriteAllLines(filename, lines);
         }
         public Dictionary<int, ExcellonTool> Tools = new Dictionary<int, ExcellonTool>();
+
+
+        public int TotalDrillCount()
+        {
+            int T = 0;
+            foreach(var Tool in Tools)
+            {
+                T += Tool.Value.Drills.Count;
+            }
+            return T;
+        }
 
         bool ParseExcellon(List<string> lines)
         {

@@ -10,7 +10,7 @@ using GerberLibrary.Core;
 
 namespace DirtyPCB_BoardRender
 {
-    class DirtyPCBBoardRender: ProgressLog
+    class DirtyPCB_BoardRender: ProgressLog
     {
         enum Arguments
         {
@@ -88,7 +88,7 @@ namespace DirtyPCB_BoardRender
                 GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Top, 200, false);
                 Console.WriteLine("Progress: Rendering Bottom");
                 GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Bottom, 200, false);
-                GIC.DrawAllFiles(OutputFolder + "/Layer", 200, new DirtyPCBBoardRender());
+                GIC.DrawAllFiles(OutputFolder + "/Layer", 200, new DirtyPCB_BoardRender());
                 Console.WriteLine("Progress: Done!");
             }
             catch (Exception E)

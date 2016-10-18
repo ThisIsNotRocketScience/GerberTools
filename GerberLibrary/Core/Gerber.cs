@@ -40,13 +40,21 @@ namespace GerberLibrary
         public static string StopRegion = "G37*";
         public static string LinearInterpolation = "G01*";
         public static string LineEnding = "\n";
-
+#if DEBUG
+        public static bool SaveIntermediateImages = true;
+#else
+        public static bool SaveIntermediateImages = false;
+#endif
         public static Color BoardRenderColor = ParseColor("green");
         public static Color BoardRenderSilkColor = ParseColor("white");
         public static Color BoardRenderPadColor = ParseColor("gold");
+        public static Color BoardRenderCopperColor = Color.FromArgb(219, 125, 104);
+        public static Color BoardRenderBaseMaterialColor  = ParseColor("#808080");
+        public static bool GerberRenderBumpMapOutput = true;
+
         #endregion
 
-        
+
         public static Color ParseColor(string color)
         {
             if (color == null)
@@ -64,7 +72,7 @@ namespace GerberLibrary
                 case "white": return Color.FromArgb(250, 250, 250);
                 case "red": return Color.FromArgb(192, 43, 43);
                 case "silver": return Color.FromArgb(160, 160, 160);
-                case "gold": return Color.FromArgb(227, 189, 145);
+                case "gold": return Color.FromArgb(239, 205, 85);
             }
 
             try
@@ -79,6 +87,7 @@ namespace GerberLibrary
             return Color.FromName(color);
         }
 
+        
         class QuadR
         {
             public double CX;
@@ -299,7 +308,7 @@ namespace GerberLibrary
         }
 
         private static readonly Regex rxScientific = new Regex(@"^(?<sign>-?)(?<head>\d+)(\.(?<tail>\d*?)0*)?E(?<exponent>[+\-]\d+)$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
-
+        
         public static string ToFloatingPointString(double value)
         {
             return ToFloatingPointString(value, NumberFormatInfo.CurrentInfo);
@@ -345,7 +354,7 @@ namespace GerberLibrary
         }
 
 
-        #region GERBERCOMMANDSTRINGS
+#region GERBERCOMMANDSTRINGS
         public static string MoveTo(PointD t, GerberNumberFormat GNF)
         {
             return String.Format("X{0}Y{1}D02*", GNF.Format(GNF._ScaleMMToFile(t.X)), GNF.Format(GNF._ScaleMMToFile(t.Y)));
@@ -397,7 +406,7 @@ namespace GerberLibrary
             return res;
         }
 
-        #endregion
+#endregion
 
         internal static bool TryParseDouble(string inp, out double N)
         {
@@ -410,11 +419,11 @@ namespace GerberLibrary
             return double.Parse(inp, NumberStyles.Any, CultureInfo.InvariantCulture);
         }
 
-        public static BoardFileType FindFileType(string a)
+        public static BoardFileType FindFileType(string filename)
         {
-            a = a.ToLower();
+            filename = filename.ToLower();
             List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp" };
-            string[] filesplit = a.Split('.');
+            string[] filesplit = filename.Split('.');
             string ext = filesplit[filesplit.Count() - 1].ToLower();
             foreach (var s in unsupported)
             {
@@ -427,7 +436,7 @@ namespace GerberLibrary
             try
             {
                 // var F = File.OpenText(a);
-                var F = File.ReadAllLines(a);
+                var F = File.ReadAllLines(filename);
                 for (int i = 0; i < F.Count(); i++)
                 {
                     string L = F[i];
@@ -446,6 +455,51 @@ namespace GerberLibrary
 
 
         }
+
+
+        public static BoardFileType FindFileTypeFromStream(StreamReader l, string filename)
+        {
+            filename = filename.ToLower();
+            List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp" };
+            string[] filesplit = filename.Split('.');
+            string ext = filesplit[filesplit.Count() - 1].ToLower();
+            foreach (var s in unsupported)
+            {
+                if (ext == s)
+                {
+
+                    return BoardFileType.Unsupported;
+                }
+            }
+            try
+            {
+                // var F = File.OpenText(a);
+                List<string> lines = new List<string>();
+                while (!l.EndOfStream)
+                {
+                    lines.Add(l.ReadLine());
+                }
+                //var F = File.ReadAllLines(filename);
+
+
+                for (int i = 0; i < lines.Count(); i++)
+                {
+                    string L= lines[i];
+                    if (L.Contains("%FS")) return BoardFileType.Gerber;
+                    if (L.Contains("M48")) return BoardFileType.Drill;
+                };
+
+
+            }
+            catch (Exception)
+            {
+                return BoardFileType.Unsupported;
+            }
+
+            return BoardFileType.Unsupported;
+
+        }
+
 
         class boardset { public string name; public BoardSide side; public BoardLayer layer; };
 
