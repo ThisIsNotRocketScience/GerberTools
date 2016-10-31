@@ -10,6 +10,7 @@ using OpenTK.Graphics.OpenGL;
 //using System.Drawing.Drawing2D;
 using GerberLibrary.Core.Primitives;
 using GerberLibrary.Core;
+using System.Drawing.Drawing2D;
 
 namespace GerberCombinerBuilder
 {
@@ -202,7 +203,6 @@ namespace GerberCombinerBuilder
             }
         }
 
-
         public PointD MeasureString(string p)
         {
             CheckFont();
@@ -210,10 +210,10 @@ namespace GerberCombinerBuilder
             return new PointD(R.Width, R.Height);
         }
 
-
         public void FillShape(SolidBrush P, PolyLine Shape)
         {
-            //                GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+            // GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
             if (P.Color.A < 255)
             {
                 GL.Enable(EnableCap.Blend);
@@ -228,7 +228,39 @@ namespace GerberCombinerBuilder
             }
 
             GL.End();
+        }
 
+        public void DrawLine(Pen P, PointF p1, PointF p2)
+        {
+            DrawLine(P, p1.X, p1.Y, p2.X, p2.Y);
+        }
+
+        public void DrawRectangle(Color color, float x, float y, float w, float h, float strokewidth = 1)
+        {
+            DrawLine(new Pen(color, strokewidth), x, y, x + w, y);
+            DrawLine(new Pen(color, strokewidth), x + w, y, x + w, y + h);
+            DrawLine(new Pen(color, strokewidth), x + w, y + h, x, y + h);
+            DrawLine(new Pen(color, strokewidth), x, y + h, x, y);
+        }
+
+        public void FillRectangle(Color color, float x, float y, float w, float h)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FillPath(Color c, GraphicsPath gP)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DrawString(string text, Font font, SolidBrush solidBrush, float x, float y, StringFormat sF)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DrawPath(Color black, GraphicsPath pATH, float v)
+        {
+            throw new NotImplementedException();
         }
     }
 }

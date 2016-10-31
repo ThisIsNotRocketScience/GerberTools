@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Artwork Related\BasicBounce.cs" />
+    <Compile Include="Artwork Related\SVGWriter.cs" />
     <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExcellonFile.cs" />
     <Compile Include="Artwork Related\FontSet.cs" />

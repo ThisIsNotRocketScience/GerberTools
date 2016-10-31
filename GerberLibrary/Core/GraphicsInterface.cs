@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing.Drawing2D;
 
 namespace GerberLibrary.Core
 {
@@ -23,6 +24,7 @@ namespace GerberLibrary.Core
         void TranslateTransform(float p1, float p2);
 
         void DrawLines(Pen P, PointF[] Points);
+        void DrawLine(Pen P, PointF p1, PointF p2);
 
         void DrawLine(Pen P, float p1, float p2, float p3, float p4);
 
@@ -32,13 +34,17 @@ namespace GerberLibrary.Core
 
         bool IsFast { get; set; }
 
-        void DrawRectangle(Color color, float x, float y, float w, float h);
+        void DrawRectangle(Color color, float x, float y, float w, float h, float strokewidth = 1.0f);
+        void FillRectangle(Color color, float x, float y, float w, float h);
 
         void DrawString(PointD pos, string text, double scale, bool centered, float r = 0.2f, float g = 0.2f, float b = 0.2f, float a = 1.0f);
 
         PointD MeasureString(string p);
 
         void FillShape(SolidBrush BR, PolyLine Shape);
+        void FillPath(Color c, GraphicsPath gP);
+        void DrawString(string text, Font font, SolidBrush solidBrush, float x, float y, StringFormat sF);
+        void DrawPath(Color black, GraphicsPath pATH, float v);
     }
 
 
@@ -133,18 +139,18 @@ namespace GerberLibrary.Core
             }
         }
 
-
         public void DrawRectangle(Color color, float x, float y, float w, float h)
         {
             throw new NotImplementedException();
         }
 
-
         public void DrawString(PointD pos, string text, double scale, bool center, float r = 0.2f, float g = 0.2f, float b = 0.2f, float a = 1.0f)
         {
+            StringFormat SF = new StringFormat();
+            if (center) SF.Alignment = StringAlignment.Center;
+            SF.LineAlignment = StringAlignment.Far;
+            G.DrawString(text, new Font("Arial", (float)scale * 13.0f), new SolidBrush(Color.FromArgb((byte)(a * 255.0), (byte)(r * 255.0), (byte)(g * 255.0), (byte)(b * 255.0))), new PointF((float)pos.X, (float)pos.Y), SF);
         }
-
-
 
         public PointD MeasureString(string p)
         {
@@ -153,6 +159,39 @@ namespace GerberLibrary.Core
 
 
         public void FillShape(SolidBrush BR, PolyLine Shape)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FillRectangle(Color color, float x, float y, float w, float h)
+        {
+            G.FillRectangle(new SolidBrush(color), x, y, w, h);
+        }
+
+        public void FillPath(Color c, GraphicsPath gP)
+        {
+            G.FillPath(new SolidBrush(c), gP);           
+        }
+
+        public void DrawLine(Pen P, PointF p1, PointF p2)
+        {
+            DrawLine(P, p1.X, p1.Y, p2.X, p2.Y);
+        }
+
+        public void DrawRectangle(Color color, float x, float y, float w, float h, float strokewidth = 1)
+        {
+            DrawLine(new Pen(color, strokewidth), x, y, x + w, y);
+            DrawLine(new Pen(color, strokewidth), x+w, y, x + w, y+h);
+            DrawLine(new Pen(color, strokewidth), x, y+h, x + w, y+h);
+            DrawLine(new Pen(color, strokewidth), x, y, x , y+h );
+        }
+
+        public void DrawString(string text, Font font, SolidBrush solidBrush, float x, float y, StringFormat sF)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DrawPath(Color black, GraphicsPath pATH, float v)
         {
             throw new NotImplementedException();
         }
