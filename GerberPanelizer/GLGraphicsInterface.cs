@@ -161,16 +161,7 @@ namespace GerberCombinerBuilder
         }
 
 
-        public void DrawRectangle(Color color, float x, float y, float w, float h)
-        {
-            GL.Color4(color);
-            GL.Begin(BeginMode.Quads);
-            GL.Vertex2(x, y);
-            GL.Vertex2(x + w, y);
-            GL.Vertex2(x + w, y + h);
-            GL.Vertex2(x, y + h);
-            GL.End();
-        }
+     
 
 
         public static QuickFont.QFont Font;
@@ -245,8 +236,18 @@ namespace GerberCombinerBuilder
 
         public void FillRectangle(Color color, float x, float y, float w, float h)
         {
-            throw new NotImplementedException();
-        }
+
+
+            GL.Color4(color);
+            GL.Begin(BeginMode.Quads);
+            GL.Vertex2(x, y);
+            GL.Vertex2(x + w, y);
+            GL.Vertex2(x + w, y + h);
+            GL.Vertex2(x, y + h);
+            GL.End();
+
+        
+    }
 
         public void FillPath(Color c, GraphicsPath gP)
         {

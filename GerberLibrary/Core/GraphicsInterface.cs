@@ -141,7 +141,10 @@ namespace GerberLibrary.Core
 
         public void DrawRectangle(Color color, float x, float y, float w, float h)
         {
-            throw new NotImplementedException();
+            DrawLine(new Pen(color), x, y, x+w, y);
+            DrawLine(new Pen(color), x+w, y, x+w, y+h);
+            DrawLine(new Pen(color), x+w, y+h, x, y+h);
+            DrawLine(new Pen(color), x, y+h, x, y);
         }
 
         public void DrawString(PointD pos, string text, double scale, bool center, float r = 0.2f, float g = 0.2f, float b = 0.2f, float a = 1.0f)
