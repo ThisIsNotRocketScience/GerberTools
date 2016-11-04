@@ -15,8 +15,8 @@ namespace GerberLibrary
 {
     public class GerberImageCreator
     {
-       public double scale = 25.0f / 25.4f; // dpi
-       List<ParsedGerber> PLSs = new List<ParsedGerber>();
+        public double scale = 25.0f / 25.4f; // dpi
+        List<ParsedGerber> PLSs = new List<ParsedGerber>();
 
         public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
 
@@ -24,57 +24,70 @@ namespace GerberLibrary
 
         public void AddBoardToSet(string a, bool forcezerowidth = false, bool precombinepolygons = false)
         {
-            string[] filesplit = a.Split('.');
-            string ext = filesplit[filesplit.Count() - 1].ToLower();
-
-            var FileType = Gerber.FindFileType(a);
-
-            if (FileType == BoardFileType.Unsupported)
+            try
             {
-                if (Gerber.ExtremelyVerbose) Console.WriteLine("Warning: {1}: files with extension {0} are not supported!", ext, Path.GetFileName(a));
-                return;
-            }
+                string[] filesplit = a.Split('.');
+                string ext = filesplit[filesplit.Count() - 1].ToLower();
 
+                var FileType = Gerber.FindFileType(a);
 
-            ParsedGerber PLS;
-            GerberParserState State = new GerberParserState() {PreCombinePolygons = precombinepolygons};
-            
-            if (FileType == BoardFileType.Drill)
-            {
-                PLS = PolyLineSet.LoadExcellonDrillFile(a);
-                // ExcellonFile EF = new ExcellonFile();
-                // EF.Load(a);
-            }
-            else
-            {
-                BoardSide Side = BoardSide.Unknown;
-                BoardLayer Layer = BoardLayer.Unknown;
-                Gerber.DetermineBoardSideAndLayer(a, out Side, out Layer);
-                if (Layer == BoardLayer.Outline)
+                if (FileType == BoardFileType.Unsupported)
                 {
-                    forcezerowidth = true;
-                    precombinepolygons = true;
+                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Warning: {1}: files with extension {0} are not supported!", ext, Path.GetFileName(a));
+                    return;
                 }
-                State.PreCombinePolygons = precombinepolygons;
 
-                PLS = PolyLineSet.LoadGerberFile(a, forcezerowidth, false, State);
-                PLS.Side = State.Side;
-                PLS.Layer = State.Layer;
-                if (Layer == BoardLayer.Outline)
+
+                ParsedGerber PLS;
+                GerberParserState State = new GerberParserState() { PreCombinePolygons = precombinepolygons };
+
+                if (FileType == BoardFileType.Drill)
                 {
-                    PLS.FixPolygonWindings();
+                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", a);
+                    PLS = PolyLineSet.LoadExcellonDrillFile(a);
+                    // ExcellonFile EF = new ExcellonFile();
+                    // EF.Load(a);
+                }
+                else
+                {
+                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Gerber file: {0}", a);
+                    BoardSide Side = BoardSide.Unknown;
+                    BoardLayer Layer = BoardLayer.Unknown;
+                    Gerber.DetermineBoardSideAndLayer(a, out Side, out Layer);
+                    if (Layer == BoardLayer.Outline)
+                    {
+                        forcezerowidth = true;
+                        precombinepolygons = true;
+                    }
+                    State.PreCombinePolygons = precombinepolygons;
+
+                    PLS = PolyLineSet.LoadGerberFile(a, forcezerowidth, false, State);
+                    PLS.Side = State.Side;
+                    PLS.Layer = State.Layer;
+                    if (Layer == BoardLayer.Outline)
+                    {
+                        PLS.FixPolygonWindings();
+                    }
+                }
+
+                PLS.CalcPathBounds();
+                BoundingBox.AddBox(PLS.BoundingBox);
+
+                Console.WriteLine("Progress: Loaded {0}: {1:N1} x {2:N1} mm", Path.GetFileName(a), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
+                PLSs.Add(PLS);
+                //     }
+                //     catch (Exception)
+                //    {
+                //   }
+            }
+            catch (Exception E)
+            {
+                while (E != null)
+                {
+                    Console.WriteLine("Exception adding board: {0}", E.Message);
+                    E = E.InnerException;
                 }
             }
-
-            PLS.CalcPathBounds();
-            BoundingBox.AddBox(PLS.BoundingBox);
-            
-            Console.WriteLine("Progress: Loaded {0}: {1:N1} x {2:N1} mm", Path.GetFileName(a), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
-            PLSs.Add(PLS);
-            //     }
-            //     catch (Exception)
-            //    {
-            //   }
         }
 
         public void WriteImageFiles(string TargetFileBaseName, double dpi = 200, bool showimage = true, ProgressLog Logger = null)
@@ -85,7 +98,7 @@ namespace GerberLibrary
             DrawToFile(TargetFileBaseName, BoardSide.Bottom, dpi, showimage, Logger);
         }
 
-        Bitmap DrawBoard(double dpi, BoardSide CurrentLayer, string basefilename = null, ProgressLog Logger = null)
+        Bitmap DrawBoard(double dpi, BoardSide CurrentLayer, string basefilename = null, ProgressLog Logger = null, bool ForceWhite = false)
         {
             scale = dpi / 25.4f; // dpi
 
@@ -99,15 +112,17 @@ namespace GerberLibrary
 
             int w = width + 3;
             int h = height + 3;
-            Bitmap _Final = new Bitmap(w, h);
-            Bitmap _BoardPlate = new Bitmap(w, h);
-            Bitmap _SilkMask = new Bitmap(w, h);
+            Bitmap _Final = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+
+            Bitmap _BoardPlate = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+
+            Bitmap _SilkMask = new Bitmap(w, h, PixelFormat.Format32bppArgb);
 
             System.Drawing.Drawing2D.Matrix TransformCopy = null;
             //Bitmap B = new Bitmap(width + 3, height + 3);
             {
                 Graphics G = Graphics.FromImage(_Final);
-                ApplyAASettings(G); 
+                ApplyAASettings(G);
                 G.Clear(Color.Transparent);
                 G.TranslateTransform(0, h);
                 G.ScaleTransform(1, -1);
@@ -144,15 +159,16 @@ namespace GerberLibrary
             if (Logger != null) Logger.AddString("Drawing drill files");
             Bitmap _DrillHoles = DrawIfExists(width, height, TransformCopy, Color.Black, BoardLayer.Drill, BoardSide.Both, basefilename, true, 1.0f);
 
-
             if (Gerber.SaveIntermediateImages == true)
             {
-                if (_Copper != null) _Copper.Save(CurrentLayer.ToString() + "_copper.png");
-                if (_SolderMaskHoles != null) _SolderMaskHoles.Save(CurrentLayer.ToString() + "_soldermaskholes.png");
-                if (_DrillHoles != null) _DrillHoles.Save(CurrentLayer.ToString() + "_drill.png");
-                if (_OutlineBase != null) _OutlineBase.Save(CurrentLayer.ToString() + "_base.png");
-                if (_OutlineMill!=null) _OutlineMill.Save(CurrentLayer.ToString() + "_mill.png");
+                Console.WriteLine("Progress: Writing intermediate images:");
+                if (_Copper != null) { _Copper.Save(CurrentLayer.ToString() + "_copper.png"); Console.WriteLine("Progress: Copper"); }
+                if (_SolderMaskHoles != null) { _SolderMaskHoles.Save(CurrentLayer.ToString() + "_soldermaskholes.png"); Console.WriteLine("Progress: SolderMask"); }
+                if (_DrillHoles != null) { _DrillHoles.Save(CurrentLayer.ToString() + "_drill.png"); Console.WriteLine("Progress: Drill"); }
+                if (_OutlineBase != null) { _OutlineBase.Save(CurrentLayer.ToString() + "_base.png"); Console.WriteLine("Progress: Base"); }
+                if (_OutlineMill != null) { _OutlineMill.Save(CurrentLayer.ToString() + "_mill.png"); Console.WriteLine("Progress: Mill"); }
             }
+
             //DrawIfExists(width, height, G, Color.Black, BoardLayer.Mill, BoardSide.Both, basefilename);
             //DrawIfExists(filename, width, height, G, Color.Blue, BoardLayer.Drill, BoardSide.Both, false);
             //DrawIfExists(width, height, G, Color.White, BoardLayer.Outline, BoardSide.Both, basefilename, false);
@@ -180,12 +196,13 @@ namespace GerberLibrary
                     if (Logger != null) Logger.AddString("Carving inner polygons from board");
 
 
-                    CarveOutlineAndMillInnerPolygonsFromImage(basefilename, w, h, G, TransformCopy);
-                    {
+                    CarveOutlineAndMillInnerPolygonsFromImage(basefilename, w, h, G, _BoardPlate, TransformCopy);
+                    if (Gerber.SaveIntermediateImages == true) _BoardPlate.Save("OutlinesCarved.png");
+
                         G = Graphics.FromImage(_Final);
                         ApplyAASettings(G);
                         G.Clear(Color.Transparent);
-                    }
+
                     if (Logger != null) Logger.AddString("Carving drills from board");
 
                     if (_DrillHoles != null)
@@ -214,6 +231,8 @@ namespace GerberLibrary
                         DrillHoles.UnlockBits();
                     }
                     G.DrawImage(_BoardPlate, new Rectangle(0, 0, w, h), 0, 0, w, h, GraphicsUnit.Pixel);
+
+                    if (Gerber.SaveIntermediateImages == true) _BoardPlate.Save("BoardPlateAfterDrills.png");
                 }
                 if (Logger != null) Logger.AddString("Layering copper on board");
 
@@ -249,6 +268,8 @@ namespace GerberLibrary
                     }
                     Copper.UnlockBits();
                     Final.UnlockBits();
+                    if (Gerber.SaveIntermediateImages == true) _Final.Save("FinalAfterCopper.png");
+
                 }
                 {
                     Graphics G = Graphics.FromImage(_SilkMask);
@@ -341,6 +362,9 @@ namespace GerberLibrary
                     }
                     SilkMask.UnlockBits();
                     BoardPlate.UnlockBits();
+
+                    if (Gerber.SaveIntermediateImages == true) _Final.Save("FinalAfterSoldermask.png");
+
                 }
                 if (Logger != null) Logger.AddString("Applying silkscreen to board");
 
@@ -359,9 +383,9 @@ namespace GerberLibrary
                     SilkMask.LockBits();
                     LockBitmap Silk = new LockBitmap(_Silk);
                     Silk.LockBits();
-                    for (int x = 0; x < w; x++)
+                    for (int y = 0; y < h; y++)
                     {
-                        for (int y = 0; y < h; y++)
+                        for (int x = 0; x < w; x++)
                         {
 
                             var SilkPixel = Silk.GetPixel(x, y);
@@ -401,15 +425,33 @@ namespace GerberLibrary
                     }
                     SilkMask.UnlockBits();
                     Silk.UnlockBits();
+
+                    if (Gerber.SaveIntermediateImages == true) _Final.Save("FinalAfterSilk.png");
+
                 }
 
                 if (_Copper != null && Gerber.GerberRenderBumpMapOutput)
                 {
-                    ApplyBumpMapping(_Final, _Copper,w,h);
+                    ApplyBumpMapping(_Final, _Copper, w, h);
                 }
                 // if (OutlineBase != null) G.DrawImage(OutlineBase, new Rectangle(0, 0, w, h), 0, 0, w, h, GraphicsUnit.Pixel);                
             }
 
+            if (ForceWhite)
+            {
+                LockBitmap Final = new LockBitmap(_Final);
+                Final.LockBits();
+                for (int y = 0; y < h; y++)
+                {
+                    for (int x = 0; x < w; x++)
+                    {
+                        var C = Final.GetPixel(x, y);
+                        if (C.A == 0) Final.SetPixel(x, y, Color.White);
+                    }
+                }
+                Final.UnlockBits();
+
+            }
             return _Final;
 
             //            return B;
@@ -423,9 +465,9 @@ namespace GerberLibrary
 
             BumpMap.LockBits();
 
-            for(int x =0;x<w;x++)
+            for (int x = 0; x < w; x++)
             {
-                for(int y = 0;y<h;y++)
+                for (int y = 0; y < h; y++)
                 {
                     Color TargetPixel = Target.GetPixel(x, y);
                     Color B1 = BumpMap.GetPixel(x, y);
@@ -474,8 +516,8 @@ namespace GerberLibrary
 
             BumpMap.UnlockBits();
             Target.UnlockBits();
-            
-                        
+
+
         }
         public static Color Lighter(Color color, double Fac)
         {
@@ -487,10 +529,10 @@ namespace GerberLibrary
         }
         public static Color Darker(Color color, double Fac)
         {
-            float correctionFactor =1.0f- (float)Fac;
+            float correctionFactor = 1.0f - (float)Fac;
             float red = (color.R) * correctionFactor;
             float green = (color.G) * correctionFactor;
-            float blue = (color.B) * correctionFactor;  
+            float blue = (color.B) * correctionFactor;
             return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
         }
         public void DrawAllFiles(string v1, double dpi, ProgressLog Logger = null)
@@ -502,23 +544,24 @@ namespace GerberLibrary
             double bh = Math.Abs(BoundingBox.BottomRight.Y - BoundingBox.TopLeft.Y);
             int width = (int)((bw * scale));
             int height = (int)((bh * scale));
-       
+
             int w = width + 3;
             int h = height + 3;
 
             System.Drawing.Drawing2D.Matrix TransformCopy = null;
-                Graphics G = Graphics.FromImage(new Bitmap(1,1));
-                G.TranslateTransform(0, h);
-                G.ScaleTransform(1, -1);
+            Graphics G = Graphics.FromImage(new Bitmap(1, 1));
 
-                G.TranslateTransform(1, 1);
-                G.ScaleTransform((float)scale, (float)scale);
-                G.TranslateTransform((float)-BoundingBox.TopLeft.X, (float)-BoundingBox.TopLeft.Y);
-                TransformCopy = G.Transform.Clone();
-        
-        
+            G.TranslateTransform(0, h);
+            G.ScaleTransform(1, -1);
 
-           
+            G.TranslateTransform(1, 1);
+            G.ScaleTransform((float)scale, (float)scale);
+            G.TranslateTransform((float)-BoundingBox.TopLeft.X, (float)-BoundingBox.TopLeft.Y);
+            TransformCopy = G.Transform.Clone();
+
+
+
+
 
 
             foreach (var L in PLSs)
@@ -526,8 +569,9 @@ namespace GerberLibrary
 
                 string FileName = v1 + "_" + L.Layer.ToString() + "_" + L.Side.ToString() + ".png";
                 if (Logger != null) Logger.AddString(String.Format("Rendering {0}-{1}", L.Layer.ToString(), L.Side.ToString()));
-                
-                Bitmap B2 = new Bitmap(w + 3, h + 3);
+
+                Bitmap B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
+
                 Graphics G2 = Graphics.FromImage(B2);
                 ApplyAASettings(G2);
                 G2.Clear(Color.White);
@@ -535,7 +579,7 @@ namespace GerberLibrary
 
                 Pen P = new Pen(Color.Black, 1.0f / (float)(scale));
                 int Shapes = 0;
-                
+
                 Shapes += DrawLayerToGraphics(Color.Black, true, G2, P, L, false);
 
                 B2.Save(FileName);
@@ -560,7 +604,7 @@ namespace GerberLibrary
         }
 
 
-        private void CarveOutlineAndMillInnerPolygonsFromImage(string basefilename, int w, int h, Graphics G, System.Drawing.Drawing2D.Matrix TransformCopy)
+        private void CarveOutlineAndMillInnerPolygonsFromImage(string basefilename, int w, int h, Graphics G,Bitmap _Target, System.Drawing.Drawing2D.Matrix TransformCopy)
         {
             var T = G.Transform.Clone();
             G.Transform = TransformCopy;
@@ -609,7 +653,15 @@ namespace GerberLibrary
                 //    }
                 //}
             }
-            G.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+
+            Bitmap B2 = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            Graphics G2 = Graphics.FromImage(B2);
+            G2.Clear(Color.Black);
+            G2.Transform = TransformCopy;
+            ApplyAASettings(G2);
+
+
+            //G.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
 
             foreach (var a in InsidePolygons.Values)
             {
@@ -622,15 +674,40 @@ namespace GerberLibrary
                 }
 
 
-                G.FillPolygon(new SolidBrush(Color.Transparent), Points.ToArray());
+                G2.FillPolygon(new SolidBrush(Color.Red), Points.ToArray());
             }
-            G.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+            if (Gerber.SaveIntermediateImages) B2.Save("outlines_redimages.png");
+
+
+            LockBitmap Source = new LockBitmap(B2);
+            LockBitmap Target = new LockBitmap(_Target);
+            Source.LockBits();
+            Target.LockBits();
+
+            for(int y = 0;y<h;y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    var S = Source.GetPixel(x, y);
+                    if (S.R > 0)
+                    {
+                        Target.SetPixel(x, y, Color.FromArgb(255-S.R, Target.GetPixel(x, y)));
+                    }
+                }
+            }
+            Source.UnlockBits();
+            Target.UnlockBits();
+
+            if (Gerber.SaveIntermediateImages) _Target.Save("outlines_carved.png");
+
+
+            // G.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
             G.Transform = T;
             if (Gerber.ExtremelyVerbose) Console.WriteLine("polygons #: {0} total, {1} carved", ShapesList.Count, InsidePolygons.Count);
 
 
-            Bitmap B2 = new Bitmap(w, h);
-            Graphics G2 = Graphics.FromImage(B2);
+            //Bitmap B2 = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+           // Graphics G2 = Graphics.FromImage(B2);
             G2.Clear(Color.Black);
             G2.Transform = TransformCopy;
             foreach (var a in ShapesList)
@@ -643,10 +720,10 @@ namespace GerberLibrary
                     Points.Add(new PointF((float)((P1.X)), (float)((P1.Y))));
                 }
 
-
-                G2.DrawPolygon(new Pen(Color.White, 1.0f / (float)scale), Points.ToArray());
-
+                G2.DrawPolygon(new Pen(Color.Transparent, 1.0f / (float)scale), Points.ToArray());
             }
+            if (Gerber.SaveIntermediateImages) B2.Save("outlines_3aftershapelist.png");
+
             foreach (var a in InsidePolygons.Values)
             {
                 List<PointF> Points = new List<PointF>();
@@ -657,16 +734,10 @@ namespace GerberLibrary
                     Points.Add(new PointF((float)((P1.X)), (float)((P1.Y))));
                 }
 
-
                 G2.DrawPolygon(new Pen(Color.FromArgb(200, 255, 255, 0), 1.0f / (float)scale), Points.ToArray());
-
             }
 
-            if (Gerber.SaveOutlineImages)
-            {
-                B2.Save(basefilename + "_outlines.png");
-                System.Diagnostics.Process.Start(basefilename + "_outlines.png");
-            }
+            if (Gerber.SaveIntermediateImages) B2.Save("outlines_4afterinside.png");
 
         }
 
@@ -675,7 +746,7 @@ namespace GerberLibrary
             Bitmap B = DrawBoard(dpi, CurrentLayer, basefilename, Logger);
             string filename = basefilename + "_Combined_" + CurrentLayer.ToString() + ".png";
 
-            B.Save(filename);
+            B.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
             if (showimage) System.Diagnostics.Process.Start(basefilename + "_Combined_" + CurrentLayer.ToString() + ".png");
             return filename;
         }
@@ -690,7 +761,7 @@ namespace GerberLibrary
             {
                 if (filename != null)
                 {
-                  //  B2.Save(filename + "_Layer_" + boardSide.ToString() + "_" + boardLayer.ToString() + ".png");
+                    //  B2.Save(filename + "_Layer_" + boardSide.ToString() + "_" + boardLayer.ToString() + ".png");
                 }
 
                 //float[][] colorMatrixElements = 
@@ -738,15 +809,15 @@ namespace GerberLibrary
 
         }
 
-        public Bitmap RenderToBitmap(int w, int h, System.Drawing.Drawing2D.Matrix Transform, Color foregroundcolor,Color backgroundcolor, ParsedGerber PLS, bool fill, bool forcefill = false)
+        public Bitmap RenderToBitmap(int w, int h, System.Drawing.Drawing2D.Matrix Transform, Color foregroundcolor, Color backgroundcolor, ParsedGerber PLS, bool fill, bool forcefill = false)
         {
             Bitmap B2;
 
             try
             {
-                B2 = new Bitmap(w + 3, h + 3);
+                B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 Console.WriteLine("Error: Failed to create image of size {0}x{1}", w, h);
                 return null;
@@ -761,15 +832,15 @@ namespace GerberLibrary
             Pen P = new Pen(foregroundcolor, 1.0f / (float)(scale));
             int Shapes = 0;
             Shapes += DrawLayerToGraphics(foregroundcolor, fill, G2, P, PLS, forcefill);
-//            if (Shapes == 0) return null;
-                return B2;
+            //            if (Shapes == 0) return null;
+            return B2;
         }
 
         private Bitmap RenderToBitmap(int w, int h, System.Drawing.Drawing2D.Matrix T, Color color, BoardLayer boardLayer, BoardSide boardSide, bool fill, bool forcefill = false)
         {
             var L = from i in PLSs where i.Layer == boardLayer && i.Side == boardSide select i;
             //if (L.Count() == 0) return null;
-            Bitmap B2 = new Bitmap(w + 3, h + 3);
+            Bitmap B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
             Graphics G2 = Graphics.FromImage(B2);
             ApplyAASettings(G2);
             G2.Clear(Color.FromArgb(0, 0, 0, 0));
@@ -846,8 +917,8 @@ namespace GerberLibrary
             {
                 BoardSide aSide;
                 BoardLayer aLayer;
-                Gerber.DetermineBoardSideAndLayer(a, out aSide,out aLayer);
-                if (aLayer ==  BoardLayer.Outline) hasgko = true;
+                Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
+                if (aLayer == BoardLayer.Outline) hasgko = true;
             }
 
             foreach (var a in FileList)
@@ -862,9 +933,7 @@ namespace GerberLibrary
                 BoardLayer aLayer;
                 Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
 
-
-
-                if (aLayer  ==  BoardLayer.Outline || (aLayer == BoardLayer.Mill  && hasgko == false))
+                if (aLayer == BoardLayer.Outline || (aLayer == BoardLayer.Mill && hasgko == false))
                 {
                     zerowidth = true;
                     precombine = true;
@@ -915,7 +984,7 @@ namespace GerberLibrary
                 {
                     throw new ArgumentException("Error: Only 8, 24 and 32 bpp images are supported.");
                 }
-
+                //Console.WriteLine("Lockbits: {0} bit depth", Depth);
                 // Lock bitmap and return bitmap data
                 bitmapData = source.LockBits(rect, ImageLockMode.ReadWrite,
                                              source.PixelFormat);

@@ -421,7 +421,7 @@ namespace GerberLibrary
 
         public static BoardFileType FindFileType(string filename)
         {
-            filename = filename.ToLower();
+            //filename = filename.ToLower();
             List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp" };
             string[] filesplit = filename.Split('.');
             string ext = filesplit[filesplit.Count() - 1].ToLower();
@@ -446,8 +446,12 @@ namespace GerberLibrary
 
 
             }
-            catch (Exception)
+            catch (Exception E)
             {
+                if (Gerber.ExtremelyVerbose)
+                {
+                    Console.WriteLine("Exception determining filetype: {0}", E.Message);
+                }
                 return BoardFileType.Unsupported;
             }
 

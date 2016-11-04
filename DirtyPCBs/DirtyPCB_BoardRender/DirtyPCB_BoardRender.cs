@@ -62,6 +62,7 @@ namespace DirtyPCB_BoardRender
             string InputFolder = args[args.Count() - 2];
             string OutputFolder = args[args.Count() - 1];
 
+         
             if (Directory.Exists(InputFolder) == false)
             {
                 Console.WriteLine("Error: {0} is not a valid path!", InputFolder);
@@ -78,7 +79,7 @@ namespace DirtyPCB_BoardRender
             try
             {
                 var InputFiles = Directory.GetFiles(InputFolder);
-                GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
+                 GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
                 GerberImageCreator.AA = true;
                 Gerber.BoardRenderColor = SolderMaskColor;
                 Gerber.BoardRenderSilkColor = SilkScreenColor;
