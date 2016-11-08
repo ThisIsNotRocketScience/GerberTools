@@ -92,7 +92,7 @@ namespace DirtyPCB_BoardStats
                             GerberLibrary.Core.BoardSide Side;
                             GerberLibrary.Core.BoardLayer Layer;
                             GerberLibrary.Gerber.DetermineBoardSideAndLayer(filename, out Side, out Layer);
-                            if (Layer == GerberLibrary.Core.BoardLayer.Outline)
+                            if (Layer == GerberLibrary.Core.BoardLayer.Outline || Layer == GerberLibrary.Core.BoardLayer.Mill)
                             {
                                 L.Seek(0, SeekOrigin.Begin);
                                 var G = GerberLibrary.PolyLineSet.LoadGerberFileFromStream(new StreamReader(L), filename);
@@ -122,7 +122,7 @@ namespace DirtyPCB_BoardStats
                             GerberLibrary.Core.BoardSide Side;
                             GerberLibrary.Core.BoardLayer Layer;
                             GerberLibrary.Gerber.DetermineBoardSideAndLayer(L, out Side, out Layer);
-                            if (Layer == GerberLibrary.Core.BoardLayer.Outline)
+                            if (Layer == GerberLibrary.Core.BoardLayer.Outline || Layer == GerberLibrary.Core.BoardLayer.Mill)
                             {
                                 var G = GerberLibrary.PolyLineSet.LoadGerberFile(L);
                                 Box.AddBox(G.BoundingBox);

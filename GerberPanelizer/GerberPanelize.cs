@@ -528,7 +528,7 @@ namespace GerberCombinerBuilder
 
             
 
-           Console.WriteLine("{0} - {1}", hratio, vratio);
+//           Console.WriteLine("{0} - {1}", hratio, vratio);
 
             if (hratio > 1)
             {
@@ -568,7 +568,7 @@ namespace GerberCombinerBuilder
         {
             if (ShapeMarkedForUpdate)
             {
-                Console.WriteLine("updating shape..");
+//                Console.WriteLine("updating shape..");
                 ThePanel.UpdateShape(); // check if needed?
                 ShapeMarkedForUpdate = false;
             }
@@ -849,9 +849,9 @@ namespace GerberCombinerBuilder
 
         private void glControl1_KeyDown(object sender, KeyEventArgs e)
         {
-            Console.WriteLine("key: {0}", e);
-            Console.WriteLine("keycode: {0}", e.KeyCode);
-            Console.WriteLine("keyvalue: {0}", e.KeyValue);
+         //   Console.WriteLine("key: {0}", e);
+          //  Console.WriteLine("keycode: {0}", e.KeyCode);
+          //  Console.WriteLine("keyvalue: {0}", e.KeyValue);
             switch (e.KeyCode)
             {
                

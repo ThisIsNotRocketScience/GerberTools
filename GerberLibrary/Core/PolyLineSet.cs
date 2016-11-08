@@ -91,6 +91,11 @@ namespace GerberLibrary
                 return String.Format("({0:N2}, {1:N2}) - ({2:N2}, {3:N2}) -> {4:N2} x {5:N2} mm", TopLeft.X, TopLeft.Y, BottomRight.X, BottomRight.Y, Width(), Height() );
             }
 
+            public void FitPoint(double x, double y)
+            {
+                FitPoint(new PointD(x, y));
+            }
+
             public void FitPoint(PointD P)
             {
                 if (!Valid)
@@ -153,6 +158,20 @@ namespace GerberLibrary
                 FitPoint(bounds.TopLeft);
                 FitPoint(bounds.BottomRight);
 
+            }
+
+            public PointD Middle()
+            {
+                return new PointD((TopLeft.X + BottomRight.X) * 0.5, (TopLeft.Y + BottomRight.Y) * 0.5);
+            }
+
+            public void GenerateTransform(Graphics g, int width, int height, int margin)
+            {
+                float scale = Math.Min((width-margin*2) / (float)Width(), (height-margin*2) / (float)Height());
+                g.TranslateTransform(width / 2, height / 2);
+                g.ScaleTransform(scale, scale);
+                var M = Middle();
+                g.TranslateTransform(-(float)M.X, -(float)M.Y);
             }
         }
 
