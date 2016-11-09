@@ -25,6 +25,7 @@ namespace WindowsFormsApplication1
             SolderMaskColor.Items.Add("Yellow");
             SolderMaskColor.Items.Add("Black");
             SolderMaskColor.Items.Add("White");
+            SolderMaskColor.Items.Add("Purple");
             CopperColor.Items.Add("Silver");
             CopperColor.Items.Add("Gold");
             ReDoColor();

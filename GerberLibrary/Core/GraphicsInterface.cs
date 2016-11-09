@@ -110,9 +110,9 @@ namespace GerberLibrary.Core
             G.DrawLines(P, Points);
         }
 
-        public void DrawLine(Pen P, float p1, float p2, float p3, float p4)
+        public void DrawLine(Pen P, float x1, float y1, float x2, float y2)
         {
-            G.DrawLine(P, p1, p2, p3, p4);
+            G.DrawLine(P, x1, y1, x2, y2);
         }
 
         public void RotateTransform(float p)
@@ -185,8 +185,8 @@ namespace GerberLibrary.Core
         {
             DrawLine(new Pen(color, strokewidth), x, y, x + w, y);
             DrawLine(new Pen(color, strokewidth), x+w, y, x + w, y+h);
-            DrawLine(new Pen(color, strokewidth), x, y+h, x + w, y+h);
-            DrawLine(new Pen(color, strokewidth), x, y, x , y+h );
+            DrawLine(new Pen(color, strokewidth), x+w, y+h, x , y+h);
+            DrawLine(new Pen(color, strokewidth), x, y+h, x , y );
         }
 
         public void DrawString(string text, Font font, SolidBrush solidBrush, float x, float y, StringFormat sF)
@@ -196,7 +196,8 @@ namespace GerberLibrary.Core
 
         public void DrawPath(Color black, GraphicsPath pATH, float v)
         {
-            throw new NotImplementedException();
+            G.DrawPath(new Pen(black, v), pATH);
+            
         }
     }
 
