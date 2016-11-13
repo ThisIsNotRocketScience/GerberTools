@@ -1613,7 +1613,7 @@ namespace GerberLibrary
             return G;
         }
 
-        public static ParsedGerber LoadExcellonDrillFile(string drillfile, bool Precombine = false)
+        public static ParsedGerber LoadExcellonDrillFile(string drillfile, bool Precombine = false, double drillscaler = 1.0)
         {
             ParsedGerber Gerb = new ParsedGerber();
             Gerb.Name = drillfile;
@@ -1625,7 +1625,7 @@ namespace GerberLibrary
             State.Layer = BoardLayer.Drill;
 
             ExcellonFile EF = new ExcellonFile();
-            EF.Load(drillfile);
+            EF.Load(drillfile, drillscaler);
 
             foreach (var T in EF.Tools)
             {

@@ -85,6 +85,7 @@ namespace DirtyPCB_BoardRender
                 Gerber.BoardRenderSilkColor = SilkScreenColor;
                 Gerber.BoardRenderPadColor = CopperColor;
                 GIC.AddBoardsToSet(InputFiles.ToList());
+               
                 Console.WriteLine("Progress: Rendering Top");
                 GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Top, 200, false);
                 Console.WriteLine("Progress: Rendering Bottom");

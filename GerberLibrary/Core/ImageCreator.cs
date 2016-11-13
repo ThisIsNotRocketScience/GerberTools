@@ -22,18 +22,18 @@ namespace GerberLibrary
 
         public static bool AA = true;
 
-        public void AddBoardToSet(string a, bool forcezerowidth = false, bool precombinepolygons = false)
+        public void AddBoardToSet(string originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler =1.0)
         {
             try
             {
-                string[] filesplit = a.Split('.');
+                string[] filesplit = originalfilename.Split('.');
                 string ext = filesplit[filesplit.Count() - 1].ToLower();
 
-                var FileType = Gerber.FindFileType(a);
+                var FileType = Gerber.FindFileType(originalfilename);
 
                 if (FileType == BoardFileType.Unsupported)
                 {
-                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Warning: {1}: files with extension {0} are not supported!", ext, Path.GetFileName(a));
+                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Warning: {1}: files with extension {0} are not supported!", ext, Path.GetFileName(originalfilename));
                     return;
                 }
 
@@ -43,17 +43,17 @@ namespace GerberLibrary
 
                 if (FileType == BoardFileType.Drill)
                 {
-                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", a);
-                    PLS = PolyLineSet.LoadExcellonDrillFile(a);
+                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", originalfilename);
+                    PLS = PolyLineSet.LoadExcellonDrillFile(originalfilename, false, drillscaler);
                     // ExcellonFile EF = new ExcellonFile();
                     // EF.Load(a);
                 }
                 else
                 {
-                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Gerber file: {0}", a);
+                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Gerber file: {0}", originalfilename);
                     BoardSide Side = BoardSide.Unknown;
                     BoardLayer Layer = BoardLayer.Unknown;
-                    Gerber.DetermineBoardSideAndLayer(a, out Side, out Layer);
+                    Gerber.DetermineBoardSideAndLayer(originalfilename, out Side, out Layer);
                     if (Layer == BoardLayer.Outline)
                     {
                         forcezerowidth = true;
@@ -61,7 +61,7 @@ namespace GerberLibrary
                     }
                     State.PreCombinePolygons = precombinepolygons;
 
-                    PLS = PolyLineSet.LoadGerberFile(a, forcezerowidth, false, State);
+                    PLS = PolyLineSet.LoadGerberFile(originalfilename, forcezerowidth, false, State);
                     PLS.Side = State.Side;
                     PLS.Layer = State.Layer;
                     if (Layer == BoardLayer.Outline)
@@ -73,7 +73,7 @@ namespace GerberLibrary
                 PLS.CalcPathBounds();
                 BoundingBox.AddBox(PLS.BoundingBox);
 
-                Console.WriteLine("Progress: Loaded {0}: {1:N1} x {2:N1} mm", Path.GetFileName(a), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
+                Console.WriteLine("Progress: Loaded {0}: {1:N1} x {2:N1} mm", Path.GetFileName(originalfilename), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
                 PLSs.Add(PLS);
                 //     }
                 //     catch (Exception)
@@ -909,10 +909,9 @@ namespace GerberLibrary
                 }
             }
         }
-
+        bool hasgko = false;
         public void AddBoardsToSet(List<string> FileList)
         {
-            bool hasgko = false;
             foreach (var a in FileList)
             {
                 BoardSide aSide;
@@ -923,22 +922,69 @@ namespace GerberLibrary
 
             foreach (var a in FileList)
             {
-                string[] filesplit = a.Split('.');
+                AddFileToSet( a);
+            }
 
-                string ext = filesplit[filesplit.Count() - 1].ToLower();
-                bool zerowidth = false;
-                bool precombine = false;
+            FixEagleDrillExportIssues();
+        }
 
-                BoardSide aSide;
-                BoardLayer aLayer;
-                Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
+        private void AddFileToSet( string a, double drillscaler = 1.0)
+        {
+            string[] filesplit = a.Split('.');
 
-                if (aLayer == BoardLayer.Outline || (aLayer == BoardLayer.Mill && hasgko == false))
+            string ext = filesplit[filesplit.Count() - 1].ToLower();
+            bool zerowidth = false;
+            bool precombine = false;
+
+            BoardSide aSide;
+            BoardLayer aLayer;
+            Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
+
+            if (aLayer == BoardLayer.Outline || (aLayer == BoardLayer.Mill && hasgko == false))
+            {
+                zerowidth = true;
+                precombine = true;
+            }
+            AddBoardToSet(a, zerowidth, precombine, drillscaler);
+        }
+
+        private void FixEagleDrillExportIssues()
+        {
+            List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
+            List<ParsedGerber> DrillFilesToReload = new List<ParsedGerber>();
+            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
+            foreach(var a in PLSs)
+            {
+                if (a.Layer == BoardLayer.Drill)
                 {
-                    zerowidth = true;
-                    precombine = true;
+                    DrillFiles.Add(a);
                 }
-                AddBoardToSet(a, zerowidth, precombine);
+                else
+                {
+                    BB.AddBox(a.BoundingBox);
+                }
+            }
+
+            foreach(var a in DrillFiles)
+            {
+                var b = a.BoundingBox;
+                if (b.Width() > BB.Width() * 4 || b.Height() > BB.Height()*4 )
+                {
+                    Console.WriteLine("Note: Really large drillfile found ({0})- fix your export scripts!", a.Name);
+                    DrillFilesToReload.Add(a);
+                }
+                
+            }
+            foreach(var a in DrillFilesToReload)
+            {
+                PLSs.Remove(a);
+                AddFileToSet(a.Name, 0.1);
+            }
+
+            BoundingBox = new PolyLineSet.Bounds();
+            foreach (var a in PLSs)
+            {
+                BoundingBox.AddBox(a.BoundingBox);
             }
         }
     }

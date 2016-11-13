@@ -24,20 +24,20 @@ namespace GerberLibrary
 
     public class ExcellonFile
     {
-        public void Load(string filename)
+        public void Load(string filename, double drillscaler = 1.0)
         {
             var lines = File.ReadAllLines(filename);
-            ParseExcellon(lines.ToList());
+            ParseExcellon(lines.ToList(), drillscaler);
         }
 
-        public void Load(StreamReader stream)
+        public void Load(StreamReader stream, double drillscaler = 1.0)
         {
             List<string> lines = new List<string>();
             while (!stream.EndOfStream)
             {
                 lines.Add(stream.ReadLine());
             }
-            ParseExcellon(lines);
+            ParseExcellon(lines, drillscaler);
         }
 
         public static void MergeAll(List<string> Files, string output, ProgressLog Log)
@@ -282,7 +282,7 @@ namespace GerberLibrary
             return T;
         }
 
-        bool ParseExcellon(List<string> lines)
+        bool ParseExcellon(List<string> lines, double drillscaler )
         {
             Tools.Clear();
             bool headerdone = false;
@@ -466,7 +466,7 @@ namespace GerberLibrary
                                             if (GLS.HasAfter("G", "X")) { x2 = GNF.ScaleFileToMM(GLS.GetAfter("G", "X") * Scaler); LastX = x2; }
                                             if (GLS.HasAfter("G", "Y")) { y2 = GNF.ScaleFileToMM(GLS.GetAfter("G", "Y") * Scaler); LastY = y2; }
 
-                                            CurrentTool.Slots.Add(new ExcellonTool.SlotInfo() { Start = new PointD(x1, y1), End = new PointD(x2, y2) });
+                                            CurrentTool.Slots.Add(new ExcellonTool.SlotInfo() { Start = new PointD(x1 * drillscaler, y1 * drillscaler), End = new PointD(x2 * drillscaler, y2 * drillscaler) });
 
                                             LastX = x2;
                                             LastY = y2;
@@ -479,7 +479,7 @@ namespace GerberLibrary
                                                 if (GS.Has("X")) X = GNF.ScaleFileToMM(GS.Get("X") * Scaler);
                                                 double Y = LastY;
                                                 if (GS.Has("Y")) Y = GNF.ScaleFileToMM(GS.Get("Y") * Scaler);
-                                                CurrentTool.Drills.Add(new PointD(X, Y));
+                                                CurrentTool.Drills.Add(new PointD(X * drillscaler, Y * drillscaler));
                                                 LastX = X;
                                                 LastY = Y;
                                             }
