@@ -16,8 +16,8 @@ namespace GerberLibrary
     public class GerberImageCreator
     {
         public double scale = 25.0f / 25.4f; // dpi
-        
-        
+
+
         public static bool AA = true;
         bool hasgko = false;
 
@@ -26,7 +26,7 @@ namespace GerberLibrary
         List<ParsedGerber> PLSs = new List<ParsedGerber>();
 
 
-        public void AddBoardToSet(string originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler =1.0)
+        public ParsedGerber AddBoardToSet(string originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace GerberLibrary
                 if (FileType == BoardFileType.Unsupported)
                 {
                     if (Gerber.ExtremelyVerbose) Console.WriteLine("Warning: {1}: files with extension {0} are not supported!", ext, Path.GetFileName(originalfilename));
-                    return;
+                    return null;
                 }
 
 
@@ -83,6 +83,8 @@ namespace GerberLibrary
                 //     catch (Exception)
                 //    {
                 //   }
+
+                return PLS;
             }
             catch (Exception E)
             {
@@ -92,6 +94,7 @@ namespace GerberLibrary
                     E = E.InnerException;
                 }
             }
+            return null;
         }
 
         public void WriteImageFiles(string TargetFileBaseName, double dpi = 200, bool showimage = true, ProgressLog Logger = null)
@@ -203,9 +206,9 @@ namespace GerberLibrary
                     CarveOutlineAndMillInnerPolygonsFromImage(basefilename, w, h, G, _BoardPlate, TransformCopy);
                     if (Gerber.SaveIntermediateImages == true) _BoardPlate.Save("OutlinesCarved.png");
 
-                        G = Graphics.FromImage(_Final);
-                        ApplyAASettings(G);
-                        G.Clear(Color.Transparent);
+                    G = Graphics.FromImage(_Final);
+                    ApplyAASettings(G);
+                    G.Clear(Color.Transparent);
 
                     if (Logger != null) Logger.AddString("Carving drills from board");
 
@@ -607,7 +610,7 @@ namespace GerberLibrary
             }
         }
 
-        private void CarveOutlineAndMillInnerPolygonsFromImage(string basefilename, int w, int h, Graphics G,Bitmap _Target, System.Drawing.Drawing2D.Matrix TransformCopy)
+        private void CarveOutlineAndMillInnerPolygonsFromImage(string basefilename, int w, int h, Graphics G, Bitmap _Target, System.Drawing.Drawing2D.Matrix TransformCopy)
         {
             var T = G.Transform.Clone();
             G.Transform = TransformCopy;
@@ -687,14 +690,14 @@ namespace GerberLibrary
             Source.LockBits();
             Target.LockBits();
 
-            for(int y = 0;y<h;y++)
+            for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x++)
                 {
                     var S = Source.GetPixel(x, y);
                     if (S.R > 0)
                     {
-                        Target.SetPixel(x, y, Color.FromArgb(255-S.R, Target.GetPixel(x, y)));
+                        Target.SetPixel(x, y, Color.FromArgb(255 - S.R, Target.GetPixel(x, y)));
                     }
                 }
             }
@@ -710,7 +713,7 @@ namespace GerberLibrary
 
 
             //Bitmap B2 = new Bitmap(w, h, PixelFormat.Format32bppArgb);
-           // Graphics G2 = Graphics.FromImage(B2);
+            // Graphics G2 = Graphics.FromImage(B2);
             G2.Clear(Color.Black);
             G2.Transform = TransformCopy;
             foreach (var a in ShapesList)
@@ -925,16 +928,65 @@ namespace GerberLibrary
 
             foreach (var a in FileList)
             {
-                AddFileToSet( a);
+                AddFileToSet(a);
             }
 
             FixEagleDrillExportIssues();
             CheckRelativeBoundingBoxes();
+
+            CheckForOutlineFiles();
+        }
+
+        private void CheckForOutlineFiles()
+        {
+            List<ParsedGerber> Outlines = new List<ParsedGerber>();
+            List<ParsedGerber> Unknowns = new List<ParsedGerber>();
+            foreach (var a in PLSs)
+            {
+                if (a.Side == BoardSide.Both && a.Layer == BoardLayer.Outline)
+                {
+                    Outlines.Add(a);
+                }
+                if (a.Side == BoardSide.Unknown && a.Layer == BoardLayer.Unknown)
+                {
+                    Unknowns.Add(a);
+                    Errors.Add(String.Format("Unknown file in set:{0}", Path.GetFileName(a.Name)));
+                }
+
+            }
+
+            if (Outlines.Count == 0)
+            {
+                if (Unknowns.Count == 0)
+                {
+                    Errors.Add(String.Format("No outline file found and all other files accounted for! "));
+                }
+                else
+                {
+                    foreach (var a in Unknowns)
+                    {
+                        PLSs.Remove(a);
+                        hasgko = true;
+                        a.Layer = BoardLayer.Outline;
+                        a.Side = BoardSide.Both;
+                        Console.WriteLine("Note: Using {0} as outline file", Path.GetFileName(a.Name));
+
+
+                        bool    zerowidth = true;
+                            bool precombine = true;
+                        
+                        var b = AddBoardToSet(a.Name, zerowidth, precombine, 1.0);
+                        b.Layer = BoardLayer.Outline;
+                        b.Side = BoardSide.Both;
+                            
+                    }
+                }
+            }
         }
 
         private void CheckRelativeBoundingBoxes()
         {
-         
+
 
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<ParsedGerber> DrillFilesToReload = new List<ParsedGerber>();
@@ -966,7 +1018,7 @@ namespace GerberLibrary
             BoundingBox = new PolyLineSet.Bounds();
             foreach (var a in PLSs)
             {
-                Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName(a.Name));
+                //   Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName(a.Name));
 
 
                 //Console.WriteLine("adding box for {0}:{1},{2}", a.Name, a.BoundingBox.Width(), a.BoundingBox.Height());
@@ -975,7 +1027,7 @@ namespace GerberLibrary
 
         }
 
-        private void AddFileToSet( string a, double drillscaler = 1.0)
+        private void AddFileToSet(string a, double drillscaler = 1.0)
         {
             string[] filesplit = a.Split('.');
 
@@ -998,9 +1050,9 @@ namespace GerberLibrary
         private void FixEagleDrillExportIssues()
         {
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
-            List<ParsedGerber> DrillFilesToReload = new List<ParsedGerber>();
+            List<Tuple<double, ParsedGerber>> DrillFilesToReload = new List<Tuple<double, ParsedGerber>>();
             PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
-            foreach(var a in PLSs)
+            foreach (var a in PLSs)
             {
                 if (a.Layer == BoardLayer.Drill)
                 {
@@ -1012,26 +1064,34 @@ namespace GerberLibrary
                 }
             }
 
-            foreach(var a in DrillFiles)
+            foreach (var a in DrillFiles)
             {
                 var b = a.BoundingBox;
-                if (b.Width() > BB.Width()*1.5  || b.Height() > BB.Height() *1.5)
+                if (b.Width() > BB.Width() * 1.5 || b.Height() > BB.Height() * 1.5)
                 {
+                    var MaxRatio = Math.Max(b.Width() / BB.Width(), b.Height() / BB.Height());
                     Console.WriteLine("Note: Really large drillfile found ({0})- fix your export scripts!", a.Name);
-                    DrillFilesToReload.Add(a);
+                    DrillFilesToReload.Add(new Tuple<double, ParsedGerber>(MaxRatio, a));
                 }
-                
+
             }
-            foreach(var a in DrillFilesToReload)
+            foreach (var a in DrillFilesToReload)
             {
-                PLSs.Remove(a);
-                AddFileToSet(a.Name, 0.1);
+                PLSs.Remove(a.Item2);
+                var scale = 1.0;
+                var R = a.Item1;
+                while (R >= 1.5)
+                {
+                    R /= 10;
+                    scale /= 10;
+                }
+                AddFileToSet(a.Item2.Name, scale);
             }
 
             BoundingBox = new PolyLineSet.Bounds();
             foreach (var a in PLSs)
             {
-                Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName( a.Name));
+                //Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName( a.Name));
 
 
                 //Console.WriteLine("adding box for {0}:{1},{2}", a.Name, a.BoundingBox.Width(), a.BoundingBox.Height());

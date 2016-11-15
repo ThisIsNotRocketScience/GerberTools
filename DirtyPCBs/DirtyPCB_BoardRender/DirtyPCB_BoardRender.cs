@@ -100,7 +100,7 @@ namespace DirtyPCB_BoardRender
                   //  return;
                 }
 
-                Console.WriteLine("Progress: Estimated board bounding box:{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", GIC.BoundingBox.TopLeft.X, GIC.BoundingBox.TopLeft.Y, GIC.BoundingBox.BottomRight.X, GIC.BoundingBox.BottomRight.Y, GIC.BoundingBox.Width(), GIC.BoundingBox.Height());
+//                Console.WriteLine("Progress: Estimated board bounding box:{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", GIC.BoundingBox.TopLeft.X, GIC.BoundingBox.TopLeft.Y, GIC.BoundingBox.BottomRight.X, GIC.BoundingBox.BottomRight.Y, GIC.BoundingBox.Width(), GIC.BoundingBox.Height());
 
                 Console.WriteLine("Progress: Rendering Top");
                 GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Top, 200, false);

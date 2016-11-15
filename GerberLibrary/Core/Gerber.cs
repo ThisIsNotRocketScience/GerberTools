@@ -523,6 +523,11 @@ namespace GerberLibrary
                             Side = BoardSide.Both;
                             Layer = BoardLayer.Outline;
                             break;
+
+                        case "board":
+                            Side = BoardSide.Both;
+                            Layer = BoardLayer.Outline;
+                            break;
                         case "bottom":
                             Side = BoardSide.Bottom;
                             Layer = BoardLayer.Copper;
