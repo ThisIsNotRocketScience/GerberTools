@@ -564,6 +564,14 @@ namespace GerberLibrary
                             Layer = BoardLayer.Copper;
                             break;
 
+                        default:
+                            if (gerberfile.ToLower().Contains("-edge_cuts"))
+                            {
+                                Side= BoardSide.Both;
+                                Layer = BoardLayer.Outline;
+                            }
+                            break;
+
                     }
 
                     break;

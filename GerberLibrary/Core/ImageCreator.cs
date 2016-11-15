@@ -954,8 +954,23 @@ namespace GerberLibrary
             foreach (var a in DrillFiles)
             {
 
-                    if (a.BoundingBox.Intersects(BB) == false) Errors.Add(String.Format("Drill file {0} does not seem to touch the main bounding box!", Path.GetFileName(a.Name)));
+                if (a.BoundingBox.Intersects(BB) == false)
+                {
+                    Errors.Add(String.Format("Drill file {0} does not seem to touch the main bounding box!", Path.GetFileName(a.Name)));
+                    PLSs.Remove(a);
+                }
+            }
 
+
+
+            BoundingBox = new PolyLineSet.Bounds();
+            foreach (var a in PLSs)
+            {
+                Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName(a.Name));
+
+
+                //Console.WriteLine("adding box for {0}:{1},{2}", a.Name, a.BoundingBox.Width(), a.BoundingBox.Height());
+                BoundingBox.AddBox(a.BoundingBox);
             }
 
         }

@@ -45,7 +45,7 @@ namespace Base64Extractor
             var b = ReadAndExtract(a);
             if (b != null)
             {
-                File.WriteAllBytes(Path.GetFileNameWithoutExtension( a) + ".zip", b);
+                File.WriteAllBytes(  a+ "___.zip", b);
             }
         }
 
