@@ -16,11 +16,15 @@ namespace GerberLibrary
     public class GerberImageCreator
     {
         public double scale = 25.0f / 25.4f; // dpi
+        
+        
+        public static bool AA = true;
+        bool hasgko = false;
+
+        public List<String> Errors = new List<string>();
+        public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
         List<ParsedGerber> PLSs = new List<ParsedGerber>();
 
-        public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
-
-        public static bool AA = true;
 
         public void AddBoardToSet(string originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler =1.0)
         {
@@ -603,7 +607,6 @@ namespace GerberLibrary
             }
         }
 
-
         private void CarveOutlineAndMillInnerPolygonsFromImage(string basefilename, int w, int h, Graphics G,Bitmap _Target, System.Drawing.Drawing2D.Matrix TransformCopy)
         {
             var T = G.Transform.Clone();
@@ -909,7 +912,7 @@ namespace GerberLibrary
                 }
             }
         }
-        bool hasgko = false;
+
         public void AddBoardsToSet(List<string> FileList)
         {
             foreach (var a in FileList)
@@ -926,6 +929,35 @@ namespace GerberLibrary
             }
 
             FixEagleDrillExportIssues();
+            CheckRelativeBoundingBoxes();
+        }
+
+        private void CheckRelativeBoundingBoxes()
+        {
+         
+
+            List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
+            List<ParsedGerber> DrillFilesToReload = new List<ParsedGerber>();
+            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
+            foreach (var a in PLSs)
+            {
+                if (a.Layer == BoardLayer.Drill)
+                {
+                    DrillFiles.Add(a);
+                }
+                else
+                {
+                    BB.AddBox(a.BoundingBox);
+                }
+            }
+
+            foreach (var a in DrillFiles)
+            {
+
+                    if (a.BoundingBox.Intersects(BB) == false) Errors.Add(String.Format("Drill file {0} does not seem to touch the main bounding box!", Path.GetFileName(a.Name)));
+
+            }
+
         }
 
         private void AddFileToSet( string a, double drillscaler = 1.0)
@@ -968,7 +1000,7 @@ namespace GerberLibrary
             foreach(var a in DrillFiles)
             {
                 var b = a.BoundingBox;
-                if (b.Width() > BB.Width() * 4 || b.Height() > BB.Height()*4 )
+                if (b.Width() > BB.Width()*1.5  || b.Height() > BB.Height() *1.5)
                 {
                     Console.WriteLine("Note: Really large drillfile found ({0})- fix your export scripts!", a.Name);
                     DrillFilesToReload.Add(a);
@@ -984,6 +1016,10 @@ namespace GerberLibrary
             BoundingBox = new PolyLineSet.Bounds();
             foreach (var a in PLSs)
             {
+                Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName( a.Name));
+
+
+                //Console.WriteLine("adding box for {0}:{1},{2}", a.Name, a.BoundingBox.Width(), a.BoundingBox.Height());
                 BoundingBox.AddBox(a.BoundingBox);
             }
         }

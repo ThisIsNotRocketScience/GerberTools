@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using GerberLibrary;
 using GerberLibrary.Core;
+using System.Globalization;
+using System.Threading;
 
 namespace DirtyPCB_BoardRender
 {
@@ -22,6 +24,10 @@ namespace DirtyPCB_BoardRender
        
         static void Main(string[] args)
         {
+
+  //          CultureInfo ci = new CultureInfo("en-US");
+    //        Thread.CurrentThread.CurrentCulture = ci;
+      //      Thread.CurrentThread.CurrentUICulture = ci;
 
             if (args.Count() < 2)
             {
@@ -79,13 +85,23 @@ namespace DirtyPCB_BoardRender
             try
             {
                 var InputFiles = Directory.GetFiles(InputFolder);
-                 GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
+                GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
                 GerberImageCreator.AA = true;
                 Gerber.BoardRenderColor = SolderMaskColor;
                 Gerber.BoardRenderSilkColor = SilkScreenColor;
                 Gerber.BoardRenderPadColor = CopperColor;
                 GIC.AddBoardsToSet(InputFiles.ToList());
-               
+                if (GIC.Errors.Count >0)
+                {
+                    foreach(var a in GIC.Errors)
+                    {
+                        Console.WriteLine("Error: {0}", a);
+                    }
+                    return;
+                }
+
+                Console.WriteLine("Progress: Estimated board bounding box:{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", GIC.BoundingBox.TopLeft.X, GIC.BoundingBox.TopLeft.Y, GIC.BoundingBox.BottomRight.X, GIC.BoundingBox.BottomRight.Y, GIC.BoundingBox.Width(), GIC.BoundingBox.Height());
+
                 Console.WriteLine("Progress: Rendering Top");
                 GIC.DrawToFile(OutputFolder + "/FullRender", BoardSide.Top, 200, false);
                 Console.WriteLine("Progress: Rendering Bottom");

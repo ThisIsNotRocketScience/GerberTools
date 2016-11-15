@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace GerberLibrary.Core.Primitives
             if (Numbers.IndexOf('.') > -1 && hasdecimalpoint == true)
             {
                 double D = 0;
-                double.TryParse(Numbers.Replace('.', ','), out D);
+                Double.TryParse(Numbers, NumberStyles.Any, CultureInfo.InvariantCulture, out D);
                 if (invert) D = -D;
                 return D;
             }

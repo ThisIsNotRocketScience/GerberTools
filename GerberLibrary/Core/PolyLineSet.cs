@@ -173,6 +173,14 @@ namespace GerberLibrary
                 var M = Middle();
                 g.TranslateTransform(-(float)M.X, -(float)M.Y);
             }
+
+            public bool Intersects(Bounds B)
+            {
+                var M1 = Middle();
+                var M2 = B.Middle();
+
+                return (Math.Abs(M1.X - M2.X) * 2 < (Width() + B.Width())) && (Math.Abs(M1.Y- M2.Y) * 2 < (Height() + B.Height()));
+            }
         }
 
         public static ParsedGerber LoadGerberFileFromStream(StreamReader sr,string originalfilename, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)

@@ -299,6 +299,29 @@ namespace GerberLibrary
             double LastY = 0;
             while (currentline < lines.Count)
             {
+                switch(lines[currentline])
+                {
+                    //  case "M70":  GNF.Multiplier = 25.4; break; // inch mode
+                    case "INCH":
+                        if (Gerber.ExtremelyVerbose) Console.WriteLine("Out of header INCH found!");
+                        GNF.SetImperialMode();
+
+                        break; // inch mode
+                    case "METRIC":
+                        if (Gerber.ExtremelyVerbose) Console.WriteLine("Out of header METRIC found!");
+
+                        GNF.SetMetricMode();
+                        break;
+                    case "M72":
+                        if (Gerber.ExtremelyVerbose) Console.WriteLine("Out of header M72 found!");
+                        GNF.SetImperialMode();
+                        break; // inch mode
+                    case "M71":
+                        if (Gerber.ExtremelyVerbose) Console.WriteLine("Out of header M71 found!");
+                        GNF.SetMetricMode();
+                        break; // metric mode
+
+                }
                 if (lines[currentline] == "M48")
                 {
                     //Console.WriteLine("Excellon header starts at line {0}", currentline);
@@ -306,7 +329,7 @@ namespace GerberLibrary
                     while ((lines[currentline] != "%" && lines[currentline] != "M95"))
                     {
                         headerdone = true;
-                        double InchMult = 1;// 0.010;
+                        //double InchMult = 1;// 0.010;
                         switch (lines[currentline])
                         {
                             //  case "M70":  GNF.Multiplier = 25.4; break; // inch mode
@@ -319,14 +342,15 @@ namespace GerberLibrary
                                 GNF.SetMetricMode();
                                 break;
                             case "M72":
-                                GNF.Multiplier = 25.4 * InchMult;
+                                //GNF.Multiplier = 25.4 * InchMult;
                                 GNF.SetImperialMode();
                                 //  Scaler = 0.01;
                                 break; // inch mode
                             case "M71":
-                                GNF.Multiplier = 1.0;
+                                //GNF.Multiplier = 1.0;
                                 GNF.SetMetricMode();
                                 break; // metric mode
+
                             default:
                                 {
                                     var S = lines[currentline].Split(',');
@@ -444,8 +468,7 @@ namespace GerberLibrary
                                     }
                                     break;
                                 default:
-                                    {
-
+                                    {                                    
                                         GerberSplitter GS = new GerberSplitter();
                                         GS.Split(GCC.originalline, GNF, true);
                                         if (GS.Has("G") && GS.Get("G") == 85 && (GS.Has("X") || GS.Has("Y")))
