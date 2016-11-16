@@ -39,9 +39,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirtyPCB_BoardStats", "..\D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirtyPCB_DXFStats", "..\DirtyPCBs\DirtyPCB_DXFStats\DirtyPCB_DXFStats.csproj", "{5FE8976E-B869-4148-92DD-91AD9F3642CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirtyLocaleTest", "..\DirtyPCBs\DirtyLocaleTest\DirtyLocaleTest.csproj", "{308020D4-60F1-4DB5-AFE5-759920FE0793}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirtyPCB_LocaleTest", "..\DirtyPCBs\DirtyLocaleTest\DirtyPCB_LocaleTest.csproj", "{308020D4-60F1-4DB5-AFE5-759920FE0793}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Base64Extractor", "..\DirtyPCBs\Base64Extractor\Base64Extractor.csproj", "{5E7376A5-39E2-4607-9783-094875794303}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirtyPCB_Base64Extractor", "..\DirtyPCBs\Base64Extractor\DirtyPCB_Base64Extractor.csproj", "{5E7376A5-39E2-4607-9783-094875794303}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

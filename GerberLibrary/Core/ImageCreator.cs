@@ -108,9 +108,10 @@ namespace GerberLibrary
         Bitmap DrawBoard(double dpi, BoardSide CurrentLayer, string basefilename = null, ProgressLog Logger = null, bool ForceWhite = false)
         {
             scale = dpi / 25.4f; // dpi
+            var OutlineBoundingBox = GetOutlineBoundingBox();
 
-            double bw = Math.Abs(BoundingBox.BottomRight.X - BoundingBox.TopLeft.X);
-            double bh = Math.Abs(BoundingBox.BottomRight.Y - BoundingBox.TopLeft.Y);
+            double bw = Math.Abs(OutlineBoundingBox.BottomRight.X - OutlineBoundingBox.TopLeft.X);
+            double bh = Math.Abs(OutlineBoundingBox.BottomRight.Y - OutlineBoundingBox.TopLeft.Y);
             int width = (int)((bw * scale));
             int height = (int)((bh * scale));
 
@@ -142,7 +143,7 @@ namespace GerberLibrary
 
                 G.TranslateTransform(1, 1);
                 G.ScaleTransform((float)scale, (float)scale);
-                G.TranslateTransform((float)-BoundingBox.TopLeft.X, (float)-BoundingBox.TopLeft.Y);
+                G.TranslateTransform((float)-OutlineBoundingBox.TopLeft.X, (float)-OutlineBoundingBox.TopLeft.Y);
                 TransformCopy = G.Transform.Clone();
 
             }
@@ -464,6 +465,22 @@ namespace GerberLibrary
             //            return B;
         }
 
+        private PolyLineSet.Bounds GetOutlineBoundingBox()
+        {
+            PolyLineSet.Bounds B = new PolyLineSet.Bounds();
+            int i = 0;
+            foreach(var a in PLSs)
+            {
+                if (a.Layer == BoardLayer.Mill || a.Layer == BoardLayer.Outline)
+                {
+                    B.AddBox(a.BoundingBox);
+                    i++;
+                }
+            }
+            if (i == 0) return BoundingBox;
+            return B;
+        }
+
         private void ApplyBumpMapping(Bitmap _Target, Bitmap _Bump, int w, int h)
         {
             LockBitmap Target = new LockBitmap(_Target);
@@ -546,9 +563,9 @@ namespace GerberLibrary
         {
 
             scale = dpi / 25.4f; // dpi
-
-            double bw = Math.Abs(BoundingBox.BottomRight.X - BoundingBox.TopLeft.X);
-            double bh = Math.Abs(BoundingBox.BottomRight.Y - BoundingBox.TopLeft.Y);
+            var OutlineBoundingBox = GetOutlineBoundingBox();
+            double bw = Math.Abs(OutlineBoundingBox.BottomRight.X - OutlineBoundingBox.TopLeft.X);
+            double bh = Math.Abs(OutlineBoundingBox.BottomRight.Y - OutlineBoundingBox.TopLeft.Y);
             int width = (int)((bw * scale));
             int height = (int)((bh * scale));
 
@@ -563,7 +580,7 @@ namespace GerberLibrary
 
             G.TranslateTransform(1, 1);
             G.ScaleTransform((float)scale, (float)scale);
-            G.TranslateTransform((float)-BoundingBox.TopLeft.X, (float)-BoundingBox.TopLeft.Y);
+            G.TranslateTransform((float)-OutlineBoundingBox.TopLeft.X, (float)-OutlineBoundingBox.TopLeft.Y);
             TransformCopy = G.Transform.Clone();
 
 
@@ -804,12 +821,13 @@ namespace GerberLibrary
             Bitmap B = new Bitmap(1, 1);
             Graphics G = Graphics.FromImage(B);
             System.Drawing.Drawing2D.Matrix T = new System.Drawing.Drawing2D.Matrix();
+            var OutlineBoundingBox = GetOutlineBoundingBox();
 
             G.TranslateTransform(0, h);
             G.ScaleTransform(1, -1);
             G.TranslateTransform(1, 1);
             G.ScaleTransform((float)scale, (float)scale);
-            G.TranslateTransform((float)-BoundingBox.TopLeft.X, (float)-BoundingBox.TopLeft.Y);
+            G.TranslateTransform((float)-OutlineBoundingBox.TopLeft.X, (float)-OutlineBoundingBox.TopLeft.Y);
             T = G.Transform.Clone();
             return T;
 
@@ -943,7 +961,7 @@ namespace GerberLibrary
             List<ParsedGerber> Unknowns = new List<ParsedGerber>();
             foreach (var a in PLSs)
             {
-                if (a.Side == BoardSide.Both && a.Layer == BoardLayer.Outline)
+                if (a.Side == BoardSide.Both &&( a.Layer == BoardLayer.Outline || a.Layer == BoardLayer.Mill))
                 {
                     Outlines.Add(a);
                 }
@@ -960,9 +978,15 @@ namespace GerberLibrary
                 if (Unknowns.Count == 0)
                 {
                     Errors.Add(String.Format("No outline file found and all other files accounted for! "));
+
+                    InventOutline();
+                        
+
                 }
                 else
                 {
+                    //InventOutline();
+                    //return;
                     foreach (var a in Unknowns)
                     {
                         PLSs.Remove(a);
@@ -982,6 +1006,40 @@ namespace GerberLibrary
                     }
                 }
             }
+        }
+
+        private void InventOutline()
+        {
+            double largest = 0;
+            ParsedGerber Largest = null;
+            PolyLine Outline = null;
+            foreach (var a in PLSs)
+            {
+                var P = a.FindLargestPolygon();
+                if (P.Item1 > largest)
+                {
+                    Largest = a;
+                    Outline = P.Item2;
+                }
+
+            }
+            bool zerowidth = true;
+            bool precombine = true;
+
+            Console.WriteLine("Note: Using {0} to extract outline file", Path.GetFileName(Largest.Name));
+            var b = AddBoardToSet(Largest.Name, zerowidth, precombine, 1.0);
+            b.Layer = BoardLayer.Outline;
+            b.Side = BoardSide.Both;
+            b.DisplayShapes.Clear();
+            b.OutlineShapes.Clear();
+            b.Shapes.Clear();
+            Outline.Close();
+            b.Shapes.Add(Outline);
+            b.OutlineShapes.Add(Outline);
+            //b.DisplayShapes.Add(Outline);
+            //b.BuildBoundary();
+            b.FixPolygonWindings();
+            b.CalcPathBounds();
         }
 
         private void CheckRelativeBoundingBoxes()

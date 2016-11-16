@@ -149,6 +149,7 @@
             // 
             // xbox
             // 
+            this.xbox.DecimalPlaces = 2;
             this.xbox.Increment = new decimal(new int[] {
             1,
             0,
@@ -173,6 +174,12 @@
             // 
             // radiusbox
             // 
+            this.radiusbox.DecimalPlaces = 1;
+            this.radiusbox.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
             this.radiusbox.Location = new System.Drawing.Point(237, 94);
             this.radiusbox.Margin = new System.Windows.Forms.Padding(4);
             this.radiusbox.Maximum = new decimal(new int[] {
@@ -198,6 +205,7 @@
             // 
             // ybox
             // 
+            this.ybox.DecimalPlaces = 2;
             this.ybox.Increment = new decimal(new int[] {
             1,
             0,
@@ -356,14 +364,14 @@
             this.Down.UseVisualStyleBackColor = true;
             this.Down.Click += new System.EventHandler(this.Down_Click_1);
             // 
-            // Left
+            // LeftButton
             // 
             this.LeftButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LeftButton.ImageIndex = 4;
             this.LeftButton.ImageList = this.imageList1;
             this.LeftButton.Location = new System.Drawing.Point(4, 47);
             this.LeftButton.Margin = new System.Windows.Forms.Padding(4);
-            this.LeftButton.Name = "Left";
+            this.LeftButton.Name = "LeftButton";
             this.LeftButton.Size = new System.Drawing.Size(130, 35);
             this.LeftButton.TabIndex = 10;
             this.LeftButton.UseVisualStyleBackColor = true;
@@ -382,14 +390,14 @@
             this.AClock.UseVisualStyleBackColor = true;
             this.AClock.Click += new System.EventHandler(this.AClock_Click_1);
             // 
-            // Right
+            // RightButton
             // 
             this.RightButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.RightButton.ImageIndex = 6;
             this.RightButton.ImageList = this.imageList1;
             this.RightButton.Location = new System.Drawing.Point(280, 47);
             this.RightButton.Margin = new System.Windows.Forms.Padding(4);
-            this.RightButton.Name = "Right";
+            this.RightButton.Name = "RightButton";
             this.RightButton.Size = new System.Drawing.Size(130, 35);
             this.RightButton.TabIndex = 11;
             this.RightButton.UseVisualStyleBackColor = true;

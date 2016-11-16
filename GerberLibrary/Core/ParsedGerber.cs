@@ -218,7 +218,20 @@ namespace GerberLibrary.Core
 
         }
 
-        
+        internal Tuple<double, PolyLine> FindLargestPolygon()
+        {
+            if (OutlineShapes.Count == 0) return null;
+
+            List<Tuple<double, PolyLine>> Polies = new List<Tuple<double, PolyLine>>();
+            
+            foreach(var a in OutlineShapes)
+            {
+                var area = Core.Helpers.PolygonSurfaceArea(a.Vertices);
+                Polies.Add(new Tuple<double, PolyLine>(area, a));
+            }
+
+            return  (from a in Polies orderby a.Item1 descending select a).First();
+        }
     }
 
 }

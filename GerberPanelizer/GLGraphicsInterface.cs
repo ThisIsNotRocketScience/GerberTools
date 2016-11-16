@@ -12,6 +12,12 @@ using GerberLibrary.Core.Primitives;
 using GerberLibrary.Core;
 using System.Drawing.Drawing2D;
 
+
+using TriangleNet.Geometry;
+using TriangleNet.IO;
+using TriangleNet.Meshing;
+
+
 namespace GerberCombinerBuilder
 {
     public class GLGraphicsInterface : GraphicsInterface
@@ -209,13 +215,33 @@ namespace GerberCombinerBuilder
             {
                 GL.Enable(EnableCap.Blend);
             }
-
-            GL.Begin(BeginMode.Polygon);
-            GL.Color4(P.Color.R, P.Color.G, P.Color.B, P.Color.A);
-
+            var polygon = new Polygon();
+            List<Vertex> V = new List<Vertex>();
             for (int i = 0; i < Shape.Count(); i++)
             {
-                GL.Vertex2(Shape.Vertices[i].X, Shape.Vertices[i].Y);
+                V.Add(new Vertex( Shape.Vertices[i].X, Shape.Vertices[i].Y));
+            }
+            polygon.AddContour(V);
+
+
+            var options = new ConstraintOptions() { ConformingDelaunay = true };
+            var quality = new QualityOptions() { MinimumAngle = 25 };
+
+            var mesh = polygon.Triangulate(options, quality);
+
+
+            GL.Begin(BeginMode.Triangles);
+            GL.Color4(P.Color.R, P.Color.G, P.Color.B, P.Color.A);
+
+            foreach(var t in mesh.Triangles)
+            {
+
+               var A =  t.GetVertex(0);
+                var B = t.GetVertex(1);
+                var C = t.GetVertex(2);
+                GL.Vertex2(A.X, A.Y);
+                GL.Vertex2(B.X, B.Y);
+                GL.Vertex2(C.X, C.Y);
             }
 
             GL.End();
