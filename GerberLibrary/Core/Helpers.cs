@@ -1,10 +1,12 @@
-﻿using GerberLibrary.Core.Primitives;
+﻿using GerberLibrary.Core.Algorithms;
+using GerberLibrary.Core.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static GerberLibrary.PolyLineSet;
 
 namespace GerberLibrary.Core
 {
@@ -132,58 +134,7 @@ namespace GerberLibrary.Core
             int Merges = 1;
             while (Merges > 0)
             {
-                Merges = 0;
-
-                for (int i = 0; i < Paths.Count; i++)
-                {
-                    for (int j = i + 1; j < Paths.Count; j++)
-                    {
-                        if (Merges == 0 && Paths[i].Closed == false && Paths[j].Closed == false)
-                        {
-                            if (Paths[j].Points.First() == Paths[i].Points.Last())
-                            {
-                                Paths[i].Points.Remove(Paths[i].Points.Last());
-                                Paths[i].Points.AddRange(Paths[j].Points);
-                                Merges++;
-                                if (Paths[i].Points.First() == Paths[i].Points.Last()) Paths[i].Closed = true;
-                                Paths.Remove(Paths[j]);
-                            }
-                            else
-                            {
-                                if (Paths[i].Points.First() == Paths[j].Points.Last())
-                                {
-                                    Paths[j].Points.Remove(Paths[j].Points.Last());
-                                    Paths[j].Points.AddRange(Paths[i].Points);
-                                    Merges++;
-                                    if (Paths[j].Points.First() == Paths[j].Points.Last()) Paths[j].Closed = true;
-                                    Paths.Remove(Paths[i]);
-                                }
-                                else
-                                {
-                                    if (Paths[i].Points.First() == Paths[j].Points.First())
-                                    {
-                                        Paths[i].Points.Reverse();
-                                        Paths[i].Points.Remove(Paths[i].Points.Last());
-                                        Paths[i].Points.AddRange(Paths[j].Points);
-                                        Merges++;
-                                        if (Paths[i].Points.First() == Paths[i].Points.Last()) Paths[i].Closed = true;
-                                        Paths.Remove(Paths[j]);
-                                    }
-                                    else
-                                        if (Paths[i].Points.Last() == Paths[j].Points.Last())
-                                    {
-                                        Paths[i].Points.Reverse();
-                                        Paths[j].Points.Remove(Paths[j].Points.Last());
-                                        Paths[j].Points.AddRange(Paths[i].Points);
-                                        Merges++;
-                                        if (Paths[j].Points.First() == Paths[j].Points.Last()) Paths[j].Closed = true;
-                                        Paths.Remove(Paths[i]);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                Merges = FindNextMerge(Paths);
             }
             int ClosedCount = (from i in Paths where i.Closed == true select i).Count();
             if (ClosedCount < Paths.Count)
@@ -271,6 +222,226 @@ namespace GerberLibrary.Core
                 Results.Add(Sanitize(p.Points));
             }
             return Results;
+        }
+
+
+        enum SideEnum
+        {
+            Start,
+            End
+        }
+        class SegmentEndContainer: QuadTreeItem
+        {
+            public PointD Point;
+            public SideEnum Side;
+            public int PathID;
+
+            public double x
+            {
+                get
+                {
+                    return Point.X;
+                }
+            }
+
+            public double y
+            {
+                get
+                {
+                    return Point.Y;
+                }
+            }
+        }
+
+        private static int FindNextMerge(List<PathDefWithClosed> Paths)
+        {            
+            QuadTreeNode Root = new QuadTreeNode();
+            Bounds B = new Bounds();
+            for (int i = 0; i < Paths.Count; i++)
+            {
+                if (Paths[i].Closed == false)
+                {
+                    B.FitPoint(Paths[i].Points.First());
+                    B.FitPoint(Paths[i].Points.Last());
+                }
+            }
+
+            Root.xstart = B.TopLeft.X;
+            Root.xend= B.BottomRight.X;
+            Root.ystart = B.TopLeft.Y;
+            Root.yend = B.BottomRight.Y;
+
+            for (int i = 0; i < Paths.Count; i++)
+            {
+                if (Paths[i].Closed == false)
+                {
+                    Root.Insert(new SegmentEndContainer() { PathID = i, Point = Paths[i].Points.First(), Side = SideEnum.Start }, 4);
+                    Root.Insert(new SegmentEndContainer() { PathID = i, Point = Paths[i].Points.Last(), Side = SideEnum.End }, 4);
+                }
+            }
+            RectangleF R = new RectangleF();
+
+            R.Width = 1;
+            R.Height = 1;
+
+            for (int i = 0; i < Paths.Count; i++)
+            {
+                var P = Paths[i];
+               if (P.Closed == false)
+                {
+                    var PF = P.Points.First();
+                    R.X = (float)(P.Points.First().X - 0.5);
+                    R.Y = (float)(P.Points.First().Y - 0.5);
+                    int startmatch = -1;
+                    int endmatch = -1;
+                    Root.CallBackInside(R, delegate (QuadTreeItem QI) 
+                        {
+                            var S = QI as SegmentEndContainer;
+                            if (S.PathID == i) return true;
+                            if (S.Point == PF)
+                            {
+                                if (S.Side == SideEnum.Start)
+                                {
+                                    startmatch = S.PathID;
+                                }
+                                else
+                                {
+
+                                    endmatch = S.PathID;
+                                }
+
+                            }
+                            return true;
+                        });
+
+                    if (startmatch >-1 || endmatch > -1)
+                    {
+                        if (endmatch>-1)
+                        {
+                            Paths[endmatch].Points.Remove(Paths[endmatch].Points.Last());
+                            Paths[endmatch].Points.AddRange(Paths[i].Points);
+                            if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last()) Paths[endmatch].Closed = true;
+                            Paths.Remove(Paths[i]);
+                            return 1;
+                        }
+                        if (startmatch >-1)
+                        {
+                            Paths[i].Points.Reverse();
+                            Paths[i].Points.Remove(Paths[i].Points.Last());
+                            Paths[i].Points.AddRange(Paths[startmatch].Points);
+                            if (Paths[i].Points.First() == Paths[i].Points.Last()) Paths[i].Closed = true;
+                            Paths.Remove(Paths[startmatch]);
+                            return 1;
+                        }
+                        return 1;
+                    }
+
+                     PF = P.Points.Last();
+                    R.X = (float)(P.Points.First().X - 0.5);
+                    R.Y = (float)(P.Points.First().Y - 0.5);
+                     startmatch = -1;
+                    endmatch = -1;
+                    Root.CallBackInside(R, delegate (QuadTreeItem QI)
+                    {
+                        var S = QI as SegmentEndContainer;
+                        if (S.PathID == i) return true;
+                        if (S.Point == PF)
+                        {
+                            if (S.Side == SideEnum.Start)
+                            {
+                                startmatch = S.PathID;
+                            }
+                            else
+                            {
+
+                                endmatch = S.PathID;
+                            }
+
+                        }
+                        return true;
+                    });
+
+                    if (startmatch > -1 || endmatch > -1)
+                    {
+                        if (endmatch > -1)
+                        {
+                            Paths[i].Points.Reverse();
+                            Paths[endmatch].Points.Remove(Paths[endmatch].Points.Last());
+                            Paths[endmatch].Points.AddRange(Paths[i].Points);
+                            if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last()) Paths[endmatch].Closed = true;
+                            Paths.Remove(Paths[i]);
+                            return 1;
+                        }
+                        if (startmatch > -1)
+                        {
+                            Paths[i].Points.Remove(Paths[i].Points.Last());
+                            Paths[i].Points.AddRange(Paths[startmatch].Points);
+                            if (Paths[i].Points.First() == Paths[i].Points.Last()) Paths[i].Closed = true;
+                            Paths.Remove(Paths[startmatch]);
+                            return 1;
+                        }
+                        return 1;
+                    }
+
+                }
+            }
+
+            return 0;
+            for (int i = 0; i < Paths.Count; i++)
+            {
+                for (int j = i + 1; j < Paths.Count; j++)
+                {
+                    if (Paths[i].Closed == false && Paths[j].Closed == false)
+                    {
+                        if (Paths[j].Points.First() == Paths[i].Points.Last())
+                        {
+                            Paths[i].Points.Remove(Paths[i].Points.Last());
+                            Paths[i].Points.AddRange(Paths[j].Points);
+                            if (Paths[i].Points.First() == Paths[i].Points.Last()) Paths[i].Closed = true;
+                            Paths.Remove(Paths[j]);
+                            return 1;
+                        }
+                        else
+                        {
+                            if (Paths[i].Points.First() == Paths[j].Points.Last())
+                            {
+                                Paths[j].Points.Remove(Paths[j].Points.Last());
+                                Paths[j].Points.AddRange(Paths[i].Points);
+                                if (Paths[j].Points.First() == Paths[j].Points.Last()) Paths[j].Closed = true;
+                                Paths.Remove(Paths[i]);
+                                return 1;
+
+                            }
+                            else
+                            {
+                                if (Paths[i].Points.First() == Paths[j].Points.First())
+                                {
+                                    Paths[i].Points.Reverse();
+                                    Paths[i].Points.Remove(Paths[i].Points.Last());
+                                    Paths[i].Points.AddRange(Paths[j].Points);
+                                    if (Paths[i].Points.First() == Paths[i].Points.Last()) Paths[i].Closed = true;
+                                    Paths.Remove(Paths[j]);
+                                    return 1;
+
+                                }
+                                else
+                                    if (Paths[i].Points.Last() == Paths[j].Points.Last())
+                                {
+                                    Paths[i].Points.Reverse();
+                                    Paths[j].Points.Remove(Paths[j].Points.Last());
+                                    Paths[j].Points.AddRange(Paths[i].Points);
+                                    if (Paths[j].Points.First() == Paths[j].Points.Last()) Paths[j].Closed = true;
+                                    Paths.Remove(Paths[i]);
+                                    return 1;
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return 0;
         }
 
         public static double PolygonSurfaceArea(List<PointD> Polygon)

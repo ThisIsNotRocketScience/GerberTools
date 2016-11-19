@@ -255,14 +255,16 @@ namespace GerberLibrary
                                     double J = 0;
                                     if (GS.Has("I")) I = GS.Get("I");
                                     if (GS.Has("J")) J = GS.Get("J");
-                                    double nJ = J * CA - I * SA;
-                                    double nI = J * SA + I * CA;
+                                    double nJ = J * CA + I * SA;
+                                    double nI = -J * SA + I * CA;
                                     I = nI;
                                     J = nJ;
-                                    GS.Set("I", Math.Abs(I));
-                                    GS.Set("J",Math.Abs(J));
+                                  //  GS.Set("I", Math.Abs(I));
+                                  //  GS.Set("J", Math.Abs(J));
+                                    GS.Set("I", I);
+                                    GS.Set("J", J);
                                 }
-                             }
+                            }
                             GS.Set("X", X);
                             GS.Set("Y", Y);
                         }

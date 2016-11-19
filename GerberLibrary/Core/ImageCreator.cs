@@ -1016,10 +1016,13 @@ namespace GerberLibrary
             foreach (var a in PLSs)
             {
                 var P = a.FindLargestPolygon();
-                if (P.Item1 > largest)
+                if (P!=null)
                 {
-                    Largest = a;
-                    Outline = P.Item2;
+                    if (P.Item1 > largest)
+                    {
+                        Largest = a;
+                        Outline = P.Item2;
+                    }
                 }
 
             }
@@ -1137,13 +1140,20 @@ namespace GerberLibrary
             {
                 PLSs.Remove(a.Item2);
                 var scale = 1.0;
-                var R = a.Item1;
-                while (R >= 1.5)
+                if (Double.IsInfinity(a.Item1) || Double.IsNaN(a.Item1))
                 {
-                    R /= 10;
-                    scale /= 10;
+                    Errors.Add("Drill file size reached infinity - ignoring it");
                 }
-                AddFileToSet(a.Item2.Name, scale);
+                else
+                {
+                    var R = a.Item1;
+                    while (R >= 1.5)
+                    {
+                        R /= 10;
+                        scale /= 10;
+                    }
+                    AddFileToSet(a.Item2.Name, scale);
+                }
             }
 
             BoundingBox = new PolyLineSet.Bounds();

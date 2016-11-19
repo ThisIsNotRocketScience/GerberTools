@@ -144,7 +144,7 @@ namespace GerberLibrary
             return new PointF(p1.X + p2.X, p1.Y + p2.Y);
         }      
 
-        internal static PointF Sub(PointF force, PointF d)
+        public static PointF Sub(PointF force, PointF d)
         {
             return new PointF(force.X - d.X, force.Y - d.Y);
         }

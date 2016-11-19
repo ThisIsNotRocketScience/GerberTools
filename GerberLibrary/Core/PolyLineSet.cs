@@ -1071,6 +1071,10 @@ namespace GerberLibrary
                             }
                             else
                             {
+                                if (CurrentBlock.Lines.Count == 0)
+                                {
+                                    CurrentBlock.Lines.Add("");
+                                }
                                 CurrentBlock.Lines[CurrentBlock.Lines.Count - 1] += '%';
                                 AddToPrevious = true;
                                 HeaderActive = false;
