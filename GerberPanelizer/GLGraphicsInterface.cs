@@ -166,9 +166,18 @@ namespace GerberCombinerBuilder
             }
         }
 
+        public CompositingMode CompositingMode
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
 
-     
-
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         public static QuickFont.QFont Font;
         public void DrawString(PointD pos, string text, double scale, bool center, float r = 0.2f, float g = 0.2f, float b = 0.2f, float a = 1.0f)
@@ -286,6 +295,11 @@ namespace GerberCombinerBuilder
         }
 
         public void DrawPath(Color black, GraphicsPath pATH, float v)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FillPolygon(SolidBrush solidBrush, PointF[] pointF)
         {
             throw new NotImplementedException();
         }

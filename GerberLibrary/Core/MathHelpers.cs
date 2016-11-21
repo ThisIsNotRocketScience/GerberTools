@@ -105,7 +105,26 @@ namespace GerberLibrary
             {
                 inpoly.Reverse();
             }
+            List<List<ClipperLib.IntPoint>> Points = new List<List<ClipperLib.IntPoint>>();
+            List<ClipperLib.IntPoint> L = new List<ClipperLib.IntPoint>();
+            for (int i = 0; i < inpoly.Count; i++)
+            {
+                var V = inpoly[i];
+                L.Add(new ClipperLib.IntPoint((long)(V.X * 10000), (long)(V.Y * 10000)));
+            }
+            Points.Add(L);
+            var P = ClipperLib.Clipper.OffsetPolygons(Points, distance*1000);
+
             List<PointF> Res = new List<PointF>();
+            if (P.Count > 0)
+            {
+                foreach (var a in P[0])
+                {
+                    Res.Add(new PointF(a.X / 10000.0f, a.Y / 10000.0f));
+                }
+                return Res;
+            }
+
             for (int i = 0; i < inpoly.Count; i++)
             {
                 int idx1 = i % inpoly.Count;

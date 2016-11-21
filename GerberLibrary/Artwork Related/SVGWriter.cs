@@ -82,6 +82,19 @@ namespace GerberLibrary
             }
         }
 
+        public CompositingMode CompositingMode
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public Color BackgroundColor = Color.White;
         public List<string> OutputLines = new List<string>();
         public void Clear(Color color)
@@ -246,6 +259,11 @@ namespace GerberLibrary
             fileout.Add("</svg>");
             System.IO.File.WriteAllLines(fileName, fileout);
 
+        }
+
+        public void FillPolygon(SolidBrush solidBrush, PointF[] pointF)
+        {
+            throw new NotImplementedException();
         }
     }
 

@@ -32,7 +32,7 @@ namespace DirtyPCB_BoardRender
             public string InputFolder { get; internal set; }
             public string OutputFolder { get; internal set; }
             public int TimeOut = -1;
-
+            public bool TimeOutExpired = false;
         }
         public static BoardRenderSettings TheSettings = new BoardRenderSettings();
 
@@ -108,13 +108,13 @@ namespace DirtyPCB_BoardRender
                     TheSettings.TimeOut--;
                     if (TheSettings.TimeOut == 0)
                     {
+                        TheSettings.TimeOutExpired = true;
                         T.Abort();
                         done = true;
                         Console.WriteLine("Error: Maximum gerber time generation limit expired! Aborting!");
                     }
                 }
-            }
-           
+            }           
         }
 
         private static void RunImageGeneration()
@@ -148,7 +148,10 @@ namespace DirtyPCB_BoardRender
             }
             catch (Exception E)
             {
-                Console.WriteLine("Error: {0}", E.Message);
+                if (TheSettings.TimeOutExpired == false)
+                {
+                    Console.WriteLine("Error: {0}", E.Message);
+                }
             }
         }
         

@@ -598,13 +598,14 @@ namespace GerberLibrary
 
                 Graphics G2 = Graphics.FromImage(B2);
                 ApplyAASettings(G2);
-                G2.Clear(Color.White);
-                G2.Transform = TransformCopy.Clone();
+                var G3 = new GraphicsGraphicsInterface(G2);
+                G3.Clear(Color.White);
+                G3.Transform = TransformCopy.Clone();
 
                 Pen P = new Pen(Color.Black, 1.0f / (float)(scale));
                 int Shapes = 0;
 
-                Shapes += DrawLayerToGraphics(Color.Black, true, G2, P, L, false);
+                Shapes += DrawLayerToGraphics(Color.Black, true, G3, P, L, false);
 
                 B2.Save(FileName);
             }
@@ -850,12 +851,13 @@ namespace GerberLibrary
             Graphics G2 = Graphics.FromImage(B2);
 
             ApplyAASettings(G2);
-            G2.Clear(backgroundcolor);
-            G2.Transform = Transform.Clone();
+            var G3 = new GraphicsGraphicsInterface(G2);
+            G3.Clear(backgroundcolor);
+            G3.Transform = Transform.Clone();
 
             Pen P = new Pen(foregroundcolor, 1.0f / (float)(scale));
             int Shapes = 0;
-            Shapes += DrawLayerToGraphics(foregroundcolor, fill, G2, P, PLS, forcefill);
+            Shapes += DrawLayerToGraphics(foregroundcolor, fill, G3, P, PLS, forcefill);
             //            if (Shapes == 0) return null;
             return B2;
         }
@@ -867,20 +869,20 @@ namespace GerberLibrary
             Bitmap B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
             Graphics G2 = Graphics.FromImage(B2);
             ApplyAASettings(G2);
-            G2.Clear(Color.FromArgb(0, 0, 0, 0));
-            G2.Transform = T.Clone();
-
+            var G3 = new GraphicsGraphicsInterface(G2);
+            G3.Clear(Color.FromArgb(0, 0, 0, 0));
+            G3.Transform = T.Clone();
             Pen P = new Pen(color, 1.0f / (float)(scale));
             int Shapes = 0;
             foreach (var l in L)
             {
-                Shapes += DrawLayerToGraphics(color, fill, G2, P, l, forcefill);
+                Shapes += DrawLayerToGraphics(color, fill,  G3, P, l, forcefill);
             }
             if (Shapes == 0) return null;
             return B2;
         }
 
-        private int DrawLayerToGraphics(Color color, bool fill, Graphics G2, Pen P, ParsedGerber l, bool forcefill = false)
+        private int DrawLayerToGraphics(Color color, bool fill, GraphicsInterface G2, Pen P, ParsedGerber l, bool forcefill = false)
         {
             int RenderedShapes = 0;
             foreach (var Shape in l.DisplayShapes)
@@ -896,7 +898,7 @@ namespace GerberLibrary
             return RenderedShapes;
         }
 
-        private void DrawShape(Graphics G, Pen P, Color c, PolyLine Shape, bool fill, double dx, double dy)
+        private void DrawShape(GraphicsInterface G, Pen P, Color c, PolyLine Shape, bool fill, double dx, double dy)
         {
 
             List<PointF> Points = new List<PointF>();

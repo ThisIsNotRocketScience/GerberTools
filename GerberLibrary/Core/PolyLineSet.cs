@@ -18,46 +18,37 @@ namespace GerberLibrary
 
     public class GerberParserState
     {
-        public BoardSide Side;
-        public BoardLayer Layer;
-        public string SanitizedFile = "";
-
-        public PolyLine Boundary;
-
-        public PolyLine ThinLine;
-
-        public double MinimumApertureRadius = -1;
-        public Dictionary<int, GerberApertureType> Apertures = new Dictionary<int, GerberApertureType>();
         public Dictionary<string, GerberApertureMacro> ApertureMacros = new Dictionary<string, GerberApertureMacro>();
-
-
-        public bool PreCombinePolygons = true;
-        public bool IgnoreZeroWidth = false;
-
-
-        public GerberApertureType CurrentAperture = new GerberApertureType() { }; // blank default
-        public double LastX = 0;
-        public double LastY = 0;
-
-        public int currentline = 0;
-        public bool PolygonMode = false;
+        public Dictionary<int, GerberApertureType> Apertures = new Dictionary<int, GerberApertureType>();
+        public PolyLine Boundary;
         public bool ClearanceMode = false;
-        public InterpolationMode MoveInterpolation = InterpolationMode.Linear;
+        public GerberNumberFormat CoordinateFormat = new GerberNumberFormat();
+        public GerberApertureType CurrentAperture = new GerberApertureType() { };
+        public int CurrentLineIndex = 0;
+        public bool IgnoreZeroWidth = false;
+        public int LastD;
+        // blank default
+        public double LastX = 0;
 
-        public List<PointD> PolygonPoints = new List<PointD>();
+        public double LastY = 0;
+        public BoardLayer Layer;
+        public double MinimumApertureRadius = -1;
+        public InterpolationMode MoveInterpolation = InterpolationMode.Linear;
         public List<PolyLine> NewShapes = new List<PolyLine>();
         public List<PolyLine> NewThinShapes = new List<PolyLine>();
-        public int LastD;
+        public bool PolygonMode = false;
+        public List<PointD> PolygonPoints = new List<PointD>();
+        public bool PreCombinePolygons = true;
         public bool Repeater;
-        public int RepeatYCount;
-        public int RepeatXCount;
-        public double RepeatXOff;
-        public double RepeatYOff;
         public int RepeatStartShapeIdx;
         public int RepeatStartThinShapeIdx;
-
-        public GerberNumberFormat CoordinateFormat = new GerberNumberFormat();
-
+        public int RepeatXCount;
+        public double RepeatXOff;
+        public int RepeatYCount;
+        public double RepeatYOff;
+        public string SanitizedFile = "";
+        public BoardSide Side;
+        public PolyLine ThinLine;
     }
 
     public class PolyLineSet
@@ -66,142 +57,231 @@ namespace GerberLibrary
 
 
 
-        public void Normalize(ParsedGerber gerb)
-        {
-            gerb.Normalize();
-        }
+        static string laststatus = "";
 
+        static int laststatuscount = 0;
 
-
-        public override string ToString()
-        {
-            return Name;
-        }
+        static int laststatusidx = 0;
 
         public PolyLineSet(string inname)
         {
             Name = inname;
         }
 
-
-        public class Bounds
+        /// <summary>
+        /// Find optimal locations for breaktabs -> returns list of position + normal tuples
+        /// </summary>
+        /// <returns></returns>
+        public static List<Tuple<PointD, PointD>> FindOptimalBreaktTabLocations(ParsedGerber Gerb)
         {
-            public override string ToString()
-            {
-                return String.Format("({0:N2}, {1:N2}) - ({2:N2}, {3:N2}) -> {4:N2} x {5:N2} mm", TopLeft.X, TopLeft.Y, BottomRight.X, BottomRight.Y, Width(), Height() );
-            }
+            List<Tuple<PointD, PointD>> Res = new List<Tuple<PointD, PointD>>();
+            List<SegmentWithNormalAndDistance> Segs = new List<SegmentWithNormalAndDistance>();
 
-            public void FitPoint(double x, double y)
-            {
-                FitPoint(new PointD(x, y));
-            }
+            if (Gerb.OutlineShapes.Count == 0 || Gerb.OutlineShapes[0].Vertices.Count == 0) return Res;
 
-            public void FitPoint(PointD P)
+            var First = Gerb.OutlineShapes[0].Vertices[0];
+            PointD Max = new PointD(First.X, First.Y);
+            PointD Min = new PointD(First.X, First.Y);
+
+            foreach (var a in Gerb.OutlineShapes)
             {
-                if (!Valid)
+
+                if (Clipper.Orientation(a.toPolygon()) == true)
                 {
-                    TopLeft.X = P.X;
-                    TopLeft.Y = P.Y;
-                    BottomRight.X = P.X;
-                    BottomRight.Y = P.Y;
-                    Valid = true;
-
-                }
-                if (P.X < TopLeft.X) TopLeft.X = P.X;
-                if (P.Y < TopLeft.Y) TopLeft.Y = P.Y;
-                if (P.X > BottomRight.X) BottomRight.X = P.X;
-                if (P.Y > BottomRight.Y) BottomRight.Y = P.Y;
-            }
-            public PointD TopLeft = new PointD(0, 0);
-            public PointD BottomRight = new PointD(0, 0);
-
-            public bool Valid = false;
-
-            public void Reset()
-            {
-                TopLeft.X = 10000;
-                TopLeft.Y = 10000;
-                BottomRight.X = -10000;
-                BottomRight.Y = -10000;
-
-                Valid = false;
-            }
-
-            public void AddPolyLines(List<PolyLine> Shapes)
-            {
-                foreach (var a in Shapes)
-                {
-                    foreach (var r in a.Vertices)
+                    PointD Prev = a.Vertices[a.Vertices.Count - 1];
+                    // generate normals and find extends
+                    for (int V = 0; V < a.Vertices.Count; V++)
                     {
-                        FitPoint(new PointD(r.X, r.Y));
+                        SegmentWithNormalAndDistance S = new SegmentWithNormalAndDistance();
+                        S.A = Prev;
+                        S.B = a.Vertices[V];
+
+                        if (S.A != S.B)
+                        {
+                            S.CalculateNormal();
+
+                            if (a.Vertices[V].X < Min.X) Min.X = a.Vertices[V].X;
+                            if (a.Vertices[V].Y < Min.Y) Min.Y = a.Vertices[V].Y;
+                            if (a.Vertices[V].X > Max.X) Max.X = a.Vertices[V].X;
+                            if (a.Vertices[V].Y > Max.Y) Max.Y = a.Vertices[V].Y;
+
+                            Segs.Add(S);
+                        }
+                        Prev = a.Vertices[V];
+                    }
+                }
+            }
+            PointD Center = (Min + Max) * 0.5;
+
+
+            List<List<SegmentWithNormalAndDistance>> Buckets = new List<List<SegmentWithNormalAndDistance>>(); ;
+            Buckets.Add(new List<SegmentWithNormalAndDistance>());
+            Buckets.Add(new List<SegmentWithNormalAndDistance>());
+            Buckets.Add(new List<SegmentWithNormalAndDistance>());
+            Buckets.Add(new List<SegmentWithNormalAndDistance>());
+            Buckets.Add(new List<SegmentWithNormalAndDistance>());
+            Buckets.Add(new List<SegmentWithNormalAndDistance>());
+            Buckets.Add(new List<SegmentWithNormalAndDistance>());
+            Buckets.Add(new List<SegmentWithNormalAndDistance>());
+
+            foreach (var a in Segs)
+            {
+                int Bucket = (int)Math.Floor((a.Angle * 8.0 / 360.0) + 0.5);
+                while (Bucket < 0) Bucket += 8;
+                while (Bucket >= 8) Bucket -= 8;
+                double bucketangle = Bucket * (360 / 8.0);
+
+                //                if (Bucket == 0)
+                {
+                    a.CalculateDistance(Center, bucketangle);
+                    //       Console.WriteLine("{0}: {1} {2} {3}", a.Angle.ToString("N1"), a.Length.ToString("N1"), a.DistanceToCenter.ToString("N1"), a.ProjectedDistanceToCenter.ToString("N1"));
+                    Buckets[Bucket].Add(a);
+                }
+            }
+
+            List<SegmentWithNormalAndDistance> BucketItems = new List<SegmentWithNormalAndDistance>();
+
+            for (int i = 0; i < 8; i++)
+            {
+                var L = Buckets[i];
+                double bucketangle = i * 360.0 / 8.0;
+                var sorted = from ii in L orderby (ii.ProjectedDistanceToCenter / ii.Length) descending select ii;
+                if (sorted.Count() > 0)
+                {
+                    var f = sorted.First();
+                    BucketItems.Add(f);
+                    var t = new Tuple<PointD, PointD>(f.M, f.N);
+                    //       Console.WriteLine("bucket {0}: {1} angle: {2}", i, f, bucketangle);
+                }
+                else
+                {
+                    BucketItems.Add(null);
+                }
+            }
+
+            double evenscore = 0;
+            double oddscore = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                double score = 0;
+                if (BucketItems[i] != null)
+                {
+                    score += Math.Abs(BucketItems[i].Length * BucketItems[i].ProjectedDistanceToCenter);
+                }
+                Console.WriteLine("{0}: {1}", i, score);
+                if (i % 2 == 0) evenscore += score; else oddscore += score;
+            }
+
+            int off = 0;
+            if (oddscore > evenscore) off = 1;
+            for (int i = off; i < 8; i += 2)
+            {
+                var f = BucketItems[i];
+
+
+                int Items = (int)Math.Ceiling(f.Length / 20);
+                PointD delta = (f.B - f.A) * (1.0 / Items);
+                for (int j = 0; j < Items; j++)
+                {
+                    var t = new Tuple<PointD, PointD>(f.A + delta * 0.5 + delta * (double)j, f.N);
+                    Res.Add(t);
+                }
+
+            }
+            return Res;
+        }
+
+        public static ParsedGerber LoadExcellonDrillFile(string drillfile, bool Precombine = false, double drillscaler = 1.0)
+        {
+            ParsedGerber Gerb = new ParsedGerber();
+            Gerb.Name = drillfile;
+            Gerb.Shapes.Clear();
+            Gerb.DisplayShapes.Clear();
+            GerberParserState State = new GerberParserState();
+            State.Side = BoardSide.Both;
+            State.PreCombinePolygons = Precombine;
+            State.Layer = BoardLayer.Drill;
+
+            ExcellonFile EF = new ExcellonFile();
+            EF.Load(drillfile, drillscaler);
+
+            foreach (var T in EF.Tools)
+            {
+                var Tool = T.Value;
+
+                int sides = (int)(Gerber.ArcQualityScaleFactor * Math.Max(2.0, Tool.Radius));
+
+
+                foreach (var Hole in Tool.Drills)
+                {
+                    PolyLine DispPL = new PolyLine();
+
+                    for (int i = 0; i < sides; i++)
+                    {
+                        double PP = i * 6.283f / (double)sides;
+                        DispPL.Add(Hole.X + (double)Math.Sin(PP) * (double)Tool.Radius, Hole.Y + (double)Math.Cos(PP) * (double)Tool.Radius);
+                    }
+                    DispPL.Close();
+                    DispPL.MyColor = Color.DarkGreen;
+                    Gerb.DisplayShapes.Add(DispPL);
+                }
+
+                foreach (var Slot in Tool.Slots)
+                {
+                    PolyLine DispPL = new PolyLine();
+
+                    double dy = Slot.End.Y - Slot.Start.Y;
+                    double dx = Slot.End.X - Slot.Start.X;
+
+                    double offangl = -Math.Atan2(dy, dx) + 3.1415;
+
+                    for (int i = 0; i < sides / 2; i++)
+                    {
+                        double PP = i * 6.283f / (double)sides;
+                        PP += offangl;
+                        DispPL.Add(Slot.Start.X + (double)Math.Sin(PP) * (double)Tool.Radius, Slot.Start.Y + (double)Math.Cos(PP) * (double)Tool.Radius);
                     }
 
+                    for (int i = sides / 2; i < sides; i++)
+                    {
+                        double PP = i * 6.283f / (double)sides;
+                        PP += offangl;
+                        DispPL.Add(Slot.End.X + (double)Math.Sin(PP) * (double)Tool.Radius, Slot.End.Y + (double)Math.Cos(PP) * (double)Tool.Radius);
+                    }
+
+                    DispPL.Close();
+                    DispPL.MyColor = Color.DarkGreen;
+                    Gerb.DisplayShapes.Add(DispPL);
                 }
             }
+            Gerb.Side = State.Side;
+            Gerb.Layer = State.Layer;
+            Gerb.State = State;
 
-            public double Width()
-            {
-                if (!Valid) return 0;
-                return BottomRight.X - TopLeft.X;
-            }
+            return Gerb;
 
-            public double Height()
-            {
-                if (!Valid) return 0;
-                return BottomRight.Y - TopLeft.Y;
-            }
-
-            public void AddBox(Bounds bounds)
-            {
-                if (!bounds.Valid) return;
-
-                FitPoint(bounds.TopLeft);
-                FitPoint(bounds.BottomRight);
-
-            }
-
-            public PointD Middle()
-            {
-                return new PointD((TopLeft.X + BottomRight.X) * 0.5, (TopLeft.Y + BottomRight.Y) * 0.5);
-            }
-
-            public void GenerateTransform(Graphics g, int width, int height, int margin)
-            {
-                float scale = Math.Min((width-margin*2) / (float)Width(), (height-margin*2) / (float)Height());
-                g.TranslateTransform(width / 2, height / 2);
-                g.ScaleTransform(scale, scale);
-                var M = Middle();
-                g.TranslateTransform(-(float)M.X, -(float)M.Y);
-            }
-
-            public bool Intersects(Bounds B)
-            {
-                var M1 = Middle();
-                var M2 = B.Middle();
-
-                return (Math.Abs(M1.X - M2.X) * 2 < (Width() + B.Width())) && (Math.Abs(M1.Y- M2.Y) * 2 < (Height() + B.Height()));
-            }
         }
 
-        public static ParsedGerber LoadGerberFileFromStream(StreamReader sr,string originalfilename, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
+        public static ParsedGerber LoadGerberFile(string gerberfile, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
         {
             if (State == null) State = new GerberParserState();
-            
-            Gerber.DetermineBoardSideAndLayer (originalfilename, out State.Side, out State.Layer);
-            return ProcessStream(originalfilename, forcezerowidth, writesanitized, State, sr);
-            
+
+            Gerber.DetermineBoardSideAndLayer(gerberfile, out State.Side, out State.Layer);
+
+            using (StreamReader sr = new StreamReader(gerberfile))
+            {
+                return ProcessStream(gerberfile, forcezerowidth, writesanitized, State, sr);
+            }
         }
 
-
-
-        //      public GerberParserState State = new GerberParserState();
-
-        public class GerberBlock
+        public static ParsedGerber LoadGerberFileFromStream(StreamReader sr, string originalfilename, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
         {
-            public List<string> Lines = new List<string>();
-            public bool Header;
-        }
+            if (State == null) State = new GerberParserState();
 
+            Gerber.DetermineBoardSideAndLayer(originalfilename, out State.Side, out State.Layer);
+            return ProcessStream(originalfilename, forcezerowidth, writesanitized, State, sr);
+
+        }
 
         public static ParsedGerber ParseGerber274x(List<String> inputlines, bool parseonly, bool forcezerowidth = false, GerberParserState State = null)
         {
@@ -217,7 +297,7 @@ namespace GerberLibrary
             List<String> lines = SanitizeInputLines(inputlines, State.SanitizedFile);
 
             ParsedGerber Gerb = new ParsedGerber();
-            
+
             Gerb.State = State;
             ParseGerber274_Lines(forcezerowidth, State, lines);
 
@@ -330,13 +410,583 @@ namespace GerberLibrary
             return Gerb;
         }
 
+        public static List<string> SanitizeInputLines(List<String> inputlines, string SanitizedFile = "")
+        {
+            List<GerberBlock> Blocks = new List<GerberBlock>();
+            bool HeaderActive = false;
+            GerberBlock CurrentBlock = null;
+            GerberBlock PreviousBlock = null;
+            List<String> lines = new List<string>();
+            string currentline = "";
+            bool LastWasStar = false;
+
+            CurrentBlock = new GerberBlock();
+            CurrentBlock.Header = false;
+            Blocks.Add(CurrentBlock);
+            bool AddToPrevious = false;
+            foreach (var ll in inputlines)
+            {
+
+                List<String> CadenceSplit = new List<string>();
+                string T = ll.Trim();
+                if (T.StartsWith("%") && T.EndsWith("%") && T.Contains("*") && (T.StartsWith("%AM") == false))
+                {
+                    T = T.Substring(1, T.Length - 2);
+                    var s = T.Split('*');
+                    if (s.Count() > 1)
+                    {
+                        foreach (var sl in s)
+                        {
+                            if (sl.Length > 0)
+                            {
+                                CadenceSplit.Add("%" + sl + "*%");
+                            }
+
+                        }
+                        if (Gerber.ExtremelyVerbose)
+                        {
+                            if (CadenceSplit.Count > 1)
+                            {
+                                Console.WriteLine("Cadence format fixing:");
+                                Console.WriteLine("original: {0}", ll);
+                                Console.WriteLine("split:");
+                                foreach (var sss in CadenceSplit)
+                                {
+                                    Console.WriteLine("     {0}", sss);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        CadenceSplit.Add(ll);
+                    }
+                }
+                else
+                {
+                    CadenceSplit.Add(ll);
+
+                }
+
+                foreach (var l in CadenceSplit)
+                {
+
+                    foreach (var c in l)
+                    {
+                        AddToPrevious = false;
+                        GerberBlock Last = CurrentBlock;
+                        if (c == '%')
+                        {
+                            if (HeaderActive == false)
+                            {
+                                HeaderActive = true;
+
+                            }
+                            else
+                            {
+                                if (CurrentBlock.Lines.Count == 0)
+                                {
+                                    CurrentBlock.Lines.Add("");
+                                }
+                                CurrentBlock.Lines[CurrentBlock.Lines.Count - 1] += '%';
+                                AddToPrevious = true;
+                                HeaderActive = false;
+                            }
+                            PreviousBlock = CurrentBlock;
+                            CurrentBlock = null;
+                        }
+                        //     if (LastWasStar && c == '%')
+                        //    {
+                        //       Last.Lines[Last.Lines.Count -1] += '%';
+                        //      lines[lines.Count - 1] += '%';
+                        //  }
+                        //  else
+                        //  {
+
+                        if (AddToPrevious == false)
+                        {
+                            if (CurrentBlock == null)
+                            {
+                                CurrentBlock = new GerberBlock();
+                                CurrentBlock.Header = HeaderActive;
+                                Blocks.Add(CurrentBlock);
+
+                            }
+                            currentline += c;
+                            //  }
+                            if (HeaderActive && c == '*')
+                            {
+                                LastWasStar = true;
+                                CurrentBlock.Lines.Add(currentline);
+                                lines.Add(currentline);
+                                currentline = "";
+                            }
+                            else
+                            {
+                                if (c == '*')
+                                {
+                                    LastWasStar = true;
+                                    CurrentBlock.Lines.Add(currentline);
+                                    lines.Add(currentline);
+                                    currentline = "";
+
+                                }
+                                else
+                                {
+                                    LastWasStar = false;
+
+                                }
+                            }
+                        }
+
+                    }
+                    if (HeaderActive)
+                    {
+
+                    }
+                    else
+                    {
+                        if (currentline.Length > 0)
+                        {
+                            if (CurrentBlock == null)
+                            {
+                                CurrentBlock = new GerberBlock();
+                                CurrentBlock.Header = HeaderActive;
+                                Blocks.Add(CurrentBlock);
+
+                            }
+                            CurrentBlock.Lines.Add(currentline);
+                            lines.Add(currentline);
+                            currentline = "";
+                        }
+                    }
+                }
+            }
+            if (currentline.Length > 0)
+            {
+                CurrentBlock.Lines.Add(currentline);
+                lines.Add(currentline);
+            }
+
+            List<String> reslines = new List<string>();
+            //  foreach ( var a in lines)
+            // {
+            //     if (a.Length > 0) reslines.Add(a);
+
+            // }
+
+            foreach (var b in Blocks)
+            {
+                foreach (var a in b.Lines)
+                {
+                    string B = a.Trim().Replace(Gerber.LineEnding + Gerber.LineEnding, Gerber.LineEnding);
+                    if (B.Trim().Length > 0)
+                    {
+                        if (b.Header)
+                        {
+                            //                        string FinalLine = a.Replace("%", "").Replace("*", "").Trim();
+
+                            reslines.Add(a.Trim());
+                        }
+                        else
+                        {
+                            reslines.Add(a.Trim());
+                        }
+                    }
+                }
+            }
+            DumpSanitizedFileToLog(SanitizedFile, Blocks, reslines);
+
+            return reslines;
+        }
+
+        public static List<string> SanitizeInputLines_OLD(List<String> inputlines, string SanitizedFile = "")
+        {
+            List<GerberBlock> Blocks = new List<GerberBlock>();
+            bool HeaderActive = false;
+            GerberBlock CurrentBlock = null;
+
+            List<String> lines = new List<string>();
+
+            foreach (var l in inputlines)
+            {
+                string Line = l.Trim();
+                while (Line.Length > 0)
+                {
+                    if (Line == "%")
+                    {
+                        lines.Add(Line);
+                        if (HeaderActive)
+                        {
+                            HeaderActive = false;
+                            CurrentBlock = null;
+                        }
+                        else
+                        {
+                            HeaderActive = true;
+                        }
+                        Line = "";
+                    }
+                    else
+                        if (Line == "*")
+                    {
+                        Line = "";
+                        // skip empty lines
+                    }
+                    else
+                    {
+                        if (Line.First() == '%' && Line.Last() == '%' && Line.Length > 2)
+                        {
+                            GerberBlock GB = new GerberBlock();
+                            GB.Header = true;
+
+                            string SL = Line.Substring(1, Line.Length - 2);
+                            var SLSplit = SL.Split('*');
+                            List<string> slres = new List<string>();
+                            foreach (var part in SLSplit)
+                            {
+                                if (part.Trim().Length > 0)
+                                {
+                                    slres.Add(part.Trim() + "*");
+                                    GB.Lines.Add(part.Trim());
+                                }
+                            }
+                            if (slres.Count() > 0)
+                            {
+                                slres[0] = "%" + slres[0];
+                                for (int i = 1; i < slres.Count; i++)
+                                {
+                                    if (char.IsDigit(slres[i][0]) == false)
+                                    {
+                                        slres[i] = "%" + slres[i];
+                                        if (i < slres.Count - 1)
+                                        {
+                                            slres[i] = slres[i] + "%";
+
+                                        }
+                                    }
+                                }
+                                slres[slres.Count() - 1] += "%";
+                                lines.AddRange(slres);
+                            }
+                            Blocks.Add(GB);
+                            Line = "";
+
+                        }
+                        else
+                        {
+                            GerberBlock GB = new GerberBlock();
+                            GB.Header = false;
+                            int idx = Line.IndexOf('*');
+                            int idx2 = Line.IndexOf("*%");
+                            while (idx > -1)
+                            {
+                                int add = 1;
+                                if (idx == idx2) add = 2;
+                                if (add == 2 && Line.Length > 0 && Line.First() != '%') add = 1;
+                                string SubLine = Line.Substring(0, idx + add);
+                                lines.Add(SubLine.Trim());
+                                GB.Lines.Add(SubLine.Trim());
+                                Line = Line.Substring(idx + add).Trim();
+                                if (Line.Length > 0 && Line.First() == '%' && Line.Last() == '%')
+                                {
+                                    Blocks.Add(GB);
+                                    GB = new GerberBlock();
+                                    GB.Header = true;
+
+                                    string SL = Line;
+                                    if (Line.Length > 2) SL = Line.Substring(1, Line.Length - 2);
+                                    var SLSplit = SL.Split('*');
+                                    List<string> slres = new List<string>();
+                                    foreach (var part in SLSplit)
+                                    {
+                                        if (part.Trim().Length > 0)
+                                        {
+                                            slres.Add(part.Trim() + "*");
+                                            GB.Lines.Add(part.Trim());
+                                            lines.Add("%" + part.Trim() + "*%");
+
+                                        }
+                                    }
+                                    Line = "";
+
+                                    //    GB.Lines.Add(Line);
+                                    idx = -1;
+                                    idx2 = -2;
+                                }
+                                else
+                                {
+                                    idx = Line.IndexOf('*');
+                                    idx2 = Line.IndexOf("*%");
+
+                                }
+
+                            }
+
+                            if (Line.Length > 0)
+                            {
+                                lines.Add(Line);
+                                GB.Lines.Add(Line);
+                                Line = "";
+                            }
+                            Blocks.Add(GB);
+
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < lines.Count(); i++)
+            {
+                lines[i] = lines[i].Replace(" ", "");
+            }
+
+            DumpSanitizedFileToLog(SanitizedFile, Blocks, lines);
+            return lines;
+        }
+
+        public void Normalize(ParsedGerber gerb)
+        {
+            gerb.Normalize();
+        }
+
+
+
+        public override string ToString()
+        {
+            return Name;
+        }
+        private static void AddExtrudedCurveSegment(ref double LastX, ref double LastY, List<PolyLine> NewShapes, GerberApertureType CurrentAperture, bool ClearanceMode, double X, double Y)
+        {
+            PolyLine PL = new PolyLine();
+            PL.ClearanceMode = ClearanceMode;
+
+            // TODO: use CreatePolyLineSet and extrude that!
+            var PolySet = CurrentAperture.CreatePolyLineSet(0, 0);
+            //       var Shapes = CurrentAperture.CreatePolyLineSet(0, 0);
+
+            foreach (var currpoly in PolySet)
+            {
+                Polygons Combined = new Polygons();
+
+                PolyLine A = new PolyLine();
+                PolyLine B = new PolyLine();
+
+                PointD start = new PointD(LastX, LastY);
+                PointD end = new PointD(X, Y);
+                PointD dir = end - start;
+
+                dir.Normalize();
+                //  dir.Rotate(180);
+                dir = dir.Rotate(90);
+                PointD LeftMost = new PointD();
+                double maxdot = -10000000;
+                double mindot = 10000000;
+                PointD RightMost = new PointD();
+                {
+                    for (int i = 0; i < currpoly.Count(); i++)
+                    {
+                        PointD V = currpoly.Vertices[i];
+                        //    PointD V2 = new PointD(V.X, V.Y);
+                        // V2.Normalize();
+                        double dot = V.Dot(dir);
+                        //      Console.WriteLine("dot: {0}  {1}, {2}", dot.ToString("n2"), V, dir);
+                        if (dot > maxdot)
+                        {
+                            RightMost = V; maxdot = dot;
+                        }
+                        if (dot < mindot)
+                        {
+                            LeftMost = V; mindot = dot;
+                        }
+
+                        A.Add(V.X + LastX, V.Y + LastY);
+                        B.Add(V.X + X, V.Y + Y);
+                    }
+
+                    A.Close();
+                    B.Close();
+
+                    PolyLine C = new PolyLine();
+                    C.Add(RightMost.X + LastX, RightMost.Y + LastY);
+                    C.Add(LeftMost.X + LastX, LeftMost.Y + LastY);
+                    C.Add(LeftMost.X + X, LeftMost.Y + Y);
+                    C.Add(RightMost.X + X, RightMost.Y + Y);
+                    C.Vertices.Reverse();
+                    C.Close();
+
+                    Clipper cp = new Clipper();
+                    cp.AddPolygons(Combined, PolyType.ptSubject);
+                    cp.AddPolygon(A.toPolygon(), PolyType.ptClip);
+                    cp.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+
+                    Clipper cp2 = new Clipper();
+                    cp2.AddPolygons(Combined, PolyType.ptSubject);
+                    cp2.AddPolygon(B.toPolygon(), PolyType.ptClip);
+                    cp2.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+
+                    Clipper cp3 = new Clipper();
+                    cp3.AddPolygons(Combined, PolyType.ptSubject);
+                    cp3.AddPolygon(C.toPolygon(), PolyType.ptClip);
+                    cp3.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+
+                    foreach (var a in Combined)
+                    {
+                        PolyLine PP = new PolyLine();
+                        PP.fromPolygon(a);
+                        PP.Close();
+                        NewShapes.Add(PP);
+                    }
+                }
+            }
+
+            //    CurrentAperture.FindExtendIndices(new PointD(LastX, LastY), new PointD(X, Y), out one, out two);
+
+            //    for (int i = two; i != one; i = (i + 1) % CurrentAperture.Shape.Count())
+            //    {
+            //        PL.Add(LastX + CurrentAperture.Shape.Vertices[i].X, LastY + CurrentAperture.Shape.Vertices[i].Y);
+            //    }
+            //    for (int i = one; i != two; i = (i + 1) % CurrentAperture.Shape.Count())
+            //    {
+            //        PL.Add(X + CurrentAperture.Shape.Vertices[i].X, Y + CurrentAperture.Shape.Vertices[i].Y);
+            //    }
+
+            //    PL.Close();
+
+
+            ////    NewShapes.Add(PL);
+
+            LastX = X;
+            LastY = Y;
+        }
+
+        private static bool BasicLineCommands(string Line, GerberParserState State)
+        {
+            string FinalLine = Line.Replace("%", "").Replace("*", "").Trim();
+            switch (FinalLine)
+            {
+                case "G90": State.CoordinateFormat.Relativemode = false; break;
+                case "G91": State.CoordinateFormat.Relativemode = true; break;
+                case "G71": State.CoordinateFormat.SetMetricMode(); break;
+                case "G70": State.CoordinateFormat.SetImperialMode(); break;
+                case "G74": State.CoordinateFormat.SetSingleQuadrantMode(); break;
+                case "G75":
+                    State.CoordinateFormat.SetMultiQuadrantMode();
+                    break;
+                case "G36":
+                    State.PolygonMode = true;
+                    State.PolygonPoints.Clear();
+                    break;
+                case "G37":
+                    {
+                        PolyLine PL = new PolyLine();
+                        foreach (var a in State.PolygonPoints)
+                        {
+                            PL.Add(a.X, a.Y);
+                        }
+                        PL.Close();
+                        State.NewShapes.Add(PL);
+                        State.PolygonPoints.Clear();
+
+                        State.PolygonMode = false;
+                    }
+                    break;
+                case "LPC": State.ClearanceMode = true; break;
+                case "LPD": State.ClearanceMode = false; break;
+                case "MOIN": State.CoordinateFormat.SetImperialMode(); break;
+                case "MOMM": State.CoordinateFormat.SetMetricMode(); break;
+                case "G01":
+                    State.MoveInterpolation = InterpolationMode.Linear;
+                    break;
+                case "G02":
+                    State.MoveInterpolation = InterpolationMode.ClockWise;
+                    break;
+                case "G03":
+                    State.MoveInterpolation = InterpolationMode.CounterClockwise;
+                    break;
+
+                default:
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static void DoRepeating(GerberParserState State)
+        {
+            int LastThin = State.NewThinShapes.Count();
+            int LastShape = State.NewShapes.Count();
+            for (int x = 0; x < State.RepeatXCount; x++)
+            {
+                for (int y = 0; y < State.RepeatYCount; y++)
+                {
+                    if (!(x == 0 && y == 0))
+                    {
+                        double xoff = State.RepeatXOff * x;
+                        double yoff = State.RepeatYOff * y;
+
+                        for (int i = State.RepeatStartThinShapeIdx; i < LastThin; i++)
+                        {
+
+                            var C = State.NewThinShapes[i];
+                            PolyLine P = new PolyLine();
+                            foreach (var a in C.Vertices)
+                            {
+                                P.Vertices.Add(new PointD(a.X + xoff, a.Y + yoff));
+                            }
+                            State.NewThinShapes.Add(P);
+                        }
+                        for (int i = State.RepeatStartShapeIdx; i < LastShape; i++)
+                        {
+                            var C = State.NewShapes[i];
+                            PolyLine P = new PolyLine();
+                            foreach (var a in C.Vertices)
+                            {
+                                P.Vertices.Add(new PointD(a.X + xoff, a.Y + yoff));
+
+                            }
+                            State.NewShapes.Add(P);
+
+                        }
+
+                    }
+                }
+            }
+            State.Repeater = false;
+        }
+
+        private static void DumpSanitizedFileToLog(string SanitizedFile, List<GerberBlock> Blocks, List<String> lines)
+        {
+            if (SanitizedFile.Length > 0)
+            {
+                Gerber.WriteAllLines(SanitizedFile, lines);
+                List<string> l2 = new List<string>();
+                foreach (var b in Blocks)
+                {
+
+                    foreach (var l in b.Lines)
+                    {
+                        if (b.Header == true)
+                        {
+                            l2.Add("HEAD " + l);
+                        }
+                        else
+                        {
+                            l2.Add("BODY " + l);
+                        }
+                    }
+
+                }
+                Gerber.WriteAllLines(SanitizedFile + ".txt", l2);
+            }
+        }
+
         private static void ParseGerber274_Lines(bool forcezerowidth, GerberParserState State, List<String> lines)
         {
-            while (State.currentline < lines.Count)
+            while (State.CurrentLineIndex < lines.Count)
             {
                 GCodeCommand GCC = new GCodeCommand();
-                GCC.Decode(lines[State.currentline], State.CoordinateFormat);
-                string Line = lines[State.currentline];
+                GCC.Decode(lines[State.CurrentLineIndex], State.CoordinateFormat);
+                string Line = lines[State.CurrentLineIndex];
 
 
                 if (BasicLineCommands(Line, State) == false)
@@ -485,8 +1135,8 @@ namespace GerberLibrary
                                                                 {
                                                                     {
                                                                         int idx = 4;
-                                                                        while (char.IsDigit(lines[State.currentline][idx]) == true) idx++;
-                                                                        string mname = lines[State.currentline].Substring(idx).Split('*')[0];
+                                                                        while (char.IsDigit(lines[State.CurrentLineIndex][idx]) == true) idx++;
+                                                                        string mname = lines[State.CurrentLineIndex].Substring(idx).Split('*')[0];
                                                                         string[] macrostrings = mname.Split(',');
 
                                                                         List<string> macroparamstrings = new List<string>();
@@ -538,8 +1188,8 @@ namespace GerberLibrary
                                                         GerberApertureMacro AM = new GerberApertureMacro();
                                                         AM.Name = name;
 
-                                                        State.currentline++;
-                                                        int macroline = State.currentline;
+                                                        State.CurrentLineIndex++;
+                                                        int macroline = State.CurrentLineIndex;
                                                         string macrostring = "";
                                                         List<string> MacroLines = new List<string>();
                                                         while (lines[macroline].Contains('%') == false)
@@ -569,7 +1219,7 @@ namespace GerberLibrary
                                                                 }
                                                             }
                                                         }
-                                                        State.currentline = macroline;
+                                                        State.CurrentLineIndex = macroline;
 
 
                                                         //while (lines[currentline][lines[currentline].Length - 1] != '%')
@@ -986,7 +1636,7 @@ namespace GerberLibrary
                         }
                     }
                 }
-                State.currentline++;
+                State.CurrentLineIndex++;
             }
 
             SetupRepeater(State, 1, 1, 0, 0);
@@ -997,370 +1647,27 @@ namespace GerberLibrary
             }
         }
 
-        public static List<string> SanitizeInputLines(List<String> inputlines, string SanitizedFile = "")
+        private static ParsedGerber ProcessStream(string gerberfile, bool forcezerowidth, bool writesanitized, GerberParserState State, StreamReader sr)
         {
-            List<GerberBlock> Blocks = new List<GerberBlock>();
-            bool HeaderActive = false;
-            GerberBlock CurrentBlock = null;
-            GerberBlock PreviousBlock = null;
             List<String> lines = new List<string>();
-            string currentline = "";
-            bool LastWasStar = false;
-
-            CurrentBlock = new GerberBlock();
-            CurrentBlock.Header = false;
-            Blocks.Add(CurrentBlock);
-            bool AddToPrevious = false;
-            foreach (var ll in inputlines)
+            while (sr.EndOfStream == false)
             {
-
-                List<String> CadenceSplit = new List<string>();
-                string T = ll.Trim();
-                if (T.StartsWith("%") && T.EndsWith("%") && T.Contains("*") && (T.StartsWith("%AM") == false))
+                String line = sr.ReadLine();
+                if (line.Length > 0)
                 {
-                    T = T.Substring(1, T.Length - 2);
-                    var s = T.Split('*');
-                    if (s.Count() > 1)
-                    {
-                        foreach (var sl in s)
-                        {
-                            if (sl.Length > 0)
-                            {
-                                CadenceSplit.Add("%" + sl + "*%");
-                            }
-
-                        }
-                        if (Gerber.ExtremelyVerbose)
-                        {
-                            if (CadenceSplit.Count > 1)
-                            {
-                                Console.WriteLine("Cadence format fixing:");
-                                Console.WriteLine("original: {0}", ll);
-                                Console.WriteLine("split:");
-                                foreach (var sss in CadenceSplit)
-                                {
-                                    Console.WriteLine("     {0}", sss);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        CadenceSplit.Add(ll);
-                    }
-                }
-                else
-                {
-                    CadenceSplit.Add(ll);
-
-                }
-
-                foreach (var l in CadenceSplit)
-                {
-
-                    foreach (var c in l)
-                    {
-                        AddToPrevious = false;
-                        GerberBlock Last = CurrentBlock;
-                        if (c == '%')
-                        {
-                            if (HeaderActive == false)
-                            {
-                                HeaderActive = true;
-
-                            }
-                            else
-                            {
-                                if (CurrentBlock.Lines.Count == 0)
-                                {
-                                    CurrentBlock.Lines.Add("");
-                                }
-                                CurrentBlock.Lines[CurrentBlock.Lines.Count - 1] += '%';
-                                AddToPrevious = true;
-                                HeaderActive = false;
-                            }
-                            PreviousBlock = CurrentBlock;
-                            CurrentBlock = null;
-                        }
-                        //     if (LastWasStar && c == '%')
-                        //    {
-                        //       Last.Lines[Last.Lines.Count -1] += '%';
-                        //      lines[lines.Count - 1] += '%';
-                        //  }
-                        //  else
-                        //  {
-
-                        if (AddToPrevious == false)
-                        {
-                            if (CurrentBlock == null)
-                            {
-                                CurrentBlock = new GerberBlock();
-                                CurrentBlock.Header = HeaderActive;
-                                Blocks.Add(CurrentBlock);
-
-                            }
-                            currentline += c;
-                            //  }
-                            if (HeaderActive && c == '*')
-                            {
-                                LastWasStar = true;
-                                CurrentBlock.Lines.Add(currentline);
-                                lines.Add(currentline);
-                                currentline = "";
-                            }
-                            else
-                            {
-                                if (c == '*')
-                                {
-                                    LastWasStar = true;
-                                    CurrentBlock.Lines.Add(currentline);
-                                    lines.Add(currentline);
-                                    currentline = "";
-
-                                }
-                                else
-                                {
-                                    LastWasStar = false;
-
-                                }
-                            }
-                        }
-
-                    }
-                    if (HeaderActive)
-                    {
-
-                    }
-                    else
-                    {
-                        if (currentline.Length > 0)
-                        {
-                            if (CurrentBlock == null)
-                            {
-                                CurrentBlock = new GerberBlock();
-                                CurrentBlock.Header = HeaderActive;
-                                Blocks.Add(CurrentBlock);
-
-                            }
-                            CurrentBlock.Lines.Add(currentline);
-                            lines.Add(currentline);
-                            currentline = "";
-                        }
-                    }
+                    lines.Add(line);
                 }
             }
-            if (currentline.Length > 0)
+
+            if (writesanitized)
             {
-                CurrentBlock.Lines.Add(currentline);
-                lines.Add(currentline);
-            }
+                State.SanitizedFile = gerberfile + ".sanitized.gerber";
+            };
 
-            List<String> reslines = new List<string>();
-            //  foreach ( var a in lines)
-            // {
-            //     if (a.Length > 0) reslines.Add(a);
-
-            // }
-
-            foreach (var b in Blocks)
-            {
-                foreach (var a in b.Lines)
-                {
-                    string B = a.Trim().Replace(Gerber.LineEnding + Gerber.LineEnding, Gerber.LineEnding);
-                    if (B.Trim().Length > 0)
-                    {
-                        if (b.Header)
-                        {
-                            //                        string FinalLine = a.Replace("%", "").Replace("*", "").Trim();
-
-                            reslines.Add(a.Trim());
-                        }
-                        else
-                        {
-                            reslines.Add(a.Trim());
-                        }
-                    }
-                }
-            }
-            DumpSanitizedFileToLog(SanitizedFile, Blocks, reslines);
-
-            return reslines;
+            var G = ParseGerber274x(lines, false, forcezerowidth, State); ;
+            G.Name = gerberfile;
+            return G;
         }
-
-        public static List<string> SanitizeInputLines_OLD(List<String> inputlines, string SanitizedFile = "")
-        {
-            List<GerberBlock> Blocks = new List<GerberBlock>();
-            bool HeaderActive = false;
-             GerberBlock CurrentBlock = null;
-
-            List<String> lines = new List<string>();
-
-            foreach (var l in inputlines)
-            {
-                string Line = l.Trim();
-                while (Line.Length > 0)
-                {
-                    if (Line == "%")
-                    {
-                        lines.Add(Line);
-                        if (HeaderActive)
-                        {
-                            HeaderActive = false;
-                            CurrentBlock = null;
-                        }
-                        else
-                        {
-                            HeaderActive = true;
-                        }
-                        Line = "";
-                    }
-                    else
-                        if (Line == "*")
-                    {
-                        Line = "";
-                        // skip empty lines
-                    }
-                    else
-                    {
-                        if (Line.First() == '%' && Line.Last() == '%' && Line.Length > 2)
-                        {
-                            GerberBlock GB = new GerberBlock();
-                            GB.Header = true;
-
-                            string SL = Line.Substring(1, Line.Length - 2);
-                            var SLSplit = SL.Split('*');
-                            List<string> slres = new List<string>();
-                            foreach (var part in SLSplit)
-                            {
-                                if (part.Trim().Length > 0)
-                                {
-                                    slres.Add(part.Trim() + "*");
-                                    GB.Lines.Add(part.Trim());
-                                }
-                            }
-                            if (slres.Count() > 0)
-                            {
-                                slres[0] = "%" + slres[0];
-                                for (int i = 1; i < slres.Count; i++)
-                                {
-                                    if (char.IsDigit(slres[i][0]) == false)
-                                    {
-                                        slres[i] = "%" + slres[i];
-                                        if (i < slres.Count - 1)
-                                        {
-                                            slres[i] = slres[i] + "%";
-
-                                        }
-                                    }
-                                }
-                                slres[slres.Count() - 1] += "%";
-                                lines.AddRange(slres);
-                            }
-                            Blocks.Add(GB);
-                            Line = "";
-
-                        }
-                        else
-                        {
-                            GerberBlock GB = new GerberBlock();
-                            GB.Header = false;
-                            int idx = Line.IndexOf('*');
-                            int idx2 = Line.IndexOf("*%");
-                            while (idx > -1)
-                            {
-                                int add = 1;
-                                if (idx == idx2) add = 2;
-                                if (add == 2 && Line.Length > 0 && Line.First() != '%') add = 1;
-                                string SubLine = Line.Substring(0, idx + add);
-                                lines.Add(SubLine.Trim());
-                                GB.Lines.Add(SubLine.Trim());
-                                Line = Line.Substring(idx + add).Trim();
-                                if (Line.Length > 0 && Line.First() == '%' && Line.Last() == '%')
-                                {
-                                    Blocks.Add(GB);
-                                    GB = new GerberBlock();
-                                    GB.Header = true;
-
-                                    string SL = Line;
-                                    if (Line.Length > 2) SL = Line.Substring(1, Line.Length - 2);
-                                    var SLSplit = SL.Split('*');
-                                    List<string> slres = new List<string>();
-                                    foreach (var part in SLSplit)
-                                    {
-                                        if (part.Trim().Length > 0)
-                                        {
-                                            slres.Add(part.Trim() + "*");
-                                            GB.Lines.Add(part.Trim());
-                                            lines.Add("%" + part.Trim() + "*%");
-
-                                        }
-                                    }
-                                    Line = "";
-
-                                    //    GB.Lines.Add(Line);
-                                    idx = -1;
-                                    idx2 = -2;
-                                }
-                                else
-                                {
-                                    idx = Line.IndexOf('*');
-                                    idx2 = Line.IndexOf("*%");
-
-                                }
-
-                            }
-
-                            if (Line.Length > 0)
-                            {
-                                lines.Add(Line);
-                                GB.Lines.Add(Line);
-                                Line = "";
-                            }
-                            Blocks.Add(GB);
-
-                        }
-                    }
-                }
-            }
-            for (int i = 0; i < lines.Count(); i++)
-            {
-                lines[i] = lines[i].Replace(" ", "");
-            }
-
-            DumpSanitizedFileToLog(SanitizedFile, Blocks, lines);
-            return lines;
-        }
-
-        private static void DumpSanitizedFileToLog(string SanitizedFile, List<GerberBlock> Blocks, List<String> lines)
-        {
-            if (SanitizedFile.Length > 0)
-            {
-                Gerber.WriteAllLines(SanitizedFile, lines);
-                List<string> l2 = new List<string>();
-                foreach (var b in Blocks)
-                {
-
-                    foreach (var l in b.Lines)
-                    {
-                        if (b.Header == true)
-                        {
-                            l2.Add("HEAD " + l);
-                        }
-                        else
-                        {
-                            l2.Add("BODY " + l);
-                        }
-                    }
-
-                }
-                Gerber.WriteAllLines(SanitizedFile + ".txt", l2);
-            }
-        }
-
-
-        static string laststatus = "";
-        static int laststatuscount = 0;
-        static int laststatusidx = 0;
 
         private static void Progress(string name, int idx, int count)
         {
@@ -1388,329 +1695,121 @@ namespace GerberLibrary
             State.RepeatStartShapeIdx = State.NewShapes.Count();
         }
 
-        private static void DoRepeating(GerberParserState State)
+        public class Bounds
         {
-            int LastThin = State.NewThinShapes.Count();
-            int LastShape = State.NewShapes.Count();
-            for (int x = 0; x < State.RepeatXCount; x++)
+            public PointD BottomRight = new PointD(0, 0);
+
+            public PointD TopLeft = new PointD(0, 0);
+
+            public bool Valid = false;
+
+            public void AddBox(Bounds bounds)
             {
-                for (int y = 0; y < State.RepeatYCount; y++)
-                {
-                    if (!(x == 0 && y == 0))
-                    {
-                        double xoff = State.RepeatXOff * x;
-                        double yoff = State.RepeatYOff * y;
+                if (!bounds.Valid) return;
 
-                        for (int i = State.RepeatStartThinShapeIdx; i < LastThin; i++)
-                        {
+                FitPoint(bounds.TopLeft);
+                FitPoint(bounds.BottomRight);
 
-                            var C = State.NewThinShapes[i];
-                            PolyLine P = new PolyLine();
-                            foreach (var a in C.Vertices)
-                            {
-                                P.Vertices.Add(new PointD(a.X + xoff, a.Y + yoff));
-                            }
-                            State.NewThinShapes.Add(P);
-                        }
-                        for (int i = State.RepeatStartShapeIdx; i < LastShape; i++)
-                        {
-                            var C = State.NewShapes[i];
-                            PolyLine P = new PolyLine();
-                            foreach (var a in C.Vertices)
-                            {
-                                P.Vertices.Add(new PointD(a.X + xoff, a.Y + yoff));
-
-                            }
-                            State.NewShapes.Add(P);
-
-                        }
-
-                    }
-                }
-            }
-            State.Repeater = false;
-        }
-
-        private static bool BasicLineCommands(string Line, GerberParserState State)
-        {
-            string FinalLine = Line.Replace("%", "").Replace("*", "").Trim();
-            switch (FinalLine)
-            {
-                case "G90": State.CoordinateFormat.Relativemode = false; break;
-                case "G91": State.CoordinateFormat.Relativemode = true; break;
-                case "G71": State.CoordinateFormat.SetMetricMode(); break;
-                case "G70": State.CoordinateFormat.SetImperialMode(); break;
-                case "G74": State.CoordinateFormat.SetSingleQuadrantMode(); break;
-                case "G75":
-                    State.CoordinateFormat.SetMultiQuadrantMode();
-                    break;
-                case "G36":
-                    State.PolygonMode = true;
-                    State.PolygonPoints.Clear();
-                    break;
-                case "G37":
-                    {
-                        PolyLine PL = new PolyLine();
-                        foreach (var a in State.PolygonPoints)
-                        {
-                            PL.Add(a.X, a.Y);
-                        }
-                        PL.Close();
-                        State.NewShapes.Add(PL);
-                        State.PolygonPoints.Clear();
-
-                        State.PolygonMode = false;
-                    }
-                    break;
-                case "LPC": State.ClearanceMode = true; break;
-                case "LPD": State.ClearanceMode = false; break;
-                case "MOIN": State.CoordinateFormat.SetImperialMode(); break;
-                case "MOMM": State.CoordinateFormat.SetMetricMode(); break;
-                case "G01":
-                    State.MoveInterpolation = InterpolationMode.Linear;
-                    break;
-                case "G02":
-                    State.MoveInterpolation = InterpolationMode.ClockWise;
-                    break;
-                case "G03":
-                    State.MoveInterpolation = InterpolationMode.CounterClockwise;
-                    break;
-
-                default:
-                    return false;
             }
 
-            return true;
-        }
-
-
-        private static void AddExtrudedCurveSegment(ref double LastX, ref double LastY, List<PolyLine> NewShapes, GerberApertureType CurrentAperture, bool ClearanceMode, double X, double Y)
-        {
-            PolyLine PL = new PolyLine();
-            PL.ClearanceMode = ClearanceMode;
-
-            // TODO: use CreatePolyLineSet and extrude that!
-            var PolySet = CurrentAperture.CreatePolyLineSet(0, 0);
-            //       var Shapes = CurrentAperture.CreatePolyLineSet(0, 0);
-
-            foreach (var currpoly in PolySet)
+            public void AddPolyLines(List<PolyLine> Shapes)
             {
-                Polygons Combined = new Polygons();
-
-                PolyLine A = new PolyLine();
-                PolyLine B = new PolyLine();
-
-                PointD start = new PointD(LastX, LastY);
-                PointD end = new PointD(X, Y);
-                PointD dir = end - start;
-
-                dir.Normalize();
-                //  dir.Rotate(180);
-                dir = dir.Rotate(90);
-                PointD LeftMost = new PointD();
-                double maxdot = -10000000;
-                double mindot = 10000000;
-                PointD RightMost = new PointD();
+                foreach (var a in Shapes)
                 {
-                    for (int i = 0; i < currpoly.Count(); i++)
+                    foreach (var r in a.Vertices)
                     {
-                        PointD V = currpoly.Vertices[i];
-                        //    PointD V2 = new PointD(V.X, V.Y);
-                        // V2.Normalize();
-                        double dot = V.Dot(dir);
-                        //      Console.WriteLine("dot: {0}  {1}, {2}", dot.ToString("n2"), V, dir);
-                        if (dot > maxdot)
-                        {
-                            RightMost = V; maxdot = dot;
-                        }
-                        if (dot < mindot)
-                        {
-                            LeftMost = V; mindot = dot;
-                        }
-
-                        A.Add(V.X + LastX, V.Y + LastY);
-                        B.Add(V.X + X, V.Y + Y);
+                        FitPoint(new PointD(r.X, r.Y));
                     }
 
-                    A.Close();
-                    B.Close();
-
-                    PolyLine C = new PolyLine();
-                    C.Add(RightMost.X + LastX, RightMost.Y + LastY);
-                    C.Add(LeftMost.X + LastX, LeftMost.Y + LastY);
-                    C.Add(LeftMost.X + X, LeftMost.Y + Y);
-                    C.Add(RightMost.X + X, RightMost.Y + Y);
-                    C.Vertices.Reverse();
-                    C.Close();
-
-                    Clipper cp = new Clipper();
-                    cp.AddPolygons(Combined, PolyType.ptSubject);
-                    cp.AddPolygon(A.toPolygon(), PolyType.ptClip);
-                    cp.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
-
-                    Clipper cp2 = new Clipper();
-                    cp2.AddPolygons(Combined, PolyType.ptSubject);
-                    cp2.AddPolygon(B.toPolygon(), PolyType.ptClip);
-                    cp2.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
-
-                    Clipper cp3 = new Clipper();
-                    cp3.AddPolygons(Combined, PolyType.ptSubject);
-                    cp3.AddPolygon(C.toPolygon(), PolyType.ptClip);
-                    cp3.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
-
-                    foreach (var a in Combined)
-                    {
-                        PolyLine PP = new PolyLine();
-                        PP.fromPolygon(a);
-                        PP.Close();
-                        NewShapes.Add(PP);
-                    }
                 }
             }
 
-            //    CurrentAperture.FindExtendIndices(new PointD(LastX, LastY), new PointD(X, Y), out one, out two);
-
-            //    for (int i = two; i != one; i = (i + 1) % CurrentAperture.Shape.Count())
-            //    {
-            //        PL.Add(LastX + CurrentAperture.Shape.Vertices[i].X, LastY + CurrentAperture.Shape.Vertices[i].Y);
-            //    }
-            //    for (int i = one; i != two; i = (i + 1) % CurrentAperture.Shape.Count())
-            //    {
-            //        PL.Add(X + CurrentAperture.Shape.Vertices[i].X, Y + CurrentAperture.Shape.Vertices[i].Y);
-            //    }
-
-            //    PL.Close();
-
-
-            ////    NewShapes.Add(PL);
-
-            LastX = X;
-            LastY = Y;
-        }
-
-
-
-
-        public static ParsedGerber LoadGerberFile(string gerberfile, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
-        {
-            if (State == null) State = new GerberParserState();
-
-            Gerber.DetermineBoardSideAndLayer(gerberfile, out State.Side, out State.Layer);
-
-            using (StreamReader sr = new StreamReader(gerberfile))
+            public void FitPoint(double x, double y)
             {
-                return ProcessStream(gerberfile, forcezerowidth, writesanitized, State, sr);
-            }
-        }
-
-        private static ParsedGerber ProcessStream(string gerberfile, bool forcezerowidth, bool writesanitized, GerberParserState State, StreamReader sr)
-        {
-            List<String> lines = new List<string>();
-            while (sr.EndOfStream == false)
-            {
-                String line = sr.ReadLine();
-                if (line.Length > 0)
-                {
-                    lines.Add(line);
-                }
+                FitPoint(new PointD(x, y));
             }
 
-            if (writesanitized)
+            public void FitPoint(PointD P)
             {
-                State.SanitizedFile = gerberfile + ".sanitized.gerber";
-            };
-
-            var G = ParseGerber274x(lines, false, forcezerowidth, State); ;
-            G.Name = gerberfile;
-            return G;
-        }
-
-        public static ParsedGerber LoadExcellonDrillFile(string drillfile, bool Precombine = false, double drillscaler = 1.0)
-        {
-            ParsedGerber Gerb = new ParsedGerber();
-            Gerb.Name = drillfile;
-            Gerb.Shapes.Clear();
-            Gerb.DisplayShapes.Clear();
-            GerberParserState State = new GerberParserState();
-            State.Side = BoardSide.Both;
-            State.PreCombinePolygons = Precombine;
-            State.Layer = BoardLayer.Drill;
-
-            ExcellonFile EF = new ExcellonFile();
-            EF.Load(drillfile, drillscaler);
-
-            foreach (var T in EF.Tools)
-            {
-                var Tool = T.Value;
-
-                int sides = (int)(Gerber.ArcQualityScaleFactor * Math.Max(2.0, Tool.Radius));
-
-
-                foreach (var Hole in Tool.Drills)
+                if (!Valid)
                 {
-                    PolyLine DispPL = new PolyLine();
+                    TopLeft.X = P.X;
+                    TopLeft.Y = P.Y;
+                    BottomRight.X = P.X;
+                    BottomRight.Y = P.Y;
+                    Valid = true;
 
-                    for (int i = 0; i < sides; i++)
-                    {
-                        double PP = i * 6.283f / (double)sides;
-                        DispPL.Add(Hole.X + (double)Math.Sin(PP) * (double)Tool.Radius, Hole.Y + (double)Math.Cos(PP) * (double)Tool.Radius);
-                    }
-                    DispPL.Close();
-                    DispPL.MyColor = Color.DarkGreen;
-                    Gerb.DisplayShapes.Add(DispPL);
                 }
-
-                foreach (var Slot in Tool.Slots)
-                {
-                    PolyLine DispPL = new PolyLine();
-
-                    double dy = Slot.End.Y - Slot.Start.Y;
-                    double dx = Slot.End.X - Slot.Start.X;
-
-                    double offangl = -Math.Atan2(dy, dx) + 3.1415;
-
-                    for (int i = 0; i < sides / 2; i++)
-                    {
-                        double PP = i * 6.283f / (double)sides;
-                        PP += offangl;
-                        DispPL.Add(Slot.Start.X + (double)Math.Sin(PP) * (double)Tool.Radius, Slot.Start.Y + (double)Math.Cos(PP) * (double)Tool.Radius);
-                    }
-
-                    for (int i = sides / 2; i < sides; i++)
-                    {
-                        double PP = i * 6.283f / (double)sides;
-                        PP += offangl;
-                        DispPL.Add(Slot.End.X + (double)Math.Sin(PP) * (double)Tool.Radius, Slot.End.Y + (double)Math.Cos(PP) * (double)Tool.Radius);
-                    }
-
-                    DispPL.Close();
-                    DispPL.MyColor = Color.DarkGreen;
-                    Gerb.DisplayShapes.Add(DispPL);
-                }
+                if (P.X < TopLeft.X) TopLeft.X = P.X;
+                if (P.Y < TopLeft.Y) TopLeft.Y = P.Y;
+                if (P.X > BottomRight.X) BottomRight.X = P.X;
+                if (P.Y > BottomRight.Y) BottomRight.Y = P.Y;
             }
-            Gerb.Side = State.Side;
-            Gerb.Layer = State.Layer;
-            Gerb.State = State;
 
-            return Gerb;
+            public void GenerateTransform(Graphics g, int width, int height, int margin)
+            {
+                float scale = Math.Min((width - margin * 2) / (float)Width(), (height - margin * 2) / (float)Height());
+                g.TranslateTransform(width / 2, height / 2);
+                g.ScaleTransform(scale, scale);
+                var M = Middle();
+                g.TranslateTransform(-(float)M.X, -(float)M.Y);
+            }
 
+            public double Height()
+            {
+                if (!Valid) return 0;
+                return BottomRight.Y - TopLeft.Y;
+            }
+
+            public bool Intersects(Bounds B)
+            {
+                var M1 = Middle();
+                var M2 = B.Middle();
+
+                return (Math.Abs(M1.X - M2.X) * 2 < (Width() + B.Width())) && (Math.Abs(M1.Y - M2.Y) * 2 < (Height() + B.Height()));
+            }
+
+            public PointD Middle()
+            {
+                return new PointD((TopLeft.X + BottomRight.X) * 0.5, (TopLeft.Y + BottomRight.Y) * 0.5);
+            }
+
+            public void Reset()
+            {
+                TopLeft.X = 10000;
+                TopLeft.Y = 10000;
+                BottomRight.X = -10000;
+                BottomRight.Y = -10000;
+
+                Valid = false;
+            }
+
+            public override string ToString()
+            {
+                return String.Format("({0:N2}, {1:N2}) - ({2:N2}, {3:N2}) -> {4:N2} x {5:N2} mm", TopLeft.X, TopLeft.Y, BottomRight.X, BottomRight.Y, Width(), Height() );
+            }
+            public double Width()
+            {
+                if (!Valid) return 0;
+                return BottomRight.X - TopLeft.X;
+            }
         }
+        //      public GerberParserState State = new GerberParserState();
 
-
+        public class GerberBlock
+        {
+            public bool Header;
+            public List<string> Lines = new List<string>();
+        }
         public class SegmentWithNormalAndDistance
         {
             public PointD A = new PointD();
+            public double Angle;
             public PointD B = new PointD();
+            public double DistanceToCenter;
+            public double Length;
             public PointD M = new PointD(); public PointD N = new PointD();
-            public void CalculateNormal()
-            {
-
-                N = (B - A).Rotate(90);
-                M = (A + B) * 0.5;
-                N.Normalize();
-                Length = PointD.Distance(A, B);
-                Angle = Math.Atan2(N.Y, N.X) * 360.0 / (Math.PI * 2);
-            }
+            public double ProjectedDistanceToCenter;
 
             public void CalculateDistance(PointD center, double angle)
             {
@@ -1724,139 +1823,21 @@ namespace GerberLibrary
 
                 DistanceToCenter = PointD.LineToPointDistance2D(A, B, center, true);
             }
-            public double Angle;
-            public double DistanceToCenter;
-            public double Length;
-            public double ProjectedDistanceToCenter;
 
+            public void CalculateNormal()
+            {
+
+                N = (B - A).Rotate(90);
+                M = (A + B) * 0.5;
+                N.Normalize();
+                Length = PointD.Distance(A, B);
+                Angle = Math.Atan2(N.Y, N.X) * 360.0 / (Math.PI * 2);
+            }
             public override string ToString()
             {
                 return string.Format("Ang {0} Len {1} Dst {2} Cen {3}", Angle.ToString("N3"), Length.ToString("N3"), DistanceToCenter.ToString("N3"), M);
                 //return base.ToString();
             }
-        }
-
-        /// <summary>
-        /// Find optimal locations for breaktabs -> returns list of position + normal tuples
-        /// </summary>
-        /// <returns></returns>
-        public static List<Tuple<PointD, PointD>> FindOptimalBreaktTabLocations(ParsedGerber Gerb)
-        {
-            List<Tuple<PointD, PointD>> Res = new List<Tuple<PointD, PointD>>();
-            List<SegmentWithNormalAndDistance> Segs = new List<SegmentWithNormalAndDistance>();
-
-            if (Gerb.OutlineShapes.Count == 0 || Gerb.OutlineShapes[0].Vertices.Count == 0) return Res;
-
-            var First = Gerb.OutlineShapes[0].Vertices[0];
-            PointD Max = new PointD(First.X, First.Y);
-            PointD Min = new PointD(First.X, First.Y);
-
-            foreach (var a in Gerb.OutlineShapes)
-            {
-
-                if (Clipper.Orientation(a.toPolygon()) == true)
-                {
-                    PointD Prev = a.Vertices[a.Vertices.Count - 1];
-                    // generate normals and find extends
-                    for (int V = 0; V < a.Vertices.Count; V++)
-                    {
-                        SegmentWithNormalAndDistance S = new SegmentWithNormalAndDistance();
-                        S.A = Prev;
-                        S.B = a.Vertices[V];
-
-                        if (S.A != S.B)
-                        {
-                            S.CalculateNormal();
-
-                            if (a.Vertices[V].X < Min.X) Min.X = a.Vertices[V].X;
-                            if (a.Vertices[V].Y < Min.Y) Min.Y = a.Vertices[V].Y;
-                            if (a.Vertices[V].X > Max.X) Max.X = a.Vertices[V].X;
-                            if (a.Vertices[V].Y > Max.Y) Max.Y = a.Vertices[V].Y;
-
-                            Segs.Add(S);
-                        }
-                        Prev = a.Vertices[V];
-                    }
-                }
-            }
-            PointD Center = (Min + Max) * 0.5;
-
-
-            List<List<SegmentWithNormalAndDistance>> Buckets = new List<List<SegmentWithNormalAndDistance>>(); ;
-            Buckets.Add(new List<SegmentWithNormalAndDistance>());
-            Buckets.Add(new List<SegmentWithNormalAndDistance>());
-            Buckets.Add(new List<SegmentWithNormalAndDistance>());
-            Buckets.Add(new List<SegmentWithNormalAndDistance>());
-            Buckets.Add(new List<SegmentWithNormalAndDistance>());
-            Buckets.Add(new List<SegmentWithNormalAndDistance>());
-            Buckets.Add(new List<SegmentWithNormalAndDistance>());
-            Buckets.Add(new List<SegmentWithNormalAndDistance>());
-
-            foreach (var a in Segs)
-            {
-                int Bucket = (int)Math.Floor((a.Angle * 8.0 / 360.0) + 0.5);
-                while (Bucket < 0) Bucket += 8;
-                while (Bucket >= 8) Bucket -= 8;
-                double bucketangle = Bucket * (360 / 8.0);
-
-                //                if (Bucket == 0)
-                {
-                    a.CalculateDistance(Center, bucketangle);
-                    //       Console.WriteLine("{0}: {1} {2} {3}", a.Angle.ToString("N1"), a.Length.ToString("N1"), a.DistanceToCenter.ToString("N1"), a.ProjectedDistanceToCenter.ToString("N1"));
-                    Buckets[Bucket].Add(a);
-                }
-            }
-
-            List<SegmentWithNormalAndDistance> BucketItems = new List<SegmentWithNormalAndDistance>();
-
-            for (int i = 0; i < 8; i++)
-            {
-                var L = Buckets[i];
-                double bucketangle = i * 360.0 / 8.0;
-                var sorted = from ii in L orderby (ii.ProjectedDistanceToCenter / ii.Length) descending select ii;
-                if (sorted.Count() > 0)
-                {
-                    var f = sorted.First();
-                    BucketItems.Add(f);
-                    var t = new Tuple<PointD, PointD>(f.M, f.N);
-                    //       Console.WriteLine("bucket {0}: {1} angle: {2}", i, f, bucketangle);
-                }
-                else
-                {
-                    BucketItems.Add(null);
-                }
-            }
-
-            double evenscore = 0;
-            double oddscore = 0;
-            for (int i = 0; i < 8; i++)
-            {
-                double score = 0;
-                if (BucketItems[i] != null)
-                {
-                    score += Math.Abs(BucketItems[i].Length * BucketItems[i].ProjectedDistanceToCenter);
-                }
-                Console.WriteLine("{0}: {1}", i, score);
-                if (i % 2 == 0) evenscore += score; else oddscore += score;
-            }
-
-            int off = 0;
-            if (oddscore > evenscore) off = 1;
-            for (int i = off; i < 8; i += 2)
-            {
-                var f = BucketItems[i];
-
-
-                int Items = (int)Math.Ceiling(f.Length / 20);
-                PointD delta = (f.B - f.A) * (1.0 / Items);
-                for (int j = 0; j < Items; j++)
-                {
-                    var t = new Tuple<PointD, PointD>(f.A + delta * 0.5 + delta * (double)j, f.N);
-                    Res.Add(t);
-                }
-
-            }
-            return Res;
         }
     };
 

@@ -21,123 +21,32 @@ namespace GerberLibrary
         #region GERBERPROCESSINGDEFAULTS
         public static double ArcQualityScaleFactor = 15;
 
-        public static bool ShowProgress = false;
-        public static bool ExtremelyVerbose = false;
-
-        public static bool SaveOutlineImages = false;
+        public static Color BoardRenderBaseMaterialColor = ParseColor("#808080");
+        public static Color BoardRenderColor = ParseColor("green");
+        public static Color BoardRenderCopperColor = Color.FromArgb(219, 125, 104);
+        public static Color BoardRenderPadColor = ParseColor("gold");
+        public static Color BoardRenderSilkColor = ParseColor("white");
         public static bool DirectlyShowGeneratedBoardImages = true;
         public static bool DumpSanitizedOutput = false;
-        public static bool WriteSanitized = false;
-        public static bool WaitForKey = false;
-        public static bool SaveDebugImageOutput = false;
-
         public static string EOF = "M02*";
-        public static string MM = "%MOMM*%";
+        public static bool ExtremelyVerbose = false;
+        public static bool GerberRenderBumpMapOutput = true;
         public static string INCH = "%MOIN*%";
-
-
-        public static string StartRegion = "G36*";
-        public static string StopRegion = "G37*";
         public static string LinearInterpolation = "G01*";
         public static string LineEnding = "\n";
-#if DEBUG
-        public static bool SaveIntermediateImages = true;
-#else
+        public static string MM = "%MOMM*%";
+        public static bool SaveDebugImageOutput = false;
         public static bool SaveIntermediateImages = false;
-#endif
-        public static Color BoardRenderColor = ParseColor("green");
-        public static Color BoardRenderSilkColor = ParseColor("white");
-        public static Color BoardRenderPadColor = ParseColor("gold");
-        public static Color BoardRenderCopperColor = Color.FromArgb(219, 125, 104);
-        public static Color BoardRenderBaseMaterialColor  = ParseColor("#808080");
-        public static bool GerberRenderBumpMapOutput = true;
-
+        public static bool SaveOutlineImages = false;
+        public static bool ShowProgress = false;
+        public static string StartRegion = "G36*";
+        public static string StopRegion = "G37*";
+        public static bool WaitForKey = false;
+        public static bool WriteSanitized = false;
         #endregion
 
 
-        public static Color ParseColor(string color)
-        {
-            if (color == null)
-            {
-                Console.WriteLine("Error: Null color! Defaulting to lime!");
-                return Color.Lime;
-            }
-
-            switch (color.ToLower())
-            {
-                case "blue": return Color.FromArgb(0, 40, 74);
-                case "yellow": return Color.FromArgb(234, 206, 39);
-                case "green": return Color.FromArgb(68, 105, 80);
-                case "black": return Color.FromArgb(5, 5, 5);
-                case "white": return Color.FromArgb(250, 250, 250);
-                case "red": return Color.FromArgb(192, 43, 43);
-                case "silver": return Color.FromArgb(160, 160, 160);
-                case "gold": return Color.FromArgb(239, 205, 85);
-            }
-
-            try
-            {
-                return System.Drawing.ColorTranslator.FromHtml(color);
-            }
-            catch (Exception)
-            {
-                // unknown colors end up here... no need to worry, just pass it on to the default color handler which returns 0,0,0 as error-color if it too cant find anything.
-            }
-
-            return Color.FromName(color);
-        }
-
-        
-        class QuadR
-        {
-            public double CX;
-            public double CY;
-            public double S;
-            public double E;
-            public double Diff;
-
-            public double D1 = 0;
-            public double D2 = 0;
-            public double DRat = 0;
-            internal void Calc(double LastX, double LastY, double X, double Y)
-            {
-                double CX1 = LastX - CX;
-                double CX2 = X - CX;
-                double CY1 = LastY - CY;
-                double CY2 = Y - CY;
-
-                D1 = Math.Sqrt(CX1 * CX1 + CY1 * CY1);
-                D2 = Math.Sqrt(CX2 * CX2 + CY2 * CY2);
-                if (D2 != 0) DRat = D1 / D2;
-
-                S = Math.Atan2(LastY - CY, LastX - CX);
-                E = Math.Atan2(Y - CY, X - CX);
-
-            }
-
-            internal void FixCounterClockwise()
-            {
-                while (S > E) S -= Math.PI * 2;
-                while (S < 0)
-                {
-                    S += Math.PI * 2.0;
-                    E += Math.PI * 2.0;
-                }
-                Diff = E - S;
-
-                // while (Diff < 0) Diff += Math.PI * 2.0;
-//                Console.WriteLine("counterclock: {0:N2}", Gerber.RadToDeg(Diff));
-
-            }
-
-            internal void FixClockwise()
-            {
-                //       while (S < E) S += Math.PI * 2;
-                Diff = S - E;
-                while (Diff > Math.PI) Diff -= Math.PI * 2;
-  //              Console.WriteLine("clock: {0:N2}", Gerber.RadToDeg(Diff));
-            }
-        }
+        private static readonly Regex rxScientific = new Regex(@"^(?<sign>-?)(?<head>\d+)(\.(?<tail>\d*?)0*)?E(?<exponent>[+\-]\d+)$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
 
         public static List<PointD> CreateCurvePoints(double LastX, double LastY, double X, double Y, double I, double J, InterpolationMode mode, GerberQuadrantMode qmode)
         {
@@ -287,226 +196,6 @@ namespace GerberLibrary
             return R;
         }
 
-        public static double RadToDeg(double inp)
-        {
-            return inp * 360.0 / (Math.PI * 2.0);
-        }
-
-        public static void WriteAllLines(string filename, List<string> lines)
-        {
-
-            File.WriteAllText(filename, string.Join(Gerber.LineEnding, lines));
-
-
-        }
-
-        private static double LimitPos2PI(double dA)
-        {
-            while (dA < -Math.PI / 2) dA += Math.PI * 2;
-            while (dA >= Math.PI / 2) dA -= Math.PI * 2;
-            return dA;
-        }
-
-        private static readonly Regex rxScientific = new Regex(@"^(?<sign>-?)(?<head>\d+)(\.(?<tail>\d*?)0*)?E(?<exponent>[+\-]\d+)$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
-        
-        public static string ToFloatingPointString(double value)
-        {
-            return ToFloatingPointString(value, NumberFormatInfo.CurrentInfo);
-        }
-
-        public static string ToFloatingPointString(double value, NumberFormatInfo formatInfo)
-        {
-            string result = value.ToString("r", NumberFormatInfo.InvariantInfo);
-            Match match = rxScientific.Match(result);
-            if (match.Success)
-            {
-                Debug.WriteLine("Found scientific format: {0} => [{1}] [{2}] [{3}] [{4}]", result, match.Groups["sign"], match.Groups["head"], match.Groups["tail"], match.Groups["exponent"]);
-                int exponent = int.Parse(match.Groups["exponent"].Value, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
-                StringBuilder builder = new StringBuilder(result.Length + Math.Abs(exponent));
-                builder.Append(match.Groups["sign"].Value);
-                if (exponent >= 0)
-                {
-                    builder.Append(match.Groups["head"].Value);
-                    string tail = match.Groups["tail"].Value;
-                    if (exponent < tail.Length)
-                    {
-                        builder.Append(tail, 0, exponent);
-                        builder.Append(formatInfo.NumberDecimalSeparator);
-                        builder.Append(tail, exponent, tail.Length - exponent);
-                    }
-                    else
-                    {
-                        builder.Append(tail);
-                        builder.Append('0', exponent - tail.Length);
-                    }
-                }
-                else
-                {
-                    builder.Append('0');
-                    builder.Append(formatInfo.NumberDecimalSeparator);
-                    builder.Append('0', (-exponent) - 1);
-                    builder.Append(match.Groups["head"].Value);
-                    builder.Append(match.Groups["tail"].Value);
-                }
-                result = builder.ToString();
-            }
-            return result;
-        }
-
-
-#region GERBERCOMMANDSTRINGS
-        public static string MoveTo(PointD t, GerberNumberFormat GNF)
-        {
-            return String.Format("X{0}Y{1}D02*", GNF.Format(GNF._ScaleMMToFile(t.X)), GNF.Format(GNF._ScaleMMToFile(t.Y)));
-        }
-
-        public static string LineTo(PointD t, GerberNumberFormat GNF)
-        {
-            return String.Format("X{0}Y{1}D01*", GNF.Format(GNF._ScaleMMToFile(t.X)), GNF.Format(GNF._ScaleMMToFile(t.Y)));
-        }
-
-        public static string WriteMacroStart(string name)
-        {
-            return "%AM" + name + "*" + Gerber.LineEnding;
-        }
-
-        public static string WriteMacroEnd()
-        {
-            return "" + Gerber.LineEnding + "%" + Gerber.LineEnding;
-
-        }
-
-        public static string WriteMacroPartVertices(List<PointD> Vertices, GerberNumberFormat format)
-        {
-            string res = "";
-            res += String.Format("4,1,{0}," + Gerber.LineEnding, (Vertices.Count - 2));
-            for (int i = 0; i < Vertices.Count - 1; i++)
-            {
-                res += String.Format("{0},{1}," + Gerber.LineEnding, Gerber.ToFloatingPointString(format._ScaleMMToFile(Vertices[i].X)).Replace(',', '.'), Gerber.ToFloatingPointString(format._ScaleMMToFile(Vertices[i].Y)).Replace(',', '.'));
-            }
-            res += "0*";
-            return res;
-        }
-
-        public static string Flash(PointD t, GerberNumberFormat GNF)
-        {
-            return String.Format("X{0}Y{1}D03*", GNF.Format(GNF._ScaleMMToFile(t.X)), GNF.Format(GNF._ScaleMMToFile(t.Y)));
-        }
-
-        public static string BuildOutlineApertureMacro(string name, List<PointD> Vertices, GerberNumberFormat format)
-        {
-            string res = "%AM" + name + "*" + Gerber.LineEnding;
-            res += String.Format("4,1,{0}," + Gerber.LineEnding, (Vertices.Count - 2));
-            for (int i = 0; i < Vertices.Count - 1; i++)
-            {
-                res += String.Format("{0},{1}," + Gerber.LineEnding, Gerber.ToFloatingPointString(format._ScaleMMToFile(Vertices[i].X)).Replace(',', '.'), Gerber.ToFloatingPointString(format._ScaleMMToFile(Vertices[i].Y)).Replace(',', '.'));
-            }
-
-            res += "0*" + Gerber.LineEnding + "%" + Gerber.LineEnding;
-            return res;
-        }
-
-#endregion
-
-        internal static bool TryParseDouble(string inp, out double N)
-        {
-            inp = inp.Replace("*", "");
-            return double.TryParse(inp, NumberStyles.Any, CultureInfo.InvariantCulture, out N);
-        }
-
-        internal static double ParseDouble(string inp)
-        {
-            return double.Parse(inp, NumberStyles.Any, CultureInfo.InvariantCulture);
-        }
-
-        public static BoardFileType FindFileType(string filename)
-        {
-            //filename = filename.ToLower();
-            List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp" };
-            string[] filesplit = filename.Split('.');
-            string ext = filesplit[filesplit.Count() - 1].ToLower();
-            foreach (var s in unsupported)
-            {
-                if (ext == s)
-                {
-
-                    return BoardFileType.Unsupported;
-                }
-            }
-            try
-            {
-                // var F = File.OpenText(a);
-                var F = File.ReadAllLines(filename);
-                for (int i = 0; i < F.Count(); i++)
-                {
-                    string L = F[i];
-                    if (L.Contains("%FS")) return BoardFileType.Gerber;
-                    if (L.Contains("M48")) return BoardFileType.Drill;
-                };
-
-
-            }
-            catch (Exception E)
-            {
-                if (Gerber.ExtremelyVerbose)
-                {
-                    Console.WriteLine("Exception determining filetype: {0}", E.Message);
-                }
-                return BoardFileType.Unsupported;
-            }
-
-            return BoardFileType.Unsupported;
-
-
-        }
-
-
-        public static BoardFileType FindFileTypeFromStream(StreamReader l, string filename)
-        {
-            filename = filename.ToLower();
-            List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp" };
-            string[] filesplit = filename.Split('.');
-            string ext = filesplit[filesplit.Count() - 1].ToLower();
-            foreach (var s in unsupported)
-            {
-                if (ext == s)
-                {
-
-                    return BoardFileType.Unsupported;
-                }
-            }
-            try
-            {
-                // var F = File.OpenText(a);
-                List<string> lines = new List<string>();
-                while (!l.EndOfStream)
-                {
-                    lines.Add(l.ReadLine());
-                }
-                //var F = File.ReadAllLines(filename);
-
-
-                for (int i = 0; i < lines.Count(); i++)
-                {
-                    string L= lines[i];
-                    if (L.Contains("%FS")) return BoardFileType.Gerber;
-                    if (L.Contains("M48")) return BoardFileType.Drill;
-                };
-
-
-            }
-            catch (Exception)
-            {
-                return BoardFileType.Unsupported;
-            }
-
-            return BoardFileType.Unsupported;
-
-        }
-
-
-        class boardset { public string name; public BoardSide side; public BoardLayer layer; };
-
         public static void DetermineBoardSideAndLayer(string gerberfile, out BoardSide Side, out BoardLayer Layer)
         {
             Side = BoardSide.Unknown;
@@ -520,6 +209,10 @@ namespace GerberLibrary
                     switch (Path.GetFileNameWithoutExtension(gerberfile).ToLower())
                     {
                         case "boardoutline":
+                            Side = BoardSide.Both;
+                            Layer = BoardLayer.Outline;
+                            break;
+                        case "outline":
                             Side = BoardSide.Both;
                             Layer = BoardLayer.Outline;
                             break;
@@ -572,7 +265,7 @@ namespace GerberLibrary
                         default:
                             if (gerberfile.ToLower().Contains("-edge_cuts"))
                             {
-                                Side= BoardSide.Both;
+                                Side = BoardSide.Both;
                                 Layer = BoardLayer.Outline;
                             }
                             break;
@@ -666,7 +359,129 @@ namespace GerberLibrary
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Outline;
                     break;
+
+                case "top":
+                    Side = BoardSide.Top;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "bot":
+                    Side = BoardSide.Bottom;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "smb":
+                    Side = BoardSide.Bottom;
+                    Layer = BoardLayer.SolderMask;
+                    break;
+                case "smt":
+                    Side = BoardSide.Top;
+                    Layer = BoardLayer.SolderMask;
+                    break;
+                case "sst":
+                    Side = BoardSide.Top;
+                    Layer = BoardLayer.Silk;
+                    break;
+                case "ssb":
+                    Side = BoardSide.Bottom;
+                    Layer = BoardLayer.Silk;
+                    break;
+                case "spt":
+                    Side = BoardSide.Top;
+                    Layer = BoardLayer.Paste;
+                    break;
+                case "spb":
+                    Side = BoardSide.Bottom;
+                    Layer = BoardLayer.Paste;
+                    break;
+                case "drl":
+                    Side = BoardSide.Both;
+                    Layer = BoardLayer.Drill;
+                    break;
+
             }
+        }
+
+        public static BoardFileType FindFileType(string filename)
+        {
+            //filename = filename.ToLower();
+            List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp" };
+            string[] filesplit = filename.Split('.');
+            string ext = filesplit[filesplit.Count() - 1].ToLower();
+            foreach (var s in unsupported)
+            {
+                if (ext == s)
+                {
+
+                    return BoardFileType.Unsupported;
+                }
+            }
+            try
+            {
+                // var F = File.OpenText(a);
+                var F = File.ReadAllLines(filename);
+                for (int i = 0; i < F.Count(); i++)
+                {
+                    string L = F[i];
+                    if (L.Contains("%FS")) return BoardFileType.Gerber;
+                    if (L.Contains("M48")) return BoardFileType.Drill;
+                };
+
+
+            }
+            catch (Exception E)
+            {
+                if (Gerber.ExtremelyVerbose)
+                {
+                    Console.WriteLine("Exception determining filetype: {0}", E.Message);
+                }
+                return BoardFileType.Unsupported;
+            }
+
+            return BoardFileType.Unsupported;
+
+
+        }
+
+        public static BoardFileType FindFileTypeFromStream(StreamReader l, string filename)
+        {
+            filename = filename.ToLower();
+            List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp" };
+            string[] filesplit = filename.Split('.');
+            string ext = filesplit[filesplit.Count() - 1].ToLower();
+            foreach (var s in unsupported)
+            {
+                if (ext == s)
+                {
+
+                    return BoardFileType.Unsupported;
+                }
+            }
+            try
+            {
+                // var F = File.OpenText(a);
+                List<string> lines = new List<string>();
+                while (!l.EndOfStream)
+                {
+                    lines.Add(l.ReadLine());
+                }
+                //var F = File.ReadAllLines(filename);
+
+
+                for (int i = 0; i < lines.Count(); i++)
+                {
+                    string L = lines[i];
+                    if (L.Contains("%FS")) return BoardFileType.Gerber;
+                    if (L.Contains("M48")) return BoardFileType.Drill;
+                };
+
+
+            }
+            catch (Exception)
+            {
+                return BoardFileType.Unsupported;
+            }
+
+            return BoardFileType.Unsupported;
+
         }
 
         public static PolyLineSet.Bounds GetBoundingBox(List<string> generatedFiles)
@@ -679,6 +494,44 @@ namespace GerberLibrary
                 A.AddBox(PLS.BoundingBox);
             }
             return A;
+        }
+
+        public static Color ParseColor(string color)
+        {
+            if (color == null)
+            {
+                Console.WriteLine("Error: Null color! Defaulting to lime!");
+                return Color.Lime;
+            }
+
+            switch (color.ToLower())
+            {
+                case "blue": return Color.FromArgb(0, 40, 74);
+                case "yellow": return Color.FromArgb(234, 206, 39);
+                case "green": return Color.FromArgb(68, 105, 80);
+                case "black": return Color.FromArgb(5, 5, 5);
+                case "white": return Color.FromArgb(250, 250, 250);
+                case "red": return Color.FromArgb(192, 43, 43);
+                case "silver": return Color.FromArgb(160, 160, 160);
+                case "gold": return Color.FromArgb(239, 205, 85);
+            }
+
+            try
+            {
+                return System.Drawing.ColorTranslator.FromHtml(color);
+            }
+            catch (Exception)
+            {
+                // unknown colors end up here... no need to worry, just pass it on to the default color handler which returns 0,0,0 as error-color if it too cant find anything.
+            }
+
+            return Color.FromName(color);
+        }
+
+
+        public static double RadToDeg(double inp)
+        {
+            return inp * 360.0 / (Math.PI * 2.0);
         }
 
         public static bool SaveDebugImage(string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background)
@@ -774,17 +627,6 @@ namespace GerberLibrary
             return true;
         }
 
-        private static void DrawCross(Graphics G2, double X, double Y, Color C)
-        {
-            float S = 0.2f;
-            Pen P = new Pen(C, 1.0f);
-            G2.DrawLine(P, (float)X - S, (float)Y - S, (float)X + S, (float)Y - S);
-            G2.DrawLine(P, (float)X - S, (float)Y + S, (float)X + S, (float)Y + S);
-            G2.DrawLine(P, (float)X - S, (float)Y - S, (float)X - S, (float)Y + S);
-            G2.DrawLine(P, (float)X + S, (float)Y - S, (float)X + S, (float)Y + S);
-
-        }
-
         public static bool SaveGerberFileToImage(string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background)
         {
             try
@@ -842,5 +684,192 @@ namespace GerberLibrary
 
         }
 
+        public static string ToFloatingPointString(double value)
+        {
+            return ToFloatingPointString(value, NumberFormatInfo.CurrentInfo);
+        }
+
+        public static string ToFloatingPointString(double value, NumberFormatInfo formatInfo)
+        {
+            string result = value.ToString("r", NumberFormatInfo.InvariantInfo);
+            Match match = rxScientific.Match(result);
+            if (match.Success)
+            {
+                Debug.WriteLine("Found scientific format: {0} => [{1}] [{2}] [{3}] [{4}]", result, match.Groups["sign"], match.Groups["head"], match.Groups["tail"], match.Groups["exponent"]);
+                int exponent = int.Parse(match.Groups["exponent"].Value, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
+                StringBuilder builder = new StringBuilder(result.Length + Math.Abs(exponent));
+                builder.Append(match.Groups["sign"].Value);
+                if (exponent >= 0)
+                {
+                    builder.Append(match.Groups["head"].Value);
+                    string tail = match.Groups["tail"].Value;
+                    if (exponent < tail.Length)
+                    {
+                        builder.Append(tail, 0, exponent);
+                        builder.Append(formatInfo.NumberDecimalSeparator);
+                        builder.Append(tail, exponent, tail.Length - exponent);
+                    }
+                    else
+                    {
+                        builder.Append(tail);
+                        builder.Append('0', exponent - tail.Length);
+                    }
+                }
+                else
+                {
+                    builder.Append('0');
+                    builder.Append(formatInfo.NumberDecimalSeparator);
+                    builder.Append('0', (-exponent) - 1);
+                    builder.Append(match.Groups["head"].Value);
+                    builder.Append(match.Groups["tail"].Value);
+                }
+                result = builder.ToString();
+            }
+            return result;
+        }
+
+        public static void WriteAllLines(string filename, List<string> lines)
+        {
+
+            File.WriteAllText(filename, string.Join(Gerber.LineEnding, lines));
+
+
+        }
+
+        internal static double ParseDouble(string inp)
+        {
+            return double.Parse(inp, NumberStyles.Any, CultureInfo.InvariantCulture);
+        }
+
+        internal static bool TryParseDouble(string inp, out double N)
+        {
+            inp = inp.Replace("*", "");
+            return double.TryParse(inp, NumberStyles.Any, CultureInfo.InvariantCulture, out N);
+        }
+
+        private static void DrawCross(Graphics G2, double X, double Y, Color C)
+        {
+            float S = 0.2f;
+            Pen P = new Pen(C, 1.0f);
+            G2.DrawLine(P, (float)X - S, (float)Y - S, (float)X + S, (float)Y - S);
+            G2.DrawLine(P, (float)X - S, (float)Y + S, (float)X + S, (float)Y + S);
+            G2.DrawLine(P, (float)X - S, (float)Y - S, (float)X - S, (float)Y + S);
+            G2.DrawLine(P, (float)X + S, (float)Y - S, (float)X + S, (float)Y + S);
+
+        }
+
+        private static double LimitPos2PI(double dA)
+        {
+            while (dA < -Math.PI / 2) dA += Math.PI * 2;
+            while (dA >= Math.PI / 2) dA -= Math.PI * 2;
+            return dA;
+        }
+
+        class boardset
+        {
+            public BoardLayer layer;
+            public string name; public BoardSide side;
+        };
+
+        class QuadR
+        {
+            public double CX;
+            public double CY;
+            public double D1 = 0;
+            public double D2 = 0;
+            public double Diff;
+            public double DRat = 0;
+            public double E;
+            public double S;
+            internal void Calc(double LastX, double LastY, double X, double Y)
+            {
+                double CX1 = LastX - CX;
+                double CX2 = X - CX;
+                double CY1 = LastY - CY;
+                double CY2 = Y - CY;
+
+                D1 = Math.Sqrt(CX1 * CX1 + CY1 * CY1);
+                D2 = Math.Sqrt(CX2 * CX2 + CY2 * CY2);
+                if (D2 != 0) DRat = D1 / D2;
+
+                S = Math.Atan2(LastY - CY, LastX - CX);
+                E = Math.Atan2(Y - CY, X - CX);
+
+            }
+
+            internal void FixClockwise()
+            {
+                //       while (S < E) S += Math.PI * 2;
+                Diff = S - E;
+                while (Diff > Math.PI) Diff -= Math.PI * 2;
+                //              Console.WriteLine("clock: {0:N2}", Gerber.RadToDeg(Diff));
+            }
+
+            internal void FixCounterClockwise()
+            {
+                while (S > E) S -= Math.PI * 2;
+                while (S < 0)
+                {
+                    S += Math.PI * 2.0;
+                    E += Math.PI * 2.0;
+                }
+                Diff = E - S;
+
+                // while (Diff < 0) Diff += Math.PI * 2.0;
+//                Console.WriteLine("counterclock: {0:N2}", Gerber.RadToDeg(Diff));
+
+            }
+        }
+        #region GERBERCOMMANDSTRINGS
+        public static string BuildOutlineApertureMacro(string name, List<PointD> Vertices, GerberNumberFormat format)
+        {
+            string res = "%AM" + name + "*" + Gerber.LineEnding;
+            res += String.Format("4,1,{0}," + Gerber.LineEnding, (Vertices.Count - 2));
+            for (int i = 0; i < Vertices.Count - 1; i++)
+            {
+                res += String.Format("{0},{1}," + Gerber.LineEnding, Gerber.ToFloatingPointString(format._ScaleMMToFile(Vertices[i].X)).Replace(',', '.'), Gerber.ToFloatingPointString(format._ScaleMMToFile(Vertices[i].Y)).Replace(',', '.'));
+            }
+
+            res += "0*" + Gerber.LineEnding + "%" + Gerber.LineEnding;
+            return res;
+        }
+
+        public static string Flash(PointD t, GerberNumberFormat GNF)
+        {
+            return String.Format("X{0}Y{1}D03*", GNF.Format(GNF._ScaleMMToFile(t.X)), GNF.Format(GNF._ScaleMMToFile(t.Y)));
+        }
+
+        public static string LineTo(PointD t, GerberNumberFormat GNF)
+        {
+            return String.Format("X{0}Y{1}D01*", GNF.Format(GNF._ScaleMMToFile(t.X)), GNF.Format(GNF._ScaleMMToFile(t.Y)));
+        }
+
+        public static string MoveTo(PointD t, GerberNumberFormat GNF)
+        {
+            return String.Format("X{0}Y{1}D02*", GNF.Format(GNF._ScaleMMToFile(t.X)), GNF.Format(GNF._ScaleMMToFile(t.Y)));
+        }
+        public static string WriteMacroEnd()
+        {
+            return "" + Gerber.LineEnding + "%" + Gerber.LineEnding;
+
+        }
+
+        public static string WriteMacroPartVertices(List<PointD> Vertices, GerberNumberFormat format)
+        {
+            string res = "";
+            res += String.Format("4,1,{0}," + Gerber.LineEnding, (Vertices.Count - 2));
+            for (int i = 0; i < Vertices.Count - 1; i++)
+            {
+                res += String.Format("{0},{1}," + Gerber.LineEnding, Gerber.ToFloatingPointString(format._ScaleMMToFile(Vertices[i].X)).Replace(',', '.'), Gerber.ToFloatingPointString(format._ScaleMMToFile(Vertices[i].Y)).Replace(',', '.'));
+            }
+            res += "0*";
+            return res;
+        }
+
+        public static string WriteMacroStart(string name)
+        {
+            return "%AM" + name + "*" + Gerber.LineEnding;
+        }
+#endregion
     }   
 }

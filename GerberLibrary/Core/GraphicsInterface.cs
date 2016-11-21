@@ -33,6 +33,7 @@ namespace GerberLibrary.Core
         void ScaleTransform(float sx, float sy);
 
         bool IsFast { get; set; }
+        CompositingMode CompositingMode { get; set; }
 
         void DrawRectangle(Color color, float x, float y, float w, float h, float strokewidth = 1.0f);
         void FillRectangle(Color color, float x, float y, float w, float h);
@@ -45,6 +46,7 @@ namespace GerberLibrary.Core
         void FillPath(Color c, GraphicsPath gP);
         void DrawString(string text, Font font, SolidBrush solidBrush, float x, float y, StringFormat sF);
         void DrawPath(Color black, GraphicsPath pATH, float v);
+        void FillPolygon(SolidBrush solidBrush, PointF[] pointF);
     }
 
 
@@ -139,6 +141,19 @@ namespace GerberLibrary.Core
             }
         }
 
+        public CompositingMode CompositingMode
+        {
+            get
+            {
+                return G.CompositingMode;
+            }
+
+            set
+            {
+                G.CompositingMode = value;
+            }
+        }
+
         public void DrawRectangle(Color color, float x, float y, float w, float h)
         {
             DrawLine(new Pen(color), x, y, x+w, y);
@@ -198,6 +213,11 @@ namespace GerberLibrary.Core
         {
             G.DrawPath(new Pen(black, v), pATH);
             
+        }
+
+        public void FillPolygon(SolidBrush solidBrush, PointF[] pointF)
+        {
+            G.FillPolygon(solidBrush, pointF);            
         }
     }
 
