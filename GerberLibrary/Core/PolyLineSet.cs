@@ -1560,7 +1560,7 @@ namespace GerberLibrary
                                                                 {
                                                                     State.ThinLine = new PolyLine();
                                                                     State.ThinLine.ClearanceMode = State.ClearanceMode;
-
+                                                                    //Console.WriteLine("Start: {0:N2} , {1:N2} - {2}", State.LastX, State.LastY, Line);
                                                                     State.ThinLine.Add(State.LastX, State.LastY);
                                                                 }
                                                                 switch (State.MoveInterpolation)
@@ -1568,7 +1568,7 @@ namespace GerberLibrary
                                                                     case InterpolationMode.Linear:
 
                                                                         State.ThinLine.Add(X, Y);
-
+                                                                   //     Console.WriteLine("{0:N2} , {1:N2} - {2}", X,Y, Line);
                                                                         break;
 
                                                                     default:

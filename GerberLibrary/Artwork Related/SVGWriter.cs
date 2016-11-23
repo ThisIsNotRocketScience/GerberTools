@@ -24,10 +24,10 @@ namespace GerberLibrary
             return GetColor(C.R, C.G, C.B);
         }
 
-        public SVGGraphicsInterface(double v1, double v2)
+        public SVGGraphicsInterface(double width, double height)
         {
-           Width = v1;
-           Height = v2;
+           Width = width;
+           Height = height;
         }
 
         public SVGGraphicsInterface() : base()
@@ -167,9 +167,9 @@ namespace GerberLibrary
 
         }
 
-        public void DrawLine(Pen P, float p1, float p2, float p3, float p4)
+        public void DrawLine(Pen P, float x1, float y1, float x2, float y2)
         {
-            DrawLine(P, new PointF(p1, p2), new PointF(p3, p4));
+            DrawLine(P, new PointF(x1, y1), new PointF(x2, y2));
 
         }
 

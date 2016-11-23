@@ -23,7 +23,7 @@ namespace DirtyPCB_BoardRender
             TimeOut
         }
 
-       public class BoardRenderSettings
+        public class BoardRenderSettings
         {
             public Color SolderMaskColor = Color.Green;
             public Color SilkScreenColor = Color.White;
@@ -55,7 +55,7 @@ namespace DirtyPCB_BoardRender
 
                 return;
             }
-       
+
             Arguments NextArg = Arguments.None;
             for (int i = 0; i < args.Count() - 2; i++)
             {
@@ -81,7 +81,6 @@ namespace DirtyPCB_BoardRender
             TheSettings.InputFolder = args[args.Count() - 2];
             TheSettings.OutputFolder = args[args.Count() - 1];
 
-
             if (Directory.Exists(TheSettings.InputFolder) == false)
             {
                 Console.WriteLine("Error: {0} is not a valid path!", TheSettings.InputFolder);
@@ -102,7 +101,7 @@ namespace DirtyPCB_BoardRender
             if (TheSettings.TimeOut > 0) TheSettings.TimeOut *= 100;
             while (T.ThreadState != ThreadState.Stopped && !done)
             {
-                Thread.Sleep(10); 
+                Thread.Sleep(10);
                 if (TheSettings.TimeOut > 0)
                 {
                     TheSettings.TimeOut--;
@@ -114,7 +113,7 @@ namespace DirtyPCB_BoardRender
                         Console.WriteLine("Error: Maximum gerber time generation limit expired! Aborting!");
                     }
                 }
-            }           
+            }
         }
 
         private static void RunImageGeneration()
@@ -134,11 +133,11 @@ namespace DirtyPCB_BoardRender
                     {
                         Console.WriteLine("Error: {0}", a);
                     }
-                    //  return;
+                    // return;
                 }
 
-                //                Console.WriteLine("Progress: Estimated board bounding box:{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", GIC.BoundingBox.TopLeft.X, GIC.BoundingBox.TopLeft.Y, GIC.BoundingBox.BottomRight.X, GIC.BoundingBox.BottomRight.Y, GIC.BoundingBox.Width(), GIC.BoundingBox.Height());
-                //  Gerber.SaveIntermediateImages = true;
+                // Console.WriteLine("Progress: Estimated board bounding box:{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", GIC.BoundingBox.TopLeft.X, GIC.BoundingBox.TopLeft.Y, GIC.BoundingBox.BottomRight.X, GIC.BoundingBox.BottomRight.Y, GIC.BoundingBox.Width(), GIC.BoundingBox.Height());
+                // Gerber.SaveIntermediateImages = true;
                 Console.WriteLine("Progress: Rendering Top");
                 GIC.DrawToFile(TheSettings.OutputFolder + "/FullRender", BoardSide.Top, 200, false);
                 Console.WriteLine("Progress: Rendering Bottom");
@@ -154,7 +153,7 @@ namespace DirtyPCB_BoardRender
                 }
             }
         }
-        
+
         public void AddString(string text, float progress = -1F)
         {
             Console.WriteLine("Progress: {0}", text);

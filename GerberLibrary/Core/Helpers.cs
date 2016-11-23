@@ -63,7 +63,16 @@ namespace GerberLibrary.Core
                     }
                     else
                     {
-                        LeftoverLines.Add(FirstSweep[i]);
+                        if (FirstSweep[i].Last() == LeftoverLines.Last().Last())
+                        {
+                            FirstSweep[i].Reverse();
+                            LeftoverLines.Last().AddRange(FirstSweep[i].Skip(1));
+                        }
+                        else
+                        {
+
+                            LeftoverLines.Add(FirstSweep[i]);
+                        }
                     }
                 }
             }
@@ -126,7 +135,28 @@ namespace GerberLibrary.Core
                         P.Points.Add(v);
                     }
                     //P.Points.Add(a.Last());
-                    if (a.First() == a.Last()) P.Closed = true;
+                    if (a.First() == a.Last())
+                    {
+                        int matching = 0;
+                        for (int i = 0; i < a.Count / 2;i++)
+                        {
+                            if (a[i] == a[a.Count - 1 - i]) matching++;
+                        }
+                        if (matching > 1)
+                        {
+                            P.Points.Clear();
+                            for(int i =0;i<(a.Count+1)/2;i++)
+                            {
+                                P.Points.Add(a[i]);
+                            }
+                            
+                        }
+                        else
+                        {
+                            Console.WriteLine("closed path with {0} points during stage 2: {1} reversematched", a.Count(), matching);
+                            P.Closed = true;
+                        }
+                    }
                     Paths.Add(P);
                 }
             }
@@ -136,12 +166,20 @@ namespace GerberLibrary.Core
             {
                 Merges = FindNextMerge(Paths);
             }
+            
             int ClosedCount = (from i in Paths where i.Closed == true select i).Count();
             if (ClosedCount < Paths.Count)
             {
                 //Console.WriteLine("{0}/{1} paths open - finding closest connections", Paths.Count - ClosedCount, Paths.Count);
                 if (joinclosest)
                 {
+
+                    Merges = 1;
+                    while (Merges > 0)
+                    {
+                        Merges = FindNextClosest(Paths);
+                    }
+                    /*
                     var OpenPaths = (from i in Paths where i.Closed == false select i).ToArray();
                     //  foreach (var p in OpenPaths)
                     //  {
@@ -213,7 +251,7 @@ namespace GerberLibrary.Core
 
                         OpenPaths = (from i in Paths where i.Closed == false select i).ToArray();
 
-                    }
+                    }*/
                 }
             }
             List<List<PointD>> Results = new List<List<PointD>>();
@@ -264,6 +302,7 @@ namespace GerberLibrary.Core
                     B.FitPoint(Paths[i].Points.First());
                     B.FitPoint(Paths[i].Points.Last());
                 }
+                
             }
 
             Root.xstart = B.TopLeft.X;
@@ -281,8 +320,8 @@ namespace GerberLibrary.Core
             }
             RectangleF R = new RectangleF();
 
-            R.Width = 1;
-            R.Height = 1;
+            R.Width = 10;
+            R.Height = 10;
 
             for (int i = 0; i < Paths.Count; i++)
             {
@@ -290,8 +329,8 @@ namespace GerberLibrary.Core
                if (P.Closed == false)
                 {
                     var PF = P.Points.First();
-                    R.X = (float)(P.Points.First().X - 0.5);
-                    R.Y = (float)(P.Points.First().Y - 0.5);
+                    R.X = (float)(P.Points.First().X - 5);
+                    R.Y = (float)(P.Points.First().Y -5);
                     int startmatch = -1;
                     int endmatch = -1;
                     Root.CallBackInside(R, delegate (QuadTreeItem QI) 
@@ -320,8 +359,13 @@ namespace GerberLibrary.Core
                         {
                             Paths[endmatch].Points.Remove(Paths[endmatch].Points.Last());
                             Paths[endmatch].Points.AddRange(Paths[i].Points);
-                            if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last()) Paths[endmatch].Closed = true;
+                            if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last())
+                            {
+                                Console.WriteLine("closed path with {0} points during stage 3a", Paths[endmatch].Points.Count());
+                                Paths[endmatch].Closed = true;
+                            }
                             Paths.Remove(Paths[i]);
+                            Console.WriteLine(" a");
                             return 1;
                         }
                         if (startmatch >-1)
@@ -329,11 +373,17 @@ namespace GerberLibrary.Core
                             Paths[i].Points.Reverse();
                             Paths[i].Points.Remove(Paths[i].Points.Last());
                             Paths[i].Points.AddRange(Paths[startmatch].Points);
-                            if (Paths[i].Points.First() == Paths[i].Points.Last()) Paths[i].Closed = true;
+                            if (Paths[i].Points.First() == Paths[i].Points.Last())
+                            {
+                                Console.WriteLine("closed path with {0} points during stage 3b", Paths[i].Points.Count());
+                                Paths[i].Closed = true;
+                            }
                             Paths.Remove(Paths[startmatch]);
+                            Console.WriteLine(" b");
+
                             return 1;
                         }
-                        return 1;
+                        
                     }
 
                      PF = P.Points.Last();
@@ -368,24 +418,36 @@ namespace GerberLibrary.Core
                             Paths[i].Points.Reverse();
                             Paths[endmatch].Points.Remove(Paths[endmatch].Points.Last());
                             Paths[endmatch].Points.AddRange(Paths[i].Points);
-                            if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last()) Paths[endmatch].Closed = true;
+                            if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last())
+                            {
+                                Console.WriteLine("closed path with {0} points during stage 3c", Paths[endmatch].Points.Count());
+                                Paths[endmatch].Closed = true;
+                            }
                             Paths.Remove(Paths[i]);
+                            Console.WriteLine(" c");
+
                             return 1;
                         }
                         if (startmatch > -1)
                         {
                             Paths[i].Points.Remove(Paths[i].Points.Last());
                             Paths[i].Points.AddRange(Paths[startmatch].Points);
-                            if (Paths[i].Points.First() == Paths[i].Points.Last()) Paths[i].Closed = true;
+                            if (Paths[i].Points.First() == Paths[i].Points.Last())
+                            {
+                                Console.WriteLine("closed path with {0} points during stage 3d", Paths[i].Points.Count());
+                                Paths[i].Closed = true;
+                            }
                             Paths.Remove(Paths[startmatch]);
+                            Console.WriteLine(" d");
+
                             return 1;
                         }
-                        return 1;
+                       
                     }
 
                 }
             }
-
+            
             return 0;
             for (int i = 0; i < Paths.Count; i++)
             {
@@ -442,6 +504,173 @@ namespace GerberLibrary.Core
             }
 
             return 0;
+        }
+
+        private static int FindNextClosest(List<PathDefWithClosed> Paths)
+        {
+            QuadTreeNode Root = new QuadTreeNode();
+            Bounds B = new Bounds();
+            for (int i = 0; i < Paths.Count; i++)
+            {
+                if (Paths[i].Closed == false)
+                {
+                    B.FitPoint(Paths[i].Points.First());
+                    B.FitPoint(Paths[i].Points.Last());
+                }
+
+            }
+
+            Root.xstart = B.TopLeft.X;
+            Root.xend = B.BottomRight.X;
+            Root.ystart = B.TopLeft.Y;
+            Root.yend = B.BottomRight.Y;
+
+            for (int i = 0; i < Paths.Count; i++)
+            {
+                if (Paths[i].Closed == false)
+                {
+                    Root.Insert(new SegmentEndContainer() { PathID = i, Point = Paths[i].Points.First(), Side = SideEnum.Start }, 4);
+                    Root.Insert(new SegmentEndContainer() { PathID = i, Point = Paths[i].Points.Last(), Side = SideEnum.End }, 4);
+                }
+            }
+            RectangleF R = new RectangleF();
+
+            R.Width = 30;
+            R.Height = 30;
+
+            for (int i = 0; i < Paths.Count; i++)
+            {
+                var P = Paths[i];
+                if (P.Closed == false)
+                {
+                    var PF = P.Points.First();
+                    R.X = (float)(P.Points.First().X - 15);
+                    R.Y = (float)(P.Points.First().Y - 15);
+                    int startmatch = -1;
+                    int endmatch = -1;
+                    double closestdistance = B.Width() + B.Height();
+                    Root.CallBackInside(R, delegate (QuadTreeItem QI)
+                    {
+                        var S = QI as SegmentEndContainer;
+                        if (S.PathID == i) return true;
+                        var D = PointD.Distance(S.Point, PF);
+                        if (D < closestdistance )
+                        {
+                            closestdistance = D;
+                            if (S.Side == SideEnum.Start)
+                            {
+                                startmatch = S.PathID;
+                            }
+                            else
+                            {
+
+                                endmatch = S.PathID;
+                            }
+
+                        }
+                        return true;
+                    });
+
+                    if (startmatch > -1 || endmatch > -1)
+                    {
+                        if (endmatch > -1)
+                        {
+                            Paths[endmatch].Points.Remove(Paths[endmatch].Points.Last());
+                            Paths[endmatch].Points.AddRange(Paths[i].Points);
+                            if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last())
+                            {
+                                Console.WriteLine("closed path with {0} points during stage 4a", Paths[endmatch].Points.Count());
+                                Paths[endmatch].Closed = true;
+                            }
+                            Paths.Remove(Paths[i]);
+                            Console.WriteLine(" 4a");
+                            return 1;
+                        }
+                        if (startmatch > -1)
+                        {
+                            Paths[i].Points.Reverse();
+                            Paths[i].Points.Remove(Paths[i].Points.Last());
+                            Paths[i].Points.AddRange(Paths[startmatch].Points);
+                            if (Paths[i].Points.First() == Paths[i].Points.Last())
+                            {
+                                Console.WriteLine("closed path with {0} points during stage 4b", Paths[i].Points.Count());
+                                Paths[i].Closed = true;
+                            }
+                            Paths.Remove(Paths[startmatch]);
+                            Console.WriteLine(" 4b");
+
+                            return 1;
+                        }
+
+                    }
+
+                    PF = P.Points.Last();
+                    R.X = (float)(P.Points.First().X - 0.5);
+                    R.Y = (float)(P.Points.First().Y - 0.5);
+                    startmatch = -1;
+                    endmatch = -1;
+                    closestdistance = B.Width() + B.Height();
+                    Root.CallBackInside(R, delegate (QuadTreeItem QI)
+                    {
+                        var S = QI as SegmentEndContainer;
+                        if (S.PathID == i) return true;
+                        var D = PointD.Distance(S.Point, PF);
+                        if (D < closestdistance)
+                        {
+                            closestdistance = D;
+                            if (S.Side == SideEnum.Start)
+                            {
+                                startmatch = S.PathID;
+                            }
+                            else
+                            {
+
+                                endmatch = S.PathID;
+                            }
+
+                        }
+                        return true;
+                    });
+
+                    if (startmatch > -1 || endmatch > -1)
+                    {
+                        if (endmatch > -1)
+                        {
+                            Paths[i].Points.Reverse();
+                            Paths[endmatch].Points.Remove(Paths[endmatch].Points.Last());
+                            Paths[endmatch].Points.AddRange(Paths[i].Points);
+                            if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last())
+                            {
+                                Console.WriteLine("closed path with {0} points during stage 4c", Paths[endmatch].Points.Count());
+                                Paths[endmatch].Closed = true;
+                            }
+                            Paths.Remove(Paths[i]);
+                            Console.WriteLine(" 4c");
+
+                            return 1;
+                        }
+                        if (startmatch > -1)
+                        {
+                            Paths[i].Points.Remove(Paths[i].Points.Last());
+                            Paths[i].Points.AddRange(Paths[startmatch].Points);
+                            if (Paths[i].Points.First() == Paths[i].Points.Last())
+                            {
+                                Console.WriteLine("closed path with {0} points during stage 4d", Paths[i].Points.Count());
+                                Paths[i].Closed = true;
+                            }
+                            Paths.Remove(Paths[startmatch]);
+                            Console.WriteLine(" 4d");
+
+                            return 1;
+                        }
+
+                    }
+
+                }
+            }
+
+            return 0;
+           
         }
 
         public static double PolygonSurfaceArea(List<PointD> Polygon)
