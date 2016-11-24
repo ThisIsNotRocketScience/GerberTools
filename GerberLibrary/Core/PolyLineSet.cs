@@ -1793,6 +1793,19 @@ namespace GerberLibrary
                 if (!Valid) return 0;
                 return BottomRight.X - TopLeft.X;
             }
+
+            public double Area()
+            {
+                return Width() * Height();
+            }
+
+            internal void FitPoint(List<PointD> vertices)
+            {
+                foreach(var v in vertices)
+                {
+                    FitPoint(v);
+                }                
+            }
         }
         //      public GerberParserState State = new GerberParserState();
 

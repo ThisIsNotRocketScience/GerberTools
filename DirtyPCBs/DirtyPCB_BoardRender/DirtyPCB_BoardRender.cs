@@ -123,10 +123,13 @@ namespace DirtyPCB_BoardRender
                 var InputFiles = Directory.GetFiles(TheSettings.InputFolder);
                 GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
                 GerberImageCreator.AA = true;
-                Gerber.BoardRenderColor = TheSettings.SolderMaskColor;
-                Gerber.BoardRenderSilkColor = TheSettings.SilkScreenColor;
-                Gerber.BoardRenderPadColor = TheSettings.CopperColor;
+
+                BoardRenderColorSet Colors = new BoardRenderColorSet();
+                Colors.BoardRenderColor = TheSettings.SolderMaskColor;
+                Colors.BoardRenderSilkColor = TheSettings.SilkScreenColor;
+                Colors.BoardRenderPadColor = TheSettings.CopperColor;
                 GIC.AddBoardsToSet(InputFiles.ToList());
+                GIC.SetColors(Colors);
                 if (GIC.Errors.Count > 0)
                 {
                     foreach (var a in GIC.Errors)

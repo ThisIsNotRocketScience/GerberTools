@@ -33,7 +33,10 @@ namespace GerberLibrary.Core
             public List<PointD> Points = new List<PointD>();
             public override string ToString()
             {
-                return string.Format("closed: {0} count: {1}", Closed, Points.Count);
+                string r = "";
+                foreach (var a in Points)
+                    r += a.ToString() + "  ";
+                return string.Format("closed: {0} verts: {1}", Closed, r);
             }
         }
 
@@ -153,7 +156,7 @@ namespace GerberLibrary.Core
                         }
                         else
                         {
-                            Console.WriteLine("closed path with {0} points during stage 2: {1} reversematched", a.Count(), matching);
+//                            Console.WriteLine("closed path with {0} points during stage 2: {1} reversematched", a.Count(), matching);
                             P.Closed = true;
                         }
                     }
@@ -292,7 +295,8 @@ namespace GerberLibrary.Core
         }
 
         private static int FindNextMerge(List<PathDefWithClosed> Paths)
-        {            
+        {
+
             QuadTreeNode Root = new QuadTreeNode();
             Bounds B = new Bounds();
             for (int i = 0; i < Paths.Count; i++)
@@ -305,10 +309,10 @@ namespace GerberLibrary.Core
                 
             }
 
-            Root.xstart = B.TopLeft.X;
-            Root.xend= B.BottomRight.X;
-            Root.ystart = B.TopLeft.Y;
-            Root.yend = B.BottomRight.Y;
+            Root.xstart = B.TopLeft.X-1;
+            Root.xend= B.BottomRight.X+1;
+            Root.ystart = B.TopLeft.Y-1;
+            Root.yend = B.BottomRight.Y+1;
 
             for (int i = 0; i < Paths.Count; i++)
             {
@@ -325,10 +329,13 @@ namespace GerberLibrary.Core
 
             for (int i = 0; i < Paths.Count; i++)
             {
+               // Console.WriteLine("checking path {0}", i);
                 var P = Paths[i];
-               if (P.Closed == false)
+                if (P.Closed == false)
                 {
                     var PF = P.Points.First();
+                    //Console.WriteLine("checking firstvert {0}", PF);
+
                     R.X = (float)(P.Points.First().X - 5);
                     R.Y = (float)(P.Points.First().Y -5);
                     int startmatch = -1;
@@ -337,6 +344,7 @@ namespace GerberLibrary.Core
                         {
                             var S = QI as SegmentEndContainer;
                             if (S.PathID == i) return true;
+                           // Console.WriteLine(" against {0}", S.Point);
                             if (S.Point == PF)
                             {
                                 if (S.Side == SideEnum.Start)
@@ -361,11 +369,11 @@ namespace GerberLibrary.Core
                             Paths[endmatch].Points.AddRange(Paths[i].Points);
                             if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 3a", Paths[endmatch].Points.Count());
+                                //Console.WriteLine("closed path with {0} points during stage 3a", Paths[endmatch].Points.Count());
                                 Paths[endmatch].Closed = true;
                             }
                             Paths.Remove(Paths[i]);
-                            Console.WriteLine(" a");
+                            //Console.WriteLine(" a");
                             return 1;
                         }
                         if (startmatch >-1)
@@ -375,11 +383,11 @@ namespace GerberLibrary.Core
                             Paths[i].Points.AddRange(Paths[startmatch].Points);
                             if (Paths[i].Points.First() == Paths[i].Points.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 3b", Paths[i].Points.Count());
+                            //    Console.WriteLine("closed path with {0} points during stage 3b", Paths[i].Points.Count());
                                 Paths[i].Closed = true;
                             }
                             Paths.Remove(Paths[startmatch]);
-                            Console.WriteLine(" b");
+                          //  Console.WriteLine(" b");
 
                             return 1;
                         }
@@ -387,14 +395,17 @@ namespace GerberLibrary.Core
                     }
 
                      PF = P.Points.Last();
-                    R.X = (float)(P.Points.First().X - 0.5);
-                    R.Y = (float)(P.Points.First().Y - 0.5);
+                   // Console.WriteLine("checking lastvert {0}", PF);
+                    R.X = (float)(P.Points.First().X - 5);
+                    R.Y = (float)(P.Points.First().Y - 5);
                      startmatch = -1;
                     endmatch = -1;
                     Root.CallBackInside(R, delegate (QuadTreeItem QI)
                     {
                         var S = QI as SegmentEndContainer;
                         if (S.PathID == i) return true;
+                      //  Console.WriteLine(" against {0}", S.Point);
+
                         if (S.Point == PF)
                         {
                             if (S.Side == SideEnum.Start)
@@ -420,11 +431,11 @@ namespace GerberLibrary.Core
                             Paths[endmatch].Points.AddRange(Paths[i].Points);
                             if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 3c", Paths[endmatch].Points.Count());
+                              //  Console.WriteLine("closed path with {0} points during stage 3c", Paths[endmatch].Points.Count());
                                 Paths[endmatch].Closed = true;
                             }
                             Paths.Remove(Paths[i]);
-                            Console.WriteLine(" c");
+                            //Console.WriteLine(" c");
 
                             return 1;
                         }
@@ -438,7 +449,7 @@ namespace GerberLibrary.Core
                                 Paths[i].Closed = true;
                             }
                             Paths.Remove(Paths[startmatch]);
-                            Console.WriteLine(" d");
+                            //Console.WriteLine(" d");
 
                             return 1;
                         }
@@ -554,7 +565,7 @@ namespace GerberLibrary.Core
                         var S = QI as SegmentEndContainer;
                         if (S.PathID == i) return true;
                         var D = PointD.Distance(S.Point, PF);
-                        if (D < closestdistance )
+                        if (D<1.0 &&  D < closestdistance )
                         {
                             closestdistance = D;
                             if (S.Side == SideEnum.Start)
@@ -615,7 +626,7 @@ namespace GerberLibrary.Core
                         var S = QI as SegmentEndContainer;
                         if (S.PathID == i) return true;
                         var D = PointD.Distance(S.Point, PF);
-                        if (D < closestdistance)
+                        if (D <1.0 && D < closestdistance)
                         {
                             closestdistance = D;
                             if (S.Side == SideEnum.Start)

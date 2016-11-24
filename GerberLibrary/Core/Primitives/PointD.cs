@@ -163,7 +163,7 @@ namespace GerberLibrary.Core.Primitives
         }
         public override string ToString()
         {
-            return String.Format("{0:0.000},{1:0.000}", X, Y);
+            return String.Format("{0:N2},{1:N2}", X, Y);
         }
 
         public PointF ToF()

@@ -68,6 +68,7 @@ namespace GerberToOutline
 
             }
             SVGGraphicsInterface SG = new SVGGraphicsInterface(PLS.BoundingBox.Width(), PLS.BoundingBox.Height());
+            SG.TranslateTransform((float)-PLS.BoundingBox.TopLeft.X, (float)-PLS.BoundingBox.TopLeft.Y);
             DrawToInterface(PLS, SG);
             SG.Save(outfile);
             System.Diagnostics.Process.Start(outfile);

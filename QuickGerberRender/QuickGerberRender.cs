@@ -71,15 +71,9 @@ namespace WindowsFormsApplication1
 
         private void LoadGerberFolder(List<string> s)
         {
-            GerberLibrary.GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
-            GIC.AddBoardsToSet(s);
-
-            GerberLibrary.Gerber.BoardRenderColor = GerberLibrary.Gerber.ParseColor(SolderMaskColor.Text);
-            GerberLibrary.Gerber.BoardRenderSilkColor = GerberLibrary.Gerber.ParseColor(SilkScreenColor.Text);
-            GerberLibrary.Gerber.BoardRenderPadColor = GerberLibrary.Gerber.ParseColor(CopperColor.Text);
-
-            GIC.WriteImageFiles(Path.GetDirectoryName(s[0]) + ".png");
-            GIC.DrawAllFiles(Path.GetDirectoryName(s[0]) + "_Layer", 200);
+            Progress P = new Progress(s, SolderMaskColor.Text, SilkScreenColor.Text, CopperColor.Text);
+            P.Show();
+            P.StartThread();
         }
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
@@ -153,6 +147,11 @@ namespace WindowsFormsApplication1
         private void pictureBox1_Resize(object sender, EventArgs e)
         {
             ReDoColor();
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

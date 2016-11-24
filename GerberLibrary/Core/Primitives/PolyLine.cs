@@ -189,6 +189,7 @@ namespace GerberLibrary.Core.Primitives
             Vertices.Add(new PointD(-w / 2, -h / 2));
         }
 
+
         public void RotateDegrees(double AngleInDeg)
         {
             double Angle = AngleInDeg * (Math.PI * 2.0) / 360.0;

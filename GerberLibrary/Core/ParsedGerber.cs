@@ -13,7 +13,10 @@ namespace GerberLibrary.Core
 {
     public class ParsedGerber
     {
-
+        public override string ToString()
+        {
+            return String.Format("{0},{1}: {2} - {3}", Side, Layer, Name, BoundingBox);
+        }
         public PointD TranslationSinceLoad = new PointD();
         public GerberParserState State;
         public double PathLength()
@@ -227,7 +230,9 @@ namespace GerberLibrary.Core
             foreach(var a in OutlineShapes)
             {
                 var area = Core.Helpers.PolygonSurfaceArea(a.Vertices);
-                Polies.Add(new Tuple<double, PolyLine>(area, a));
+                var bounds = new Bounds();
+                bounds.FitPoint(a.Vertices);
+                Polies.Add(new Tuple<double, PolyLine>(bounds.Area(), a));
             }
 
             return  (from a in Polies orderby a.Item1 descending select a).First();

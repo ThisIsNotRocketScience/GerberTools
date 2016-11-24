@@ -15,16 +15,74 @@ namespace GerberLibrary
 {
     public class GerberImageCreator
     {
-        public double scale = 25.0f / 25.4f; // dpi
-
-
         public static bool AA = true;
-        bool hasgko = false;
-
-        public List<String> Errors = new List<string>();
         public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
+        public List<String> Errors = new List<string>();
+        public double scale = 25.0f / 25.4f; // dpi
+        private BoardRenderColorSet ActiveColorSet = new BoardRenderColorSet();
+        bool hasgko = false;
         List<ParsedGerber> PLSs = new List<ParsedGerber>();
+        public static void ApplyAASettings(Graphics G)
+        {
+            if (AA)
+            {
+                G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                G.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
+                G.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+            }
+            else
+            {
+                G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                G.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Low;
+                G.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+            }
+        }
 
+        public static Color Darker(Color color, double Fac)
+        {
+            float correctionFactor = 1.0f - (float)Fac;
+            float red = (color.R) * correctionFactor;
+            float green = (color.G) * correctionFactor;
+            float blue = (color.B) * correctionFactor;
+            return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
+        }
+
+        public static Color Lighter(Color color, double Fac)
+        {
+            float correctionFactor = (float)Fac;
+            float red = (255 - color.R) * correctionFactor + color.R;
+            float green = (255 - color.G) * correctionFactor + color.G;
+            float blue = (255 - color.B) * correctionFactor + color.B;
+            return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
+        }
+
+        public void AddBoardsToSet(List<string> FileList, bool fixgroup = true, ProgressLog Logger = null)
+        {
+            foreach (var a in FileList)
+            {
+                BoardSide aSide;
+                BoardLayer aLayer;
+                Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
+                if (aLayer == BoardLayer.Outline) hasgko = true;
+            }
+
+            foreach (var a in FileList)
+            {
+                if (Logger != null) Logger.AddString(String.Format("Loading {0}", Path.GetFileName(a)));
+                AddFileToSet(a, Logger);
+            }
+
+            if (fixgroup)
+            {
+                if (Logger != null) Logger.AddString("Checking for common file format mistakes.");
+                FixEagleDrillExportIssues(Logger);
+                CheckRelativeBoundingBoxes(Logger);
+                CheckForOutlineFiles(Logger);
+
+                CheckRelativeBoundingBoxes(Logger);
+
+            }
+        }
 
         public ParsedGerber AddBoardToSet(string originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
         {
@@ -97,6 +155,139 @@ namespace GerberLibrary
             return null;
         }
 
+        public System.Drawing.Drawing2D.Matrix BuildMatrix(int w, int h)
+        {
+            Bitmap B = new Bitmap(1, 1);
+            Graphics G = Graphics.FromImage(B);
+            System.Drawing.Drawing2D.Matrix T = new System.Drawing.Drawing2D.Matrix();
+            var OutlineBoundingBox = GetOutlineBoundingBox();
+
+            G.TranslateTransform(0, h);
+            G.ScaleTransform(1, -1);
+            G.TranslateTransform(1, 1);
+            G.ScaleTransform((float)scale, (float)scale);
+            G.TranslateTransform((float)-OutlineBoundingBox.TopLeft.X, (float)-OutlineBoundingBox.TopLeft.Y);
+            T = G.Transform.Clone();
+            return T;
+
+        }
+
+        public void CreateBoxOutline()
+        {
+            PolyLine Box = new PolyLine();
+            Box.MakeRectangle(BoundingBox.Width(), BoundingBox.Height());
+            Box.Translate(BoundingBox.TopLeft.X + BoundingBox.Width() / 2.0, BoundingBox.TopLeft.Y + BoundingBox.Height() / 2.0);
+            Box.Hole = false;
+            //Box.Close();
+           // Box.Vertices.Reverse();
+            ParsedGerber PLS = new ParsedGerber();
+            PLS.Name = "Generated BoundingBox";
+            PLS.DisplayShapes.Add(Box);
+            PLS.OutlineShapes.Add(Box);
+            PLS.Shapes.Add(Box);
+            PLS.Layer = BoardLayer.Outline;
+            PLS.Side = BoardSide.Both;
+      //      PLS.FixPolygonWindings();
+            PLS.CalcPathBounds();
+            PLSs.Add(PLS);
+        }
+
+        public void DrawAllFiles(string v1, double dpi, ProgressLog Logger = null)
+        {
+
+            scale = dpi / 25.4f; // dpi
+            var OutlineBoundingBox = GetOutlineBoundingBox();
+            double bw = Math.Abs(OutlineBoundingBox.BottomRight.X - OutlineBoundingBox.TopLeft.X);
+            double bh = Math.Abs(OutlineBoundingBox.BottomRight.Y - OutlineBoundingBox.TopLeft.Y);
+            int width = (int)((bw * scale));
+            int height = (int)((bh * scale));
+
+            int w = width + 3;
+            int h = height + 3;
+
+            System.Drawing.Drawing2D.Matrix TransformCopy = null;
+            Graphics G = Graphics.FromImage(new Bitmap(1, 1));
+
+            G.TranslateTransform(0, h);
+            G.ScaleTransform(1, -1);
+
+            G.TranslateTransform(1, 1);
+            G.ScaleTransform((float)scale, (float)scale);
+            G.TranslateTransform((float)-OutlineBoundingBox.TopLeft.X, (float)-OutlineBoundingBox.TopLeft.Y);
+            TransformCopy = G.Transform.Clone();
+
+
+
+
+
+
+            foreach (var L in PLSs)
+            {
+
+                string FileName = v1 + "_" + L.Layer.ToString() + "_" + L.Side.ToString() + ".png";
+                if (Logger != null) Logger.AddString(String.Format("Rendering {0}-{1}", L.Layer.ToString(), L.Side.ToString()));
+
+                Bitmap B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
+
+                Graphics G2 = Graphics.FromImage(B2);
+                ApplyAASettings(G2);
+                var G3 = new GraphicsGraphicsInterface(G2);
+                G3.Clear(Color.White);
+                G3.Transform = TransformCopy.Clone();
+
+                Pen P = new Pen(Color.Black, 1.0f / (float)(scale));
+                int Shapes = 0;
+
+                Shapes += DrawLayerToGraphics(Color.Black, true, G3, P, L, false);
+
+                B2.Save(FileName);
+            }
+
+        }
+
+        public string DrawToFile(string basefilename, BoardSide CurrentLayer, double dpi = 400, bool showimage = true, ProgressLog Logger = null)
+        {
+            Bitmap B = DrawBoard(dpi, CurrentLayer, ActiveColorSet, basefilename,  Logger);
+            string filename = basefilename + "_Combined_" + CurrentLayer.ToString() + ".png";
+
+            B.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
+            if (showimage) System.Diagnostics.Process.Start(basefilename + "_Combined_" + CurrentLayer.ToString() + ".png");
+            return filename;
+        }
+
+        public Bitmap RenderToBitmap(int w, int h, System.Drawing.Drawing2D.Matrix Transform, Color foregroundcolor, Color backgroundcolor, ParsedGerber PLS, bool fill, bool forcefill = false)
+        {
+            Bitmap B2;
+
+            try
+            {
+                B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error: Failed to create image of size {0}x{1}", w, h);
+                return null;
+            }
+
+            Graphics G2 = Graphics.FromImage(B2);
+
+            ApplyAASettings(G2);
+            var G3 = new GraphicsGraphicsInterface(G2);
+            G3.Clear(backgroundcolor);
+            G3.Transform = Transform.Clone();
+
+            Pen P = new Pen(foregroundcolor, 1.0f / (float)(scale));
+            int Shapes = 0;
+            Shapes += DrawLayerToGraphics(foregroundcolor, fill, G3, P, PLS, forcefill);
+            //            if (Shapes == 0) return null;
+            return B2;
+        }
+
+        public void SetColors(BoardRenderColorSet colors)
+        {
+            ActiveColorSet = colors;
+        }
+
         public void WriteImageFiles(string TargetFileBaseName, double dpi = 200, bool showimage = true, ProgressLog Logger = null)
         {
             if (Logger != null) Logger.AddString("Build top layer image");
@@ -105,7 +296,343 @@ namespace GerberLibrary
             DrawToFile(TargetFileBaseName, BoardSide.Bottom, dpi, showimage, Logger);
         }
 
-        Bitmap DrawBoard(double dpi, BoardSide CurrentLayer, string basefilename = null, ProgressLog Logger = null, bool ForceWhite = false)
+        private void AddFileToSet(string a, ProgressLog Logger, double drillscaler = 1.0)
+        {
+            string[] filesplit = a.Split('.');
+
+            string ext = filesplit[filesplit.Count() - 1].ToLower();
+            bool zerowidth = false;
+            bool precombine = false;
+
+            BoardSide aSide;
+            BoardLayer aLayer;
+            Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
+
+            if (aLayer == BoardLayer.Outline || (aLayer == BoardLayer.Mill && hasgko == false))
+            {
+                zerowidth = true;
+                precombine = true;
+            }
+            AddBoardToSet(a, zerowidth, precombine, drillscaler);
+        }
+
+        private void ApplyBumpMapping(Bitmap _Target, Bitmap _Bump, int w, int h)
+        {
+            LockBitmap Target = new LockBitmap(_Target);
+            Target.LockBits();
+            LockBitmap BumpMap = new LockBitmap(_Bump);
+
+            BumpMap.LockBits();
+
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    Color TargetPixel = Target.GetPixel(x, y);
+                    Color B1 = BumpMap.GetPixel(x, y);
+
+                    if (true)//B1.A > 0)
+                    {
+                        Color B2 = B1;
+                        Color B4 = B1;
+                        if (x < w - 1)
+                        {
+                            B2 = BumpMap.GetPixel(x + 1, y);
+                            B4 = B2;
+                        }
+                        Color B3 = B1;
+                        if (y < h - 1) B3 = BumpMap.GetPixel(x, y + 1);
+                        if (y < h - 1 && x < w - 1)
+                        {
+                            B4 = BumpMap.GetPixel(x + 1, y + 1);
+                        }
+                        float dx1 = (B1.GetBrightness() - B2.GetBrightness());
+                        float dx2 = (B3.GetBrightness() - B4.GetBrightness());
+                        float dy1 = (B1.GetBrightness() - B3.GetBrightness());
+                        float dy2 = (B2.GetBrightness() - B4.GetBrightness());
+                        float dx = dx1 + dx2;
+                        float dy = dy1 + dy2;
+
+                        if (dx == 0 && dy == 0)
+                        {
+                            //skip
+                        }
+                        else
+                        {
+                            double ang = Math.Atan2(dy, dx);
+                            double dist = Math.Sqrt(dx * dx + dy * dy);
+                            double L = Math.Sin(ang - 1.4);
+                            if (L > 0) Target.SetPixel(x, y, Lighter(TargetPixel, L * 0.04));
+                            else
+                            {
+                                Target.SetPixel(x, y, Darker(TargetPixel, Math.Abs(L * 0.04)));
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            BumpMap.UnlockBits();
+            Target.UnlockBits();
+
+
+        }
+
+        private void CarveOutlineAndMillInnerPolygonsFromImage(string basefilename, int w, int h, Graphics G, Bitmap _Target, System.Drawing.Drawing2D.Matrix TransformCopy)
+        {
+            var T = G.Transform.Clone();
+            G.Transform = TransformCopy;
+            var L = from i in PLSs where i.Layer == BoardLayer.Outline || i.Layer == BoardLayer.Mill && i.Side == BoardSide.Both select i;
+            if (L.Count() == 0) return;
+
+            List<PolyLine> ShapesList = new List<PolyLine>();
+            Dictionary<int, PolyLine> InsidePolygons = new Dictionary<int, PolyLine>();
+            foreach (var l in L)
+            {
+                l.FixPolygonWindings();
+                ShapesList.AddRange(l.OutlineShapes);
+
+            }
+
+            List<int> AddedIds = new List<int>();
+            // Helpers.LineSegmentsToPolygons()
+
+            for (int i = 0; i < ShapesList.Count; i++)
+            {
+                if (ClipperLib.Clipper.Orientation(ShapesList[i].toPolygon()) == false)
+                {
+                    InsidePolygons[i] = ShapesList[i];
+                }
+
+                //double IArea = Helpers.PolygonSurfaceArea(ShapesList[i].Vertices);
+
+                //for (int j = i + 1; j < ShapesList.Count; j++)
+                //{
+                //    double JArea = Helpers.PolygonSurfaceArea(ShapesList[j].Vertices);
+                //    if (JArea < IArea)
+                //    {
+                //        if (Helpers.IsInPolygon(ShapesList[i].Vertices, ShapesList[j].Vertices[0]))
+                //        {
+
+                //            InsidePolygons[j] = ShapesList[j];
+                //        }
+                //    }
+                //    else
+                //    {
+                //        if (Helpers.IsInPolygon(ShapesList[j].Vertices, ShapesList[i].Vertices[0]))
+                //        {
+                //            InsidePolygons[i] = ShapesList[i];
+                //        }
+
+                //    }
+                //}
+            }
+
+            Bitmap B2 = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            Graphics G2 = Graphics.FromImage(B2);
+            G2.Clear(Color.Black);
+            G2.Transform = TransformCopy;
+            ApplyAASettings(G2);
+
+
+            //G.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+
+            foreach (var a in InsidePolygons.Values)
+            {
+                List<PointF> Points = new List<PointF>();
+
+                for (int j = 0; j < a.Count(); j++)
+                {
+                    var P1 = a.Vertices[j];
+                    Points.Add(new PointF((float)((P1.X)), (float)((P1.Y))));
+                }
+
+
+                G2.FillPolygon(new SolidBrush(Color.Red), Points.ToArray());
+            }
+            if (Gerber.SaveIntermediateImages) B2.Save("11 outlines_redimages.png");
+
+
+            LockBitmap Source = new LockBitmap(B2);
+            LockBitmap Target = new LockBitmap(_Target);
+            Source.LockBits();
+            Target.LockBits();
+
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    var S = Source.GetPixel(x, y);
+                    if (S.R > 0)
+                    {
+                        Target.SetPixel(x, y, Color.FromArgb(255 - S.R, Target.GetPixel(x, y)));
+                    }
+                }
+            }
+            Source.UnlockBits();
+            Target.UnlockBits();
+
+            if (Gerber.SaveIntermediateImages) _Target.Save("22 outlines_carved.png");
+
+
+            // G.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+            G.Transform = T;
+            if (Gerber.ExtremelyVerbose) Console.WriteLine("polygons #: {0} total, {1} carved", ShapesList.Count, InsidePolygons.Count);
+
+
+            //Bitmap B2 = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            // Graphics G2 = Graphics.FromImage(B2);
+            G2.Clear(Color.Black);
+            G2.Transform = TransformCopy;
+            foreach (var a in ShapesList)
+            {
+                List<PointF> Points = new List<PointF>();
+
+                for (int j = 0; j < a.Count(); j++)
+                {
+                    var P1 = a.Vertices[j];
+                    Points.Add(new PointF((float)((P1.X)), (float)((P1.Y))));
+                }
+
+                G2.DrawPolygon(new Pen(Color.Transparent, 1.0f / (float)scale), Points.ToArray());
+            }
+            if (Gerber.SaveIntermediateImages) B2.Save("33 outlines_3aftershapelist.png");
+
+            foreach (var a in InsidePolygons.Values)
+            {
+                List<PointF> Points = new List<PointF>();
+
+                for (int j = 0; j < a.Count(); j++)
+                {
+                    var P1 = a.Vertices[j];
+                    Points.Add(new PointF((float)((P1.X)), (float)((P1.Y))));
+                }
+
+                G2.DrawPolygon(new Pen(Color.FromArgb(200, 255, 255, 0), 1.0f / (float)scale), Points.ToArray());
+            }
+
+            if (Gerber.SaveIntermediateImages) B2.Save("44 outlines_4afterinside.png");
+
+        }
+
+        private void CheckForOutlineFiles(ProgressLog Logger)
+        {
+            List<ParsedGerber> Outlines = new List<ParsedGerber>();
+            List<ParsedGerber> Mills = new List<ParsedGerber>();
+            List<ParsedGerber> Unknowns = new List<ParsedGerber>();
+            foreach (var a in PLSs)
+            {
+                if (a.Side == BoardSide.Both && (a.Layer == BoardLayer.Outline))
+                {
+                    Outlines.Add(a);
+                }
+                if (a.Side == BoardSide.Both && (a.Layer == BoardLayer.Mill))
+                {
+                    Mills.Add(a);
+                }
+                if (a.Side == BoardSide.Unknown && a.Layer == BoardLayer.Unknown)
+                {
+                    Unknowns.Add(a);
+                    Errors.Add(String.Format("Unknown file in set:{0}", Path.GetFileName(a.Name)));
+                    if (Logger != null) Logger.AddString(String.Format("Unknown file in set:{0}", Path.GetFileName(a.Name)));
+                }
+
+            }
+
+            if (Outlines.Count == 0)
+            {
+                if (Unknowns.Count == 0)
+                {
+                    Errors.Add(String.Format("No outline file found and all other files accounted for! "));
+                    if (Logger != null) Logger.AddString(String.Format("No outline file found and all other files accounted for! "));
+
+                   // if (Mills.Count == 1)
+                   // {
+                    //    Mills[0].Layer = BoardLayer.Outline;
+                     //   Errors.Add(String.Format("Elevating mill file to outline!"));
+                      //  if (Logger != null) Logger.AddString(String.Format("Elevating mill file to outline!"));
+                   // }
+                   // else
+                    //                    if (!InventOutlineFromMill())
+                    {
+                        CreateBoxOutline();
+                    }
+                }
+                else
+                {
+                    CreateBoxOutline();
+                    return;
+
+                    //InventOutline();
+                    //return;
+                    foreach (var a in Unknowns)
+                    {
+                        PLSs.Remove(a);
+                        hasgko = true;
+                        a.Layer = BoardLayer.Outline;
+                        a.Side = BoardSide.Both;
+                        Console.WriteLine("Note: Using {0} as outline file", Path.GetFileName(a.Name));
+
+                        if (Logger != null) Logger.AddString(String.Format("Note: Using {0} as outline file", Path.GetFileName(a.Name)));
+
+                        bool zerowidth = true;
+                        bool precombine = true;
+
+                        var b = AddBoardToSet(a.Name, zerowidth, precombine, 1.0);
+                        b.Layer = BoardLayer.Outline;
+                        b.Side = BoardSide.Both;
+
+                    }
+                }
+            }
+        }
+
+        private void CheckRelativeBoundingBoxes(ProgressLog Logger)
+        {
+
+
+            List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
+            List<ParsedGerber> DrillFilesToReload = new List<ParsedGerber>();
+            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
+            foreach (var a in PLSs)
+            {
+                if (a.Layer == BoardLayer.Drill)
+                {
+                    DrillFiles.Add(a);
+                }
+                else
+                {
+                    BB.AddBox(a.BoundingBox);
+                }
+            }
+
+            foreach (var a in DrillFiles)
+            {
+
+                if (a.BoundingBox.Intersects(BB) == false)
+                {
+                    Errors.Add(String.Format("Drill file {0} does not seem to touch the main bounding box!", Path.GetFileName(a.Name)));
+                    if (Logger != null) Logger.AddString(String.Format("Drill file {0} does not seem to touch the main bounding box!", Path.GetFileName(a.Name)));
+                    PLSs.Remove(a);
+                }
+            }
+
+
+
+            BoundingBox = new PolyLineSet.Bounds();
+            foreach (var a in PLSs)
+            {
+                //   Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName(a.Name));
+
+
+                //Console.WriteLine("adding box for {0}:{1},{2}", a.Name, a.BoundingBox.Width(), a.BoundingBox.Height());
+                BoundingBox.AddBox(a.BoundingBox);
+            }
+
+        }
+
+        Bitmap DrawBoard(double dpi, BoardSide CurrentLayer, BoardRenderColorSet Colors, string basefilename = null, ProgressLog Logger = null, bool ForceWhite = false)
         {
             scale = dpi / 25.4f; // dpi
             var OutlineBoundingBox = GetOutlineBoundingBox();
@@ -149,9 +676,9 @@ namespace GerberLibrary
             }
 
             if (Logger != null) Logger.AddString("Drawing outline files");
-            Bitmap _OutlineBase = DrawIfExists(width, height, TransformCopy, Gerber.BoardRenderBaseMaterialColor, BoardLayer.Outline, BoardSide.Both, basefilename, true, 1, true);
+            Bitmap _OutlineBase = DrawIfExists(width, height, TransformCopy, Colors.BoardRenderBaseMaterialColor, BoardLayer.Outline, BoardSide.Both, basefilename, true, 1, true);
             if (Logger != null) Logger.AddString("Drawing mill files");
-            Bitmap _OutlineMill = DrawIfExists(width, height, TransformCopy, Gerber.BoardRenderBaseMaterialColor, BoardLayer.Mill, BoardSide.Both, basefilename, true, 1, true);
+            Bitmap _OutlineMill = DrawIfExists(width, height, TransformCopy, Colors.BoardRenderBaseMaterialColor, BoardLayer.Mill, BoardSide.Both, basefilename, true, 1, true);
 
 
 
@@ -159,10 +686,10 @@ namespace GerberLibrary
             Bitmap _Copper = DrawIfExists(width, height, TransformCopy, Color.FromArgb(80, 80, 0), BoardLayer.Copper, CurrentLayer, basefilename, true);
 
             if (Logger != null) Logger.AddString("Drawing silk files");
-            Bitmap _Silk = DrawIfExists(width, height, TransformCopy, Gerber.BoardRenderSilkColor, BoardLayer.Silk, CurrentLayer, basefilename, true, 0.2f);
+            Bitmap _Silk = DrawIfExists(width, height, TransformCopy, Colors.BoardRenderSilkColor, BoardLayer.Silk, CurrentLayer, basefilename, true, 0.2f);
 
             if (Logger != null) Logger.AddString("Drawing soldermask files");
-            Bitmap _SolderMaskHoles = DrawIfExists(width, height, TransformCopy, Gerber.BoardRenderPadColor, BoardLayer.SolderMask, CurrentLayer, basefilename, true, 0.2f);
+            Bitmap _SolderMaskHoles = DrawIfExists(width, height, TransformCopy, Colors.BoardRenderPadColor, BoardLayer.SolderMask, CurrentLayer, basefilename, true, 0.2f);
 
             if (Logger != null) Logger.AddString("Drawing drill files");
             Bitmap _DrillHoles = DrawIfExists(width, height, TransformCopy, Color.Black, BoardLayer.Drill, BoardSide.Both, basefilename, true, 1.0f);
@@ -203,9 +730,10 @@ namespace GerberLibrary
 
                     if (Logger != null) Logger.AddString("Carving inner polygons from board");
 
+                    if (Gerber.SaveIntermediateImages == true) _BoardPlate.Save("00 Outlines before carve.png");
 
                     CarveOutlineAndMillInnerPolygonsFromImage(basefilename, w, h, G, _BoardPlate, TransformCopy);
-                    if (Gerber.SaveIntermediateImages == true) _BoardPlate.Save("OutlinesCarved.png");
+                    if (Gerber.SaveIntermediateImages == true) _BoardPlate.Save("66 OutlinesCarved.png");
 
                     G = Graphics.FromImage(_Final);
                     ApplyAASettings(G);
@@ -261,7 +789,7 @@ namespace GerberLibrary
                             {
                                 if (C.A > 0)
                                 {
-                                    Color CopperColor = Gerber.BoardRenderPadColor;
+                                    Color CopperColor = Colors.BoardRenderPadColor;
                                     float A = (C.A / 255.0f);
                                     float IA = 1 - A;
                                     Color newDC = Color.FromArgb(O.A,
@@ -331,7 +859,7 @@ namespace GerberLibrary
                             if (Cop.A > 0 && Mask.A > 0)
                             {
 
-                                Color SurfaceFinish = Gerber.BoardRenderPadColor;
+                                Color SurfaceFinish = Colors.BoardRenderPadColor;
                                 Color BaseColor = O;
                                 float A = (Cop.A / 255.0f * Mask.A / 255.0f * (BmP.A / 255.0f)) * 0.85f;
                                 float IA = 1.0f - A;
@@ -348,7 +876,7 @@ namespace GerberLibrary
 
                             float IOA = 1.0f - OA2;
 
-                            Color S = Gerber.BoardRenderColor;
+                            Color S = Colors.BoardRenderColor;
 
 
 
@@ -464,317 +992,6 @@ namespace GerberLibrary
 
             //            return B;
         }
-
-        private PolyLineSet.Bounds GetOutlineBoundingBox()
-        {
-            PolyLineSet.Bounds B = new PolyLineSet.Bounds();
-            int i = 0;
-            foreach(var a in PLSs)
-            {
-                if (a.Layer == BoardLayer.Mill || a.Layer == BoardLayer.Outline)
-                {
-                    B.AddBox(a.BoundingBox);
-                    i++;
-                }
-            }
-            if (i == 0) return BoundingBox;
-            return B;
-        }
-
-        private void ApplyBumpMapping(Bitmap _Target, Bitmap _Bump, int w, int h)
-        {
-            LockBitmap Target = new LockBitmap(_Target);
-            Target.LockBits();
-            LockBitmap BumpMap = new LockBitmap(_Bump);
-
-            BumpMap.LockBits();
-
-            for (int x = 0; x < w; x++)
-            {
-                for (int y = 0; y < h; y++)
-                {
-                    Color TargetPixel = Target.GetPixel(x, y);
-                    Color B1 = BumpMap.GetPixel(x, y);
-
-                    if (true)//B1.A > 0)
-                    {
-                        Color B2 = B1;
-                        Color B4 = B1;
-                        if (x < w - 1)
-                        {
-                            B2 = BumpMap.GetPixel(x + 1, y);
-                            B4 = B2;
-                        }
-                        Color B3 = B1;
-                        if (y < h - 1) B3 = BumpMap.GetPixel(x, y + 1);
-                        if (y < h - 1 && x < w - 1)
-                        {
-                            B4 = BumpMap.GetPixel(x + 1, y + 1);
-                        }
-                        float dx1 = (B1.GetBrightness() - B2.GetBrightness());
-                        float dx2 = (B3.GetBrightness() - B4.GetBrightness());
-                        float dy1 = (B1.GetBrightness() - B3.GetBrightness());
-                        float dy2 = (B2.GetBrightness() - B4.GetBrightness());
-                        float dx = dx1 + dx2;
-                        float dy = dy1 + dy2;
-
-                        if (dx == 0 && dy == 0)
-                        {
-                            //skip
-                        }
-                        else
-                        {
-                            double ang = Math.Atan2(dy, dx);
-                            double dist = Math.Sqrt(dx * dx + dy * dy);
-                            double L = Math.Sin(ang - 1.4);
-                            if (L > 0) Target.SetPixel(x, y, Lighter(TargetPixel, L * 0.04));
-                            else
-                            {
-                                Target.SetPixel(x, y, Darker(TargetPixel, Math.Abs(L * 0.04)));
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            BumpMap.UnlockBits();
-            Target.UnlockBits();
-
-
-        }
-        public static Color Lighter(Color color, double Fac)
-        {
-            float correctionFactor = (float)Fac;
-            float red = (255 - color.R) * correctionFactor + color.R;
-            float green = (255 - color.G) * correctionFactor + color.G;
-            float blue = (255 - color.B) * correctionFactor + color.B;
-            return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
-        }
-        public static Color Darker(Color color, double Fac)
-        {
-            float correctionFactor = 1.0f - (float)Fac;
-            float red = (color.R) * correctionFactor;
-            float green = (color.G) * correctionFactor;
-            float blue = (color.B) * correctionFactor;
-            return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
-        }
-        public void DrawAllFiles(string v1, double dpi, ProgressLog Logger = null)
-        {
-
-            scale = dpi / 25.4f; // dpi
-            var OutlineBoundingBox = GetOutlineBoundingBox();
-            double bw = Math.Abs(OutlineBoundingBox.BottomRight.X - OutlineBoundingBox.TopLeft.X);
-            double bh = Math.Abs(OutlineBoundingBox.BottomRight.Y - OutlineBoundingBox.TopLeft.Y);
-            int width = (int)((bw * scale));
-            int height = (int)((bh * scale));
-
-            int w = width + 3;
-            int h = height + 3;
-
-            System.Drawing.Drawing2D.Matrix TransformCopy = null;
-            Graphics G = Graphics.FromImage(new Bitmap(1, 1));
-
-            G.TranslateTransform(0, h);
-            G.ScaleTransform(1, -1);
-
-            G.TranslateTransform(1, 1);
-            G.ScaleTransform((float)scale, (float)scale);
-            G.TranslateTransform((float)-OutlineBoundingBox.TopLeft.X, (float)-OutlineBoundingBox.TopLeft.Y);
-            TransformCopy = G.Transform.Clone();
-
-
-
-
-
-
-            foreach (var L in PLSs)
-            {
-
-                string FileName = v1 + "_" + L.Layer.ToString() + "_" + L.Side.ToString() + ".png";
-                if (Logger != null) Logger.AddString(String.Format("Rendering {0}-{1}", L.Layer.ToString(), L.Side.ToString()));
-
-                Bitmap B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
-
-                Graphics G2 = Graphics.FromImage(B2);
-                ApplyAASettings(G2);
-                var G3 = new GraphicsGraphicsInterface(G2);
-                G3.Clear(Color.White);
-                G3.Transform = TransformCopy.Clone();
-
-                Pen P = new Pen(Color.Black, 1.0f / (float)(scale));
-                int Shapes = 0;
-
-                Shapes += DrawLayerToGraphics(Color.Black, true, G3, P, L, false);
-
-                B2.Save(FileName);
-            }
-
-        }
-
-        public static void ApplyAASettings(Graphics G)
-        {
-            if (AA)
-            {
-                G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                G.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
-                G.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-            }
-            else
-            {
-                G.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-                G.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Low;
-                G.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
-            }
-        }
-
-        private void CarveOutlineAndMillInnerPolygonsFromImage(string basefilename, int w, int h, Graphics G, Bitmap _Target, System.Drawing.Drawing2D.Matrix TransformCopy)
-        {
-            var T = G.Transform.Clone();
-            G.Transform = TransformCopy;
-            var L = from i in PLSs where i.Layer == BoardLayer.Outline || i.Layer == BoardLayer.Mill && i.Side == BoardSide.Both select i;
-            if (L.Count() == 0) return;
-
-            List<PolyLine> ShapesList = new List<PolyLine>();
-            Dictionary<int, PolyLine> InsidePolygons = new Dictionary<int, PolyLine>();
-            foreach (var l in L)
-            {
-                l.FixPolygonWindings();
-                ShapesList.AddRange(l.OutlineShapes);
-
-            }
-
-            List<int> AddedIds = new List<int>();
-            // Helpers.LineSegmentsToPolygons()
-
-            for (int i = 0; i < ShapesList.Count; i++)
-            {
-                if (ClipperLib.Clipper.Orientation(ShapesList[i].toPolygon()) == false)
-                {
-                    InsidePolygons[i] = ShapesList[i];
-                }
-
-                //double IArea = Helpers.PolygonSurfaceArea(ShapesList[i].Vertices);
-
-                //for (int j = i + 1; j < ShapesList.Count; j++)
-                //{
-                //    double JArea = Helpers.PolygonSurfaceArea(ShapesList[j].Vertices);
-                //    if (JArea < IArea)
-                //    {
-                //        if (Helpers.IsInPolygon(ShapesList[i].Vertices, ShapesList[j].Vertices[0]))
-                //        {
-
-                //            InsidePolygons[j] = ShapesList[j];
-                //        }
-                //    }
-                //    else
-                //    {
-                //        if (Helpers.IsInPolygon(ShapesList[j].Vertices, ShapesList[i].Vertices[0]))
-                //        {
-                //            InsidePolygons[i] = ShapesList[i];
-                //        }
-
-                //    }
-                //}
-            }
-
-            Bitmap B2 = new Bitmap(w, h, PixelFormat.Format32bppArgb);
-            Graphics G2 = Graphics.FromImage(B2);
-            G2.Clear(Color.Black);
-            G2.Transform = TransformCopy;
-            ApplyAASettings(G2);
-
-
-            //G.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-
-            foreach (var a in InsidePolygons.Values)
-            {
-                List<PointF> Points = new List<PointF>();
-
-                for (int j = 0; j < a.Count(); j++)
-                {
-                    var P1 = a.Vertices[j];
-                    Points.Add(new PointF((float)((P1.X)), (float)((P1.Y))));
-                }
-
-
-                G2.FillPolygon(new SolidBrush(Color.Red), Points.ToArray());
-            }
-            if (Gerber.SaveIntermediateImages) B2.Save("outlines_redimages.png");
-
-
-            LockBitmap Source = new LockBitmap(B2);
-            LockBitmap Target = new LockBitmap(_Target);
-            Source.LockBits();
-            Target.LockBits();
-
-            for (int y = 0; y < h; y++)
-            {
-                for (int x = 0; x < w; x++)
-                {
-                    var S = Source.GetPixel(x, y);
-                    if (S.R > 0)
-                    {
-                        Target.SetPixel(x, y, Color.FromArgb(255 - S.R, Target.GetPixel(x, y)));
-                    }
-                }
-            }
-            Source.UnlockBits();
-            Target.UnlockBits();
-
-            if (Gerber.SaveIntermediateImages) _Target.Save("outlines_carved.png");
-
-
-            // G.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
-            G.Transform = T;
-            if (Gerber.ExtremelyVerbose) Console.WriteLine("polygons #: {0} total, {1} carved", ShapesList.Count, InsidePolygons.Count);
-
-
-            //Bitmap B2 = new Bitmap(w, h, PixelFormat.Format32bppArgb);
-            // Graphics G2 = Graphics.FromImage(B2);
-            G2.Clear(Color.Black);
-            G2.Transform = TransformCopy;
-            foreach (var a in ShapesList)
-            {
-                List<PointF> Points = new List<PointF>();
-
-                for (int j = 0; j < a.Count(); j++)
-                {
-                    var P1 = a.Vertices[j];
-                    Points.Add(new PointF((float)((P1.X)), (float)((P1.Y))));
-                }
-
-                G2.DrawPolygon(new Pen(Color.Transparent, 1.0f / (float)scale), Points.ToArray());
-            }
-            if (Gerber.SaveIntermediateImages) B2.Save("outlines_3aftershapelist.png");
-
-            foreach (var a in InsidePolygons.Values)
-            {
-                List<PointF> Points = new List<PointF>();
-
-                for (int j = 0; j < a.Count(); j++)
-                {
-                    var P1 = a.Vertices[j];
-                    Points.Add(new PointF((float)((P1.X)), (float)((P1.Y))));
-                }
-
-                G2.DrawPolygon(new Pen(Color.FromArgb(200, 255, 255, 0), 1.0f / (float)scale), Points.ToArray());
-            }
-
-            if (Gerber.SaveIntermediateImages) B2.Save("outlines_4afterinside.png");
-
-        }
-
-        public string DrawToFile(string basefilename, BoardSide CurrentLayer, double dpi = 400, bool showimage = true, ProgressLog Logger = null)
-        {
-            Bitmap B = DrawBoard(dpi, CurrentLayer, basefilename, Logger);
-            string filename = basefilename + "_Combined_" + CurrentLayer.ToString() + ".png";
-
-            B.Save(filename, System.Drawing.Imaging.ImageFormat.Png);
-            if (showimage) System.Diagnostics.Process.Start(basefilename + "_Combined_" + CurrentLayer.ToString() + ".png");
-            return filename;
-        }
-
         private Bitmap DrawIfExists(int w, int h, System.Drawing.Drawing2D.Matrix TransformCopy, Color color, BoardLayer boardLayer, BoardSide boardSide, string filename = null, bool fill = true, float alpha = 0.83f, bool forcefill = false)
         {
 
@@ -814,71 +1031,6 @@ namespace GerberLibrary
                 //G.Transform = T;
             }
 
-            return B2;
-        }
-
-        public System.Drawing.Drawing2D.Matrix BuildMatrix(int w, int h)
-        {
-            Bitmap B = new Bitmap(1, 1);
-            Graphics G = Graphics.FromImage(B);
-            System.Drawing.Drawing2D.Matrix T = new System.Drawing.Drawing2D.Matrix();
-            var OutlineBoundingBox = GetOutlineBoundingBox();
-
-            G.TranslateTransform(0, h);
-            G.ScaleTransform(1, -1);
-            G.TranslateTransform(1, 1);
-            G.ScaleTransform((float)scale, (float)scale);
-            G.TranslateTransform((float)-OutlineBoundingBox.TopLeft.X, (float)-OutlineBoundingBox.TopLeft.Y);
-            T = G.Transform.Clone();
-            return T;
-
-        }
-
-        public Bitmap RenderToBitmap(int w, int h, System.Drawing.Drawing2D.Matrix Transform, Color foregroundcolor, Color backgroundcolor, ParsedGerber PLS, bool fill, bool forcefill = false)
-        {
-            Bitmap B2;
-
-            try
-            {
-                B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error: Failed to create image of size {0}x{1}", w, h);
-                return null;
-            }
-
-            Graphics G2 = Graphics.FromImage(B2);
-
-            ApplyAASettings(G2);
-            var G3 = new GraphicsGraphicsInterface(G2);
-            G3.Clear(backgroundcolor);
-            G3.Transform = Transform.Clone();
-
-            Pen P = new Pen(foregroundcolor, 1.0f / (float)(scale));
-            int Shapes = 0;
-            Shapes += DrawLayerToGraphics(foregroundcolor, fill, G3, P, PLS, forcefill);
-            //            if (Shapes == 0) return null;
-            return B2;
-        }
-
-        private Bitmap RenderToBitmap(int w, int h, System.Drawing.Drawing2D.Matrix T, Color color, BoardLayer boardLayer, BoardSide boardSide, bool fill, bool forcefill = false)
-        {
-            var L = from i in PLSs where i.Layer == boardLayer && i.Side == boardSide select i;
-            //if (L.Count() == 0) return null;
-            Bitmap B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
-            Graphics G2 = Graphics.FromImage(B2);
-            ApplyAASettings(G2);
-            var G3 = new GraphicsGraphicsInterface(G2);
-            G3.Clear(Color.FromArgb(0, 0, 0, 0));
-            G3.Transform = T.Clone();
-            Pen P = new Pen(color, 1.0f / (float)(scale));
-            int Shapes = 0;
-            foreach (var l in L)
-            {
-                Shapes += DrawLayerToGraphics(color, fill,  G3, P, l, forcefill);
-            }
-            if (Shapes == 0) return null;
             return B2;
         }
 
@@ -936,181 +1088,7 @@ namespace GerberLibrary
             }
         }
 
-        public void AddBoardsToSet(List<string> FileList)
-        {
-            foreach (var a in FileList)
-            {
-                BoardSide aSide;
-                BoardLayer aLayer;
-                Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
-                if (aLayer == BoardLayer.Outline) hasgko = true;
-            }
-
-            foreach (var a in FileList)
-            {
-                AddFileToSet(a);
-            }
-
-            FixEagleDrillExportIssues();
-            CheckRelativeBoundingBoxes();
-
-            CheckForOutlineFiles();
-        }
-
-        private void CheckForOutlineFiles()
-        {
-            List<ParsedGerber> Outlines = new List<ParsedGerber>();
-            List<ParsedGerber> Unknowns = new List<ParsedGerber>();
-            foreach (var a in PLSs)
-            {
-                if (a.Side == BoardSide.Both &&( a.Layer == BoardLayer.Outline || a.Layer == BoardLayer.Mill))
-                {
-                    Outlines.Add(a);
-                }
-                if (a.Side == BoardSide.Unknown && a.Layer == BoardLayer.Unknown)
-                {
-                    Unknowns.Add(a);
-                    Errors.Add(String.Format("Unknown file in set:{0}", Path.GetFileName(a.Name)));
-                }
-
-            }
-
-            if (Outlines.Count == 0)
-            {
-                if (Unknowns.Count == 0)
-                {
-                    Errors.Add(String.Format("No outline file found and all other files accounted for! "));
-
-                    InventOutline();
-                        
-
-                }
-                else
-                {
-                    //InventOutline();
-                    //return;
-                    foreach (var a in Unknowns)
-                    {
-                        PLSs.Remove(a);
-                        hasgko = true;
-                        a.Layer = BoardLayer.Outline;
-                        a.Side = BoardSide.Both;
-                        Console.WriteLine("Note: Using {0} as outline file", Path.GetFileName(a.Name));
-
-
-                        bool    zerowidth = true;
-                            bool precombine = true;
-                        
-                        var b = AddBoardToSet(a.Name, zerowidth, precombine, 1.0);
-                        b.Layer = BoardLayer.Outline;
-                        b.Side = BoardSide.Both;
-                            
-                    }
-                }
-            }
-        }
-
-        private void InventOutline()
-        {
-            double largest = 0;
-            ParsedGerber Largest = null;
-            PolyLine Outline = null;
-            foreach (var a in PLSs)
-            {
-                var P = a.FindLargestPolygon();
-                if (P!=null)
-                {
-                    if (P.Item1 > largest)
-                    {
-                        Largest = a;
-                        Outline = P.Item2;
-                    }
-                }
-
-            }
-            bool zerowidth = true;
-            bool precombine = true;
-
-            Console.WriteLine("Note: Using {0} to extract outline file", Path.GetFileName(Largest.Name));
-            var b = AddBoardToSet(Largest.Name, zerowidth, precombine, 1.0);
-            b.Layer = BoardLayer.Outline;
-            b.Side = BoardSide.Both;
-            b.DisplayShapes.Clear();
-            b.OutlineShapes.Clear();
-            b.Shapes.Clear();
-            Outline.Close();
-            b.Shapes.Add(Outline);
-            b.OutlineShapes.Add(Outline);
-            //b.DisplayShapes.Add(Outline);
-            //b.BuildBoundary();
-            b.FixPolygonWindings();
-            b.CalcPathBounds();
-        }
-
-        private void CheckRelativeBoundingBoxes()
-        {
-
-
-            List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
-            List<ParsedGerber> DrillFilesToReload = new List<ParsedGerber>();
-            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
-            foreach (var a in PLSs)
-            {
-                if (a.Layer == BoardLayer.Drill)
-                {
-                    DrillFiles.Add(a);
-                }
-                else
-                {
-                    BB.AddBox(a.BoundingBox);
-                }
-            }
-
-            foreach (var a in DrillFiles)
-            {
-
-                if (a.BoundingBox.Intersects(BB) == false)
-                {
-                    Errors.Add(String.Format("Drill file {0} does not seem to touch the main bounding box!", Path.GetFileName(a.Name)));
-                    PLSs.Remove(a);
-                }
-            }
-
-
-
-            BoundingBox = new PolyLineSet.Bounds();
-            foreach (var a in PLSs)
-            {
-                //   Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName(a.Name));
-
-
-                //Console.WriteLine("adding box for {0}:{1},{2}", a.Name, a.BoundingBox.Width(), a.BoundingBox.Height());
-                BoundingBox.AddBox(a.BoundingBox);
-            }
-
-        }
-
-        private void AddFileToSet(string a, double drillscaler = 1.0)
-        {
-            string[] filesplit = a.Split('.');
-
-            string ext = filesplit[filesplit.Count() - 1].ToLower();
-            bool zerowidth = false;
-            bool precombine = false;
-
-            BoardSide aSide;
-            BoardLayer aLayer;
-            Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
-
-            if (aLayer == BoardLayer.Outline || (aLayer == BoardLayer.Mill && hasgko == false))
-            {
-                zerowidth = true;
-                precombine = true;
-            }
-            AddBoardToSet(a, zerowidth, precombine, drillscaler);
-        }
-
-        private void FixEagleDrillExportIssues()
+        private void FixEagleDrillExportIssues(ProgressLog Logger)
         {
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<Tuple<double, ParsedGerber>> DrillFilesToReload = new List<Tuple<double, ParsedGerber>>();
@@ -1133,6 +1111,7 @@ namespace GerberLibrary
                 if (b.Width() > BB.Width() * 1.5 || b.Height() > BB.Height() * 1.5)
                 {
                     var MaxRatio = Math.Max(b.Width() / BB.Width(), b.Height() / BB.Height());
+                    if (Logger != null) Logger.AddString(String.Format("Note: Really large drillfile found({0})-fix your export scripts!", a.Name));
                     Console.WriteLine("Note: Really large drillfile found ({0})- fix your export scripts!", a.Name);
                     DrillFilesToReload.Add(new Tuple<double, ParsedGerber>(MaxRatio, a));
                 }
@@ -1145,6 +1124,7 @@ namespace GerberLibrary
                 if (Double.IsInfinity(a.Item1) || Double.IsNaN(a.Item1))
                 {
                     Errors.Add("Drill file size reached infinity - ignoring it");
+                    if (Logger != null) Logger.AddString("Drill file size reached infinity - ignoring it");
                 }
                 else
                 {
@@ -1154,7 +1134,7 @@ namespace GerberLibrary
                         R /= 10;
                         scale /= 10;
                     }
-                    AddFileToSet(a.Item2.Name, scale);
+                    AddFileToSet(a.Item2.Name, Logger, scale);
                 }
             }
 
@@ -1168,22 +1148,191 @@ namespace GerberLibrary
                 BoundingBox.AddBox(a.BoundingBox);
             }
         }
+
+        private PolyLineSet.Bounds GetOutlineBoundingBox()
+        {
+            PolyLineSet.Bounds B = new PolyLineSet.Bounds();
+            int i = 0;
+            foreach(var a in PLSs)
+            {
+                if (a.Layer == BoardLayer.Mill || a.Layer == BoardLayer.Outline)
+                {
+                    B.AddBox(a.BoundingBox);
+                    i++;
+                }
+            }
+            if (i == 0) return BoundingBox;
+            return B;
+        }
+        private bool InventOutline()
+        {
+            double largest = 0;
+            ParsedGerber Largest = null;
+            PolyLine Outline = null;
+
+            foreach (var a in PLSs)
+            {
+                var P = a.FindLargestPolygon();
+                if (P != null)
+                {
+                    if (P.Item1 > largest)
+                    {
+                        largest = P.Item1;
+                        Largest = a;
+                        Outline = P.Item2;
+                    }
+                }
+
+            }
+
+            if (largest < BoundingBox.Area() / 3.0) return false;
+            bool zerowidth = true;
+            bool precombine = true;
+
+            Console.WriteLine("Note: Using {0} to extract outline file", Path.GetFileName(Largest.Name));
+            if (Largest.Layer == BoardLayer.Mill)
+            {
+                Largest.OutlineShapes.Remove(Outline);
+                Largest.Shapes.Remove(Outline);
+            }
+
+            var b = AddBoardToSet(Largest.Name, zerowidth, precombine, 1.0);
+            b.Layer = BoardLayer.Outline;
+            b.Side = BoardSide.Both;
+            b.DisplayShapes.Clear();
+            b.OutlineShapes.Clear();
+            b.Shapes.Clear();
+            Outline.Close();
+            b.Shapes.Add(Outline);
+            b.OutlineShapes.Add(Outline);
+            //b.DisplayShapes.Add(Outline);
+            //b.BuildBoundary();
+            b.FixPolygonWindings();
+            b.CalcPathBounds();
+
+            return true;
+        }
+
+        private bool InventOutlineFromMill()
+        {
+            double largest = 0;
+            ParsedGerber Largest = null;
+            PolyLine Outline = null;
+
+            foreach (var a in PLSs.Where(x => x.Layer == BoardLayer.Mill))
+            {
+                var P = a.FindLargestPolygon();
+                if (P != null)
+                {
+                    if (P.Item1 > largest)
+                    {
+                        largest = P.Item1;
+                        Largest = a;
+                        Outline = P.Item2;
+                    }
+                }
+
+            }
+            if (Largest == null) return false;
+            // if (largest < BoundingBox.Area() / 3.0) return false;
+            bool zerowidth = true;
+            bool precombine = true;
+
+            Console.WriteLine("Note: Using {0} to extract outline file", Path.GetFileName(Largest.Name));
+
+            var b = AddBoardToSet(Largest.Name, zerowidth, precombine, 1.0);
+            b.Layer = BoardLayer.Outline;
+            b.Side = BoardSide.Both;
+            //b.DisplayShapes.Clear();
+            //b.OutlineShapes.Clear();
+            //b.Shapes.Clear();
+            // Outline.Close();
+            // b.Shapes.Add(Outline);
+            // b.OutlineShapes.Add(Outline);
+            //b.DisplayShapes.Add(Outline);
+            //b.BuildBoundary();
+            // b.FixPolygonWindings();
+            // b.CalcPathBounds();
+
+            return true;
+        }
+
+        private Bitmap RenderToBitmap(int w, int h, System.Drawing.Drawing2D.Matrix T, Color color, BoardLayer boardLayer, BoardSide boardSide, bool fill, bool forcefill = false)
+        {
+            var L = from i in PLSs where i.Layer == boardLayer && i.Side == boardSide select i;
+            //if (L.Count() == 0) return null;
+            Bitmap B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
+            Graphics G2 = Graphics.FromImage(B2);
+            ApplyAASettings(G2);
+            var G3 = new GraphicsGraphicsInterface(G2);
+            G3.Clear(Color.FromArgb(0, 0, 0, 0));
+            G3.Transform = T.Clone();
+            Pen P = new Pen(color, 1.0f / (float)(scale));
+            int Shapes = 0;
+            foreach (var l in L)
+            {
+                Shapes += DrawLayerToGraphics(color, fill,  G3, P, l, forcefill);
+            }
+            if (Shapes == 0) return null;
+            return B2;
+        }
     }
 
     public class LockBitmap
     {
-        Bitmap source = null;
-        IntPtr Iptr = IntPtr.Zero;
         BitmapData bitmapData = null;
-
-        public byte[] Pixels { get; set; }
-        public int Depth { get; private set; }
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-
+        IntPtr Iptr = IntPtr.Zero;
+        Bitmap source = null;
         public LockBitmap(Bitmap source)
         {
             this.source = source;
+        }
+
+        public int Depth { get; private set; }
+        public int Height { get; private set; }
+        public byte[] Pixels { get; set; }
+        public int Width { get; private set; }
+        /// <summary>
+        /// Get the color of the specified pixel
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public Color GetPixel(int x, int y)
+        {
+            Color clr = Color.Empty;
+
+            // Get color components count
+            int cCount = Depth / 8;
+
+            // Get start index of the specified pixel
+            int i = ((y * Width) + x) * cCount;
+
+            if (i > Pixels.Length - cCount)
+                throw new IndexOutOfRangeException();
+
+            if (Depth == 32) // For 32 bpp get Red, Green, Blue and Alpha
+            {
+                byte b = Pixels[i];
+                byte g = Pixels[i + 1];
+                byte r = Pixels[i + 2];
+                byte a = Pixels[i + 3]; // a
+                clr = Color.FromArgb(a, r, g, b);
+            }
+            if (Depth == 24) // For 24 bpp get Red, Green and Blue
+            {
+                byte b = Pixels[i];
+                byte g = Pixels[i + 1];
+                byte r = Pixels[i + 2];
+                clr = Color.FromArgb(r, g, b);
+            }
+            if (Depth == 8)
+            // For 8 bpp get color value (Red, Green and Blue values are the same)
+            {
+                byte c = Pixels[i];
+                clr = Color.FromArgb(c, c, c);
+            }
+            return clr;
         }
 
         /// <summary>
@@ -1233,68 +1382,6 @@ namespace GerberLibrary
         }
 
         /// <summary>
-        /// Unlock bitmap data
-        /// </summary>
-        public void UnlockBits()
-        {
-            try
-            {
-                // Copy data from byte array to pointer
-                Marshal.Copy(Pixels, 0, Iptr, Pixels.Length);
-
-                // Unlock bitmap data
-                source.UnlockBits(bitmapData);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>
-        /// Get the color of the specified pixel
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public Color GetPixel(int x, int y)
-        {
-            Color clr = Color.Empty;
-
-            // Get color components count
-            int cCount = Depth / 8;
-
-            // Get start index of the specified pixel
-            int i = ((y * Width) + x) * cCount;
-
-            if (i > Pixels.Length - cCount)
-                throw new IndexOutOfRangeException();
-
-            if (Depth == 32) // For 32 bpp get Red, Green, Blue and Alpha
-            {
-                byte b = Pixels[i];
-                byte g = Pixels[i + 1];
-                byte r = Pixels[i + 2];
-                byte a = Pixels[i + 3]; // a
-                clr = Color.FromArgb(a, r, g, b);
-            }
-            if (Depth == 24) // For 24 bpp get Red, Green and Blue
-            {
-                byte b = Pixels[i];
-                byte g = Pixels[i + 1];
-                byte r = Pixels[i + 2];
-                clr = Color.FromArgb(r, g, b);
-            }
-            if (Depth == 8)
-            // For 8 bpp get color value (Red, Green and Blue values are the same)
-            {
-                byte c = Pixels[i];
-                clr = Color.FromArgb(c, c, c);
-            }
-            return clr;
-        }
-
-        /// <summary>
         /// Set the color of the specified pixel
         /// </summary>
         /// <param name="x"></param>
@@ -1325,6 +1412,25 @@ namespace GerberLibrary
             // For 8 bpp set color value (Red, Green and Blue values are the same)
             {
                 Pixels[i] = color.B;
+            }
+        }
+
+        /// <summary>
+        /// Unlock bitmap data
+        /// </summary>
+        public void UnlockBits()
+        {
+            try
+            {
+                // Copy data from byte array to pointer
+                Marshal.Copy(Pixels, 0, Iptr, Pixels.Length);
+
+                // Unlock bitmap data
+                source.UnlockBits(bitmapData);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
     }

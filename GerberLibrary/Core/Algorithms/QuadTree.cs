@@ -35,7 +35,7 @@ namespace GerberLibrary.Core.Algorithms
                 }
                 for (int i = 0; i < Children.Count; i++)
                 {
-                    if (Children[i].CallBackInside(S, callback) == false) return false;
+                    Children[i].CallBackInside(S, callback);
                 }
             }
             return true;

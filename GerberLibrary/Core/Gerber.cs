@@ -15,17 +15,19 @@ using GerberLibrary.Core;
 namespace GerberLibrary
 {
 
-
+    public class BoardRenderColorSet
+    {
+        public Color BoardRenderBaseMaterialColor = Gerber.ParseColor("#808080");
+        public Color BoardRenderColor = Gerber.ParseColor("green");
+        public Color BoardRenderCopperColor = Color.FromArgb(219, 125, 104);
+        public Color BoardRenderPadColor = Gerber.ParseColor("gold");
+        public Color BoardRenderSilkColor = Gerber.ParseColor("white");
+    }
     public static class Gerber
     {
         #region GERBERPROCESSINGDEFAULTS
         public static double ArcQualityScaleFactor = 15;
-
-        public static Color BoardRenderBaseMaterialColor = ParseColor("#808080");
-        public static Color BoardRenderColor = ParseColor("green");
-        public static Color BoardRenderCopperColor = Color.FromArgb(219, 125, 104);
-        public static Color BoardRenderPadColor = ParseColor("gold");
-        public static Color BoardRenderSilkColor = ParseColor("white");
+        
         public static bool DirectlyShowGeneratedBoardImages = true;
         public static bool DumpSanitizedOutput = false;
         public static string EOF = "M02*";
@@ -183,7 +185,7 @@ namespace GerberLibrary
             double HEdeg = RadToDeg(HE);
 
             double HSdeg = RadToDeg(HS);
-            for (int i = 0; i < segs; i++)
+            for (int i = 0; i <= segs; i++)
             {
                 double P = ((double)i / (double)segs) * (HE - HS) + HS;
                 double nx = Math.Cos(P) * Radius + CX;
@@ -191,7 +193,7 @@ namespace GerberLibrary
                 R.Add(new PointD(nx, ny));
             }
 
-            R.Add(new PointD(X, Y));
+        //    R.Add(new PointD(X, Y));
 
             return R;
         }
@@ -200,7 +202,7 @@ namespace GerberLibrary
         {
             Side = BoardSide.Unknown;
             Layer = BoardLayer.Unknown;
-            string[] filesplit = gerberfile.Split('.');
+            string[] filesplit = Path.GetFileName( gerberfile).Split('.');
             string ext = filesplit[filesplit.Count() - 1].ToLower();
             switch (ext)
             {
@@ -263,16 +265,21 @@ namespace GerberLibrary
                             break;
 
                         default:
-                            if (gerberfile.ToLower().Contains("-edge_cuts"))
-                            {
-                                Side = BoardSide.Both;
-                                Layer = BoardLayer.Outline;
-                            }
+                            if (gerberfile.ToLower().Contains("-edge_cuts")) { Side = BoardSide.Both;Layer = BoardLayer.Outline;}
+
+                            if (gerberfile.ToLower().Contains("-b_cu")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; }
+                            if (gerberfile.ToLower().Contains("-f_cu")) { Side = BoardSide.Top; Layer = BoardLayer.Copper; }
+                            if (gerberfile.ToLower().Contains("-b_silks")) { Side = BoardSide.Bottom; Layer = BoardLayer.Silk; }
+                            if (gerberfile.ToLower().Contains("-f_silks")) { Side = BoardSide.Top; Layer = BoardLayer.Silk; }
+                            if (gerberfile.ToLower().Contains("-b_mask")) { Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; }
+                            if (gerberfile.ToLower().Contains("-f_mask")) { Side = BoardSide.Top; Layer = BoardLayer.SolderMask; }
+                            if (gerberfile.ToLower().Contains("-b_paste")) { Side = BoardSide.Bottom; Layer = BoardLayer.Paste; }
+                            if (gerberfile.ToLower().Contains("-f_paste")) { Side = BoardSide.Top; Layer = BoardLayer.Paste; }
                             break;
 
                     }
-
                     break;
+
                 case "ger":
                     {
                         string l = gerberfile.ToLower();
@@ -301,51 +308,69 @@ namespace GerberLibrary
                         }
                     }
                     break;
+
                 case "gml":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Mill;
                     break;
+
                 case "gko":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Outline;
                     break;
+
                 case "gl1":
                     Side = BoardSide.Internal1;
                     Layer = BoardLayer.Copper;
                     break;
+
                 case "gl2":
                     Side = BoardSide.Internal2;
                     Layer = BoardLayer.Copper;
                     break;
+
                 case "gbl":
+                case "l2m":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Copper;
                     break;
+
+                case "l1m":
                 case "gtl":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Copper;
                     break;
+
                 case "gbp":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Paste;
                     break;
+
                 case "gtp":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Paste;
                     break;
+
                 case "gbo":
+                case "ss2":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Silk;
                     break;
+
                 case "gto":
+                case "ss1":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Silk;
                     break;
+
                 case "gbs":
+                case "sm2":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.SolderMask;
                     break;
+
                 case "gts":
+                case "sm1":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.SolderMask;
                     break;
@@ -364,35 +389,45 @@ namespace GerberLibrary
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Copper;
                     break;
+
                 case "bot":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Copper;
                     break;
+
                 case "smb":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.SolderMask;
                     break;
+
                 case "smt":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.SolderMask;
                     break;
+
                 case "sst":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Silk;
                     break;
+
                 case "ssb":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Silk;
                     break;
+
                 case "spt":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Paste;
                     break;
+
                 case "spb":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Paste;
                     break;
+
                 case "drl":
+                case "drill":
+                case "drillnpt":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Drill;
                     break;
