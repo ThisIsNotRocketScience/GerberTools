@@ -13,6 +13,33 @@ namespace GerberLibrary
     public class SVGGraphicsInterface : Core.GraphicsInterface
     {
         public double Width;
+
+        public void FillRectangleCMYK(double x1, double y1, double width, double height, double c, double m, double y, double k)
+        {
+            OutputLines.Add(String.Format("<rect x=\"{0}\" y=\"{1}\" width=\"{2}\" height=\"{3}\" fill=\"{4}\"/>",D(x1),D(y1),D(width), D(height), GetCMYK(c,m,y,k)));
+        }
+
+        public void FillCircleCMYK(double x1, double y1, double radius, double c, double m, double y, double k)
+        {
+            OutputLines.Add(String.Format("<circle cx=\"{0}\" cy=\"{1}\" r=\"{2}\" fill=\"{3}\"/>", D(x1), D(y1), D(radius), GetCMYK(c, m, y, k)));
+        }
+
+        public void AddCMYKText(string text, string fontfam, double x, double y1 , double height, double c, double m, double y, double k)
+        {
+            OutputLines.Add(String.Format("<text font-family=\"{0}\" font-size=\"{1}\" x=\"{2}\" y=\"{3}\" fill=\"{5}\">{4}</text>", fontfam, D(height), D(x), D(y1), text, GetCMYK(c,m,y,k)));
+            
+        }
+
+        private static string D(double d)
+        {
+            return d.ToString().Replace(',', '.');
+        }
+        private object GetCMYK(double c, double m, double y, double k)
+        {
+            //fill = "#ffffff icc-color(Generic-CMYK-profile, 1.00, 0.50, 0.00, 0.25)
+            return string.Format("#ffffff icc-color(Generic-CMYK-profile, {0},{1},{2},{3})", D(c),D(m),D(y),D(k)); 
+        }
+
         public double Height;
 
         public string GetColor(byte r, byte g, byte b)
