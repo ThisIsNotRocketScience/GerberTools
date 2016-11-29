@@ -60,16 +60,20 @@ namespace GerberLibrary.Core
                 LeftoverLines.Add(FirstSweep[0]);
                 for (int i = 1; i < FirstSweep.Count; i++)
                 {
-                    if (FirstSweep[i].First() == LeftoverLines.Last().Last())
+                    var LastLeft = LeftoverLines.Last();
+                    var LastLeftP = LastLeft.Last();
+
+                    if (FirstSweep[i].First() == LastLeftP)
                     {
-                        LeftoverLines.Last().AddRange(FirstSweep[i].Skip(1));
+                        LastLeft.AddRange(FirstSweep[i].Skip(1));
                     }
                     else
                     {
-                        if (FirstSweep[i].Last() == LeftoverLines.Last().Last())
+                        if (FirstSweep[i].Last() == LastLeftP)
                         {
                             FirstSweep[i].Reverse();
-                            LeftoverLines.Last().AddRange(FirstSweep[i].Skip(1));
+
+                            LastLeft.AddRange(FirstSweep[i].Skip(1));
                         }
                         else
                         {
@@ -156,6 +160,7 @@ namespace GerberLibrary.Core
                         }
                         else
                         {
+                            a.Remove(a.Last());
 //                            Console.WriteLine("closed path with {0} points during stage 2: {1} reversematched", a.Count(), matching);
                             P.Closed = true;
                         }
@@ -309,17 +314,17 @@ namespace GerberLibrary.Core
                 
             }
 
-            Root.xstart = B.TopLeft.X-1;
-            Root.xend= B.BottomRight.X+1;
-            Root.ystart = B.TopLeft.Y-1;
-            Root.yend = B.BottomRight.Y+1;
+            Root.xstart = B.TopLeft.X-10;
+            Root.xend= B.BottomRight.X+10;
+            Root.ystart = B.TopLeft.Y-10;
+            Root.yend = B.BottomRight.Y+10;
 
             for (int i = 0; i < Paths.Count; i++)
             {
                 if (Paths[i].Closed == false)
                 {
-                    Root.Insert(new SegmentEndContainer() { PathID = i, Point = Paths[i].Points.First(), Side = SideEnum.Start }, 4);
-                    Root.Insert(new SegmentEndContainer() { PathID = i, Point = Paths[i].Points.Last(), Side = SideEnum.End }, 4);
+                    Root.Insert(new SegmentEndContainer() { PathID = i, Point = Paths[i].Points.First(), Side = SideEnum.Start }, 0);
+                    Root.Insert(new SegmentEndContainer() { PathID = i, Point = Paths[i].Points.Last(), Side = SideEnum.End }, 0);
                 }
             }
             RectangleF R = new RectangleF();
@@ -329,12 +334,12 @@ namespace GerberLibrary.Core
 
             for (int i = 0; i < Paths.Count; i++)
             {
-               // Console.WriteLine("checking path {0}", i);
+               Console.WriteLine("checking path {0}", i);
                 var P = Paths[i];
                 if (P.Closed == false)
                 {
                     var PF = P.Points.First();
-                    //Console.WriteLine("checking firstvert {0}", PF);
+                    Console.WriteLine("checking firstvert {0}", PF);
 
                     R.X = (float)(P.Points.First().X - 5);
                     R.Y = (float)(P.Points.First().Y -5);
@@ -344,17 +349,19 @@ namespace GerberLibrary.Core
                         {
                             var S = QI as SegmentEndContainer;
                             if (S.PathID == i) return true;
-                           // Console.WriteLine(" against {0}", S.Point);
+                            Console.WriteLine(" against {0}", S.Point);
                             if (S.Point == PF)
                             {
                                 if (S.Side == SideEnum.Start)
                                 {
                                     startmatch = S.PathID;
+                                    Console.WriteLine(" matched start {0}" , startmatch);
                                 }
                                 else
                                 {
 
                                     endmatch = S.PathID;
+                                    Console.WriteLine(" matched end {0}", endmatch);
                                 }
 
                             }
@@ -531,10 +538,10 @@ namespace GerberLibrary.Core
 
             }
 
-            Root.xstart = B.TopLeft.X;
-            Root.xend = B.BottomRight.X;
-            Root.ystart = B.TopLeft.Y;
-            Root.yend = B.BottomRight.Y;
+            Root.xstart = B.TopLeft.X-10;
+            Root.xend = B.BottomRight.X+10;
+            Root.ystart = B.TopLeft.Y-10;
+            Root.yend = B.BottomRight.Y+10;
 
             for (int i = 0; i < Paths.Count; i++)
             {
