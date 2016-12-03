@@ -70,7 +70,7 @@ namespace WindowsFormsApplication1
                 {
 
 
-                    GIC.WriteImageFiles(Path.GetDirectoryName(Files[0]) + ".png", 200, true, this);
+                    GIC.WriteImageFiles(Path.GetDirectoryName(Files[0]) + ".png", 400, true, this);
                     //       GIC.DrawAllFiles(Path.GetDirectoryName(Files[0]) + "_Layer", 200, this);
                 }
                 else

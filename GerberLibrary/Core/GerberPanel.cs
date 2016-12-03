@@ -520,7 +520,7 @@ namespace GerberLibrary
         private void FillShape(GraphicsInterface G, SolidBrush BR, PolyLine Shape)
         {
            
-            G.FillShape(BR, Shape);
+           // G.FillShape(BR, Shape);
         }
 
         /// <summary>

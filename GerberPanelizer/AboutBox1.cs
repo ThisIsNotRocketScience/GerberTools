@@ -15,11 +15,10 @@ namespace GerberCombinerBuilder
         {
             InitializeComponent();
             this.Text = String.Format("About {0}", AssemblyTitle);
-            this.labelProductName.Text = AssemblyProduct;
-            this.labelVersion.Text = String.Format("Version {0}", AssemblyVersion) + " built on " + System.IO.File.GetLastWriteTime(System.Reflection.Assembly.GetExecutingAssembly().Location).ToString(); ;
-            this.labelCopyright.Text = AssemblyCopyright;
-            this.labelCompanyName.Text = AssemblyCompany;
-            this.textBoxDescription.Text = AssemblyDescription;
+
+
+
+            this.textBoxDescription.Text = AssemblyProduct + "\r\n"+ String.Format("Version {0}", AssemblyVersion) + " built on " + System.IO.File.GetLastWriteTime(System.Reflection.Assembly.GetExecutingAssembly().Location).ToString() + "\r\n" + AssemblyCopyright + "\r\n" + AssemblyCompany + "\r\n" + AssemblyDescription;
         }
 
         #region Assembly Attribute Accessors
