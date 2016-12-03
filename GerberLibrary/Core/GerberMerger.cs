@@ -163,10 +163,12 @@ namespace GerberLibrary
                     OutputLines.Add(a.Value.BuildGerber(GNF, 0).Trim());
                 }
             }
+           
             foreach (var a in File1Parsed.State.Apertures)
             {
                 OutputLines.Add(a.Value.BuildGerber(GNF));
             }
+            int LastID = ApertureOffset + 10;
             foreach (var fileparsed in OtherFiles)
             {
 
@@ -176,7 +178,7 @@ namespace GerberLibrary
                     {
                         a.Value.MacroName = MacroDict[a.Value.MacroName];
                     }
-                    a.Value.ID += ApertureOffset;
+                    a.Value.ID = LastID++;
                     OutputLines.Add(a.Value.BuildGerber(GNF));
                 }
             }
