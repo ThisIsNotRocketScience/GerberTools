@@ -22,6 +22,20 @@ namespace GerberLibrary
         public Color BoardRenderCopperColor = Color.FromArgb(219, 125, 104);
         public Color BoardRenderPadColor = Gerber.ParseColor("gold");
         public Color BoardRenderSilkColor = Gerber.ParseColor("white");
+
+        public Color BackgroundColor = Color.FromArgb(20,20,20);
+        public Color GetDefaultColor(BoardLayer layer, BoardSide side)
+        {
+            switch(layer)
+            {
+                case BoardLayer.Drill: return BackgroundColor;
+                case BoardLayer.Copper: return BoardRenderCopperColor;
+                case BoardLayer.Outline: return BoardRenderColor;
+                case BoardLayer.SolderMask: return MathHelpers.Interpolate(BoardRenderColor, BoardRenderBaseMaterialColor, 0.2f);
+                case BoardLayer.Silk: return BoardRenderSilkColor;
+            }
+            return Color.FromArgb(100, 255, 255, 255);
+        }
     }
     public static class Gerber
     {
@@ -47,6 +61,22 @@ namespace GerberLibrary
         public static bool WriteSanitized = false;
         #endregion
 
+
+        public static int GetDefaultSortOrder(BoardSide side, BoardLayer layer)
+        {
+            int R = 0;
+            switch(layer)
+            {
+
+                case BoardLayer.Silk: R = 101;break;
+                case BoardLayer.Paste: R = 10; break;
+                case BoardLayer.SolderMask: R = 102; break;
+                case BoardLayer.Copper: R = 100; break;
+                case BoardLayer.Carbon: R = 103; break;
+            }
+            if (side == BoardSide.Bottom) R *= -1;
+            return R;
+        }
 
         private static readonly Regex rxScientific = new Regex(@"^(?<sign>-?)(?<head>\d+)(\.(?<tail>\d*?)0*)?E(?<exponent>[+\-]\d+)$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
 

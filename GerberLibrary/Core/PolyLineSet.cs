@@ -1746,13 +1746,19 @@ namespace GerberLibrary
                 if (P.Y > BottomRight.Y) BottomRight.Y = P.Y;
             }
 
-            public void GenerateTransform(Graphics g, int width, int height, int margin)
+            public float GenerateTransform(Graphics g, int width, int height, int margin, bool flipY = false)
             {
                 float scale = Math.Min((width - margin * 2) / (float)Width(), (height - margin * 2) / (float)Height());
                 g.TranslateTransform(width / 2, height / 2);
                 g.ScaleTransform(scale, scale);
+                if (flipY)
+                {
+                    g.ScaleTransform(1, -1);
+                    
+                }
                 var M = Middle();
                 g.TranslateTransform(-(float)M.X, -(float)M.Y);
+                return scale;
             }
 
             public double Height()

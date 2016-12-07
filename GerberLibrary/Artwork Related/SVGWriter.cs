@@ -142,7 +142,7 @@ namespace GerberLibrary
 
         }
 
-        private void DrawPolyline(Pen p, List<PointF> TheList, bool closed = false)
+        public void DrawPolyline(Pen p, List<PointF> TheList, bool closed = false)
         {
             string commands = "";
 
@@ -291,6 +291,17 @@ namespace GerberLibrary
         public void FillPolygon(SolidBrush solidBrush, PointF[] pointF)
         {
             throw new NotImplementedException();
+        }
+
+        public void WriteOutline()
+        {
+
+            List<PointF> Points = new List<PointF>();
+            Points.Add(new PointF(0, 0));
+            Points.Add(new PointF((float)Width, 0));
+            Points.Add(new PointF((float)Width, (float)Height));
+            Points.Add(new PointF(0, (float)Height));
+            DrawPolyline(new Pen(Color.Black, 0.25f), Points, true);
         }
     }
 

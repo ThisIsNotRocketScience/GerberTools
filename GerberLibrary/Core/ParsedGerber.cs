@@ -3,6 +3,7 @@ using GerberLibrary.Core.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using static GerberLibrary.PolyLineSet;
 using Polygon = System.Collections.Generic.List<ClipperLib.IntPoint>;
@@ -15,7 +16,7 @@ namespace GerberLibrary.Core
     {
         public override string ToString()
         {
-            return String.Format("{0},{1}: {2} - {3}", Side, Layer, Name, BoundingBox);
+            return String.Format("{0} {1}: {2}", Side, Layer, Path.GetFileName( Name));
         }
         public PointD TranslationSinceLoad = new PointD();
         public GerberParserState State;
@@ -122,6 +123,13 @@ namespace GerberLibrary.Core
 
         //
         public List<string> OriginalLines = new List<string>();
+
+        public bool IsOutline()
+        {
+            if (Layer == BoardLayer.Outline) return true;
+            if (Side == BoardSide.Both) return true;
+            return false;
+        }
 
         public void CalcPathBounds()
         {
