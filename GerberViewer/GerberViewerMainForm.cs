@@ -24,11 +24,13 @@ namespace GerberViewer
 
             this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
 
-           // var theme = new VS2015BlueTheme();
-            //this.dockPanel.Theme = theme;
+            var theme = new VS2015BlueTheme();
+            this.dockPanel.Theme = theme;
 
             this.dockPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Controls.Add(this.dockPanel);
+
+            dockPanel.UpdateDockWindowZOrder(DockStyle.Left, true);
             ShowDockContent();
         }
 
@@ -40,14 +42,20 @@ namespace GerberViewer
 
         public void ShowDockContent()
         {
+
+      
+
+            TheTopDisplay = new LayerDisplay(Document, BoardSide.Top, this);
+            TheTopDisplay.Show(this.dockPanel, DockState.DockBottom);
+            TheTopDisplay.Text = "Top";
+            TheBottomDisplay = new LayerDisplay(Document, BoardSide.Bottom, this);
+            TheBottomDisplay.Show(TheTopDisplay.Pane, DockAlignment.Right, 0.5);
+            TheBottomDisplay.Text = "Bottom";
+
             TheList = new LayerList(this, Document);
             TheList.Show(this.dockPanel, DockState.DockLeft);
-            TheTopDisplay= new LayerDisplay(Document, BoardSide.Top);
-            TheTopDisplay.Show(this.dockPanel, DockState.Document);
-            TheTopDisplay.Text = "Top";
-            TheBottomDisplay = new LayerDisplay(Document, BoardSide.Bottom);
-            TheBottomDisplay.Show(this.dockPanel, DockState.Document);
-            TheBottomDisplay.Text = "Bottom";
+
+
 
         }
 
@@ -65,23 +73,24 @@ namespace GerberViewer
 
             foreach (var a in Document.Gerbers)
             {
-                var Display = new LayerDisplay(Document, a);
-                 Display.Show(this.dockPanel, DockState.Document);
-                Display.Text = a.File.ToString() ;
-                SingleLayers.Add(Display);
+                a.Panel = new LayerDisplay(Document, a, this);
+                a.Panel.Show(this.dockPanel, DockState.Document);
+                a.Panel.Text = a.File.ToString() ;
+                SingleLayers.Add(a.Panel);
             }
 
 
         }
 
-        private void UpdateAll()
+        private void UpdateAll(bool reloadlist = true)
         {
-            TheTopDisplay.UpdateDocument();
-            TheBottomDisplay.UpdateDocument();
-            TheList.UpdateLoadedStuff();
+            Console.WriteLine("updating all");
+            TheTopDisplay.UpdateDocument(reloadlist);
+            TheBottomDisplay.UpdateDocument(reloadlist);
+           if (reloadlist) TheList.UpdateLoadedStuff();
             foreach(var a in SingleLayers)
             {
-                a.UpdateDocument();
+                a.UpdateDocument(reloadlist);
             }
         }
         public void ClearDisplays()
@@ -92,7 +101,8 @@ namespace GerberViewer
                 a.Close();
                 
             }
-
+            TheTopDisplay.ClearCache();
+            TheBottomDisplay.ClearCache();
             SingleLayers.Clear();
         }
         internal void ClearAll()
@@ -140,7 +150,25 @@ namespace GerberViewer
             }
         }
 
-       
+        internal void SetMouseCoord(float x, float y)
+        {
+            Document.CrossHairActive = true;
+            Document.MouseX = x;
+            Document.MouseY = y;
+            UpdateAll(false);
 
+        }
+
+        internal void MouseOut()
+        {
+            Document.CrossHairActive = false;
+            UpdateAll(false);
+            
+        }
+
+        internal void ActivateTab(int rowIndex)
+        {
+            Document.Gerbers[rowIndex].Panel.Activate();
+        }
     }
 }

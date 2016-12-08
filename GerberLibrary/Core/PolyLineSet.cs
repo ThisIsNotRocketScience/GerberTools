@@ -1754,7 +1754,11 @@ namespace GerberLibrary
                 if (flipY)
                 {
                     g.ScaleTransform(1, -1);
-                    
+                
+                }
+                else
+                {
+                    g.RotateTransform(180);
                 }
                 var M = Middle();
                 g.TranslateTransform(-(float)M.X, -(float)M.Y);

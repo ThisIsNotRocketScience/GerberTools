@@ -18,10 +18,14 @@ namespace GerberViewer
             public ParsedGerber File;
             public int sortindex;
             public Color Color;
+            internal LayerDisplay Panel;
         }
         public GerberLibrary.BoardRenderColorSet Colors = new GerberLibrary.BoardRenderColorSet();
 
         public List<DisplayGerber> Gerbers = new List<DisplayGerber>();
+        internal bool CrossHairActive;
+        internal float MouseY;
+        internal float MouseX;
 
         public void AddFile(string filename, double drillscaler = 1.0)
         {

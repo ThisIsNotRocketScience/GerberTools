@@ -18,9 +18,13 @@ namespace GerberViewer
         public LoadedStuff Document;
         public BoardSide DisplaySide;
         public LoadedStuff.DisplayGerber DispGerb;
+        Bitmap Cache;
+        private GerberViewerMainForm MainForm;
 
-        public LayerDisplay(LoadedStuff doc, BoardSide Side)
+        public LayerDisplay(LoadedStuff doc, BoardSide Side, GerberViewerMainForm _Owner)
         {
+            MainForm = _Owner;
+
             DisplaySide = Side;
             Document = doc;
             InitializeComponent();
@@ -28,8 +32,9 @@ namespace GerberViewer
             CloseButtonVisible = false;
         }
 
-        public LayerDisplay(LoadedStuff doc, LoadedStuff.DisplayGerber Gerb)
+        public LayerDisplay(LoadedStuff doc, LoadedStuff.DisplayGerber Gerb, GerberViewerMainForm _Owner)
         {
+            MainForm = _Owner;
             CloseButton = false;
 
             CloseButtonVisible = false;
@@ -39,18 +44,40 @@ namespace GerberViewer
             Document = doc;
             InitializeComponent();
         }
-        public void UpdateDocument()
+
+
+
+
+        public void UpdateDocument(bool force = false)
         {
-            pictureBox1.Invalidate();
+            bool DoInvalidate = force;
+            // if (this.DockPanel.Visible) { DoInvalidate = true; Console.Write("dockpanel visible - "); }
+            if (this.DockPanel.ActiveDocument == this) { DoInvalidate = true; };// Console.Write("dockpane = this - "); }
+            // if (this.Pane.IsActivated) { DoInvalidate = true; Console.Write("Activated - "); }
+            //    if (this.Pane.IsActivePane) { DoInvalidate = true; Console.Write("ActivePane - "); }
+            if (DispGerb == null) DoInvalidate = true;
+
+            if (DoInvalidate)
+            {
+                if (DispGerb != null)
+                {
+          //          Console.WriteLine("invalidating {0}", DispGerb.File);
+                }
+                else
+                {
+                    //Console.WriteLine("invalidating {0}", DisplaySide);
+                }
+                    pictureBox1.Invalidate();
+            }
+            else
+            {
+              //  Console.WriteLine("Skipping ");
+            }
         }
-        private void LayerDisplay_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
 
 
 
-        private void DrawGerber(Graphics G, ParsedGerber file, float S, Color C, bool dotted= false)
+        private void DrawGerber(Graphics G, ParsedGerber file, float S, Color C, bool dotted = false)
         {
 
 
@@ -86,19 +113,139 @@ namespace GerberViewer
 
         }
 
+        internal void ClearCache()
+        {
+            Cache = null;
+        }
+
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-            var G = e.Graphics;
+            var G2 = e.Graphics;
             PolyLineSet.Bounds Bounds = new PolyLineSet.Bounds();
-            G.Clear(Document.Colors.BackgroundColor);
-            GerberImageCreator.ApplyAASettings(G);
-
-            if (Document.Gerbers.Count == 0) return;
             foreach (var a in Document.Gerbers.OrderBy(x => x.sortindex))
             {
                 Bounds.AddBox(a.File.BoundingBox);
             }
+
+            if (Cache == null)
+            {
+                Cache = new Bitmap(Width, Height);
+                Graphics G = Graphics.FromImage(Cache);
+                GerberImageCreator.ApplyAASettings(G);
+                G.Clear(Document.Colors.BackgroundColor);
+                if (Document.Gerbers.Count > 0)
+                {
+
+                    float S = 1;
+                    if (DisplaySide == BoardSide.Bottom)
+                    {
+                        S = Bounds.GenerateTransform(G, Width, Height, 4, false);
+                    }
+                    else
+                    {
+                        S = Bounds.GenerateTransform(G, Width, Height, 4, true);
+
+                    }
+                    if (DispGerb == null)
+                    {
+                        if (DisplaySide == BoardSide.Bottom)
+                        {
+                            foreach (var a in Document.Gerbers.OrderByDescending(x => x.sortindex))
+                            {
+                                if (a.File.Layer != BoardLayer.Drill)
+                                {
+                                    var C = a.Color;
+                                    if (a.File.Side == BoardSide.Top) C = MathHelpers.Interpolate(C, Document.Colors.BackgroundColor, 0.4f);
+                                    DrawGerber(G, a.File, S, C);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (var a in Document.Gerbers.OrderBy(x => x.sortindex))
+                            {
+                                if (a.File.Layer != BoardLayer.Drill)
+                                {
+                                    var C = a.Color;
+                                    if (a.File.Side == BoardSide.Bottom) C = MathHelpers.Interpolate(C, Document.Colors.BackgroundColor, 0.4f);
+
+                                    DrawGerber(G, a.File, S, C);
+                                }
+                            }
+                        }
+
+                        foreach (var a in Document.Gerbers.OrderBy(x => x.sortindex))
+                        {
+                            if (a.File.Layer == BoardLayer.Drill)
+                            {
+                                DrawGerber(G, a.File, S, a.Color);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (var a in Document.Gerbers.OrderBy(x => x.sortindex))
+                        {
+                            if (a.File.Layer == BoardLayer.Outline || a.File.Layer == BoardLayer.Mill)
+                            {
+                                DrawGerber(G, a.File, S, Color.FromArgb(20, 255, 255, 255), true);
+                            }
+                        }
+                        DrawGerber(G, DispGerb.File, S, Color.White);
+                    }
+                }
+            }
+            G2.DrawImage(Cache, 0, 0);
+
+            GerberImageCreator.ApplyAASettings(G2);
+
+            {
+                if (Document.CrossHairActive)
+                {
+                    if (Document.Gerbers.Count > 0)
+                    {
+                        float S = 1;
+                        if (DisplaySide == BoardSide.Bottom)
+                        {
+                            S = Bounds.GenerateTransform(G2, Width, Height, 4, false);
+                        }
+                        else
+                        {
+                            S = Bounds.GenerateTransform(G2, Width, Height, 4, true);
+
+                        }
+
+
+                        G2.DrawLine(new Pen(Color.Yellow, 1.0f / S), (float)Bounds.TopLeft.X - 1000, Document.MouseY, (float)Bounds.BottomRight.X+1000, Document.MouseY);
+                        G2.DrawLine(new Pen(Color.Yellow, 1.0f / S), (float)Document.MouseX, (float)Bounds.TopLeft.Y-1000, (float)Document.MouseX, (float)Bounds.BottomRight.Y+1000);
+                    }
+                }
+            }
+
+        }
+
+        private void pictureBox1_Resize(object sender, EventArgs e)
+        {
+            Cache = null;
+            pictureBox1.Invalidate();
+        }
+
+
+        void SetXY(int x, int y)
+        {
+            if (Document.Gerbers.Count == 0) return;
+            if (Cache == null) return;
+
+            PolyLineSet.Bounds Bounds = new PolyLineSet.Bounds();
+
+
+            foreach (var a in Document.Gerbers.OrderBy(xx => xx.sortindex))
+            {
+                Bounds.AddBox(a.File.BoundingBox);
+            }
             float S = 1;
+            Graphics G = Graphics.FromImage(Cache);
+
             if (DisplaySide == BoardSide.Bottom)
             {
                 S = Bounds.GenerateTransform(G, Width, Height, 4, false);
@@ -108,53 +255,28 @@ namespace GerberViewer
                 S = Bounds.GenerateTransform(G, Width, Height, 4, true);
 
             }
-            if (DispGerb == null)
-            {
-                if (DisplaySide == BoardSide.Bottom)
-                {
-                    foreach (var a in Document.Gerbers.OrderByDescending(x => x.sortindex))
-                    {
-                        if (a.File.Layer != BoardLayer.Drill)
-                        {
-                            DrawGerber(G, a.File, S, a.Color);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var a in Document.Gerbers.OrderBy(x => x.sortindex))
-                    {
-                        if (a.File.Layer != BoardLayer.Drill)
-                        {
+            var M = G.Transform.Clone();
+            M.Invert();
+            PointF[] P = new PointF[1] { new PointF(x, y) };
+            M.TransformPoints(P);
 
-                            DrawGerber(G, a.File, S, a.Color);
-                        }
-                    }
-                }
+            MainForm.SetMouseCoord(P[0].X, P[0].Y);
 
-                foreach (var a in Document.Gerbers.OrderBy(x => x.sortindex))
-                {
-                    if (a.File.Layer == BoardLayer.Drill)
-                    {
-                        DrawGerber(G, a.File, S, a.Color);
-                    }
-                }
-            }
-            else
-            {
-                foreach (var a in Document.Gerbers.OrderBy(x => x.sortindex))
-                {
-                    if (a.File.Layer == BoardLayer.Outline || a.File.Layer == BoardLayer.Mill)
-                    {
-                        DrawGerber(G, a.File, S, Color.FromArgb(20, 255, 255, 255), true);
-                    }
-                }
-                DrawGerber(G, DispGerb.File, S, Color.White);
-            }
         }
 
-        private void pictureBox1_Resize(object sender, EventArgs e)
+        private void pictureBox1_MouseEnter(object sender, EventArgs e)
         {
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            pictureBox1.Invalidate();
+            SetXY(e.X, e.Y);
+        }
+
+        private void pictureBox1_MouseLeave(object sender, EventArgs e)
+        {
+            MainForm.MouseOut();
             pictureBox1.Invalidate();
         }
     }
