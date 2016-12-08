@@ -215,13 +215,47 @@ namespace GerberViewer
 
                         }
 
+                        Pen P = new Pen(Color.FromArgb(255,255,200), 1.0f / S);
 
-                        G2.DrawLine(new Pen(Color.Yellow, 1.0f / S), (float)Bounds.TopLeft.X - 1000, Document.MouseY, (float)Bounds.BottomRight.X+1000, Document.MouseY);
-                        G2.DrawLine(new Pen(Color.Yellow, 1.0f / S), (float)Document.MouseX, (float)Bounds.TopLeft.Y-1000, (float)Document.MouseX, (float)Bounds.BottomRight.Y+1000);
-                    }
+                        P.DashPattern = new float[2] { 2, 2 };
+
+                        G2.DrawLine(P, (float)Bounds.TopLeft.X - 1000, Document.MouseY, (float)Bounds.BottomRight.X+1000, Document.MouseY);
+                        G2.DrawLine(P, (float)Document.MouseX, (float)Bounds.TopLeft.Y-1000, (float)Document.MouseX, (float)Bounds.BottomRight.Y+1000);
+                      
+
+
+                        DrawUpsideDown(G2, String.Format("{0:N2}", Document.MouseX), S, 12, Color.Yellow, 5 / S + (float)Document.MouseX, (float)Bounds.TopLeft.Y);
+
+
+                                         }
                 }
             }
 
+        }
+
+        private void DrawUpsideDown(Graphics G2, string v1, float s, float f, Color C, float x, float y, bool flipx = true)
+        {
+
+            Font F = new Font("Arial", f);
+
+            System.Drawing.StringFormat drawFormat = new System.Drawing.StringFormat();
+            // drawFormat.FormatFlags = StringFormatFlags.DirectionVertical;
+            SizeF sf = G2.MeasureString(v1, F, this.Height, drawFormat);
+            Bitmap bmp = new Bitmap((int)sf.Width, (int)sf.Height);
+            using (Graphics bmpGraphics = Graphics.FromImage(bmp))
+            {
+                bmpGraphics.DrawString(v1, F, new SolidBrush(C), 0, 0, drawFormat);
+            }
+
+            bmp.RotateFlip(RotateFlipType.Rotate180FlipNone);
+            if (flipx) bmp.RotateFlip(RotateFlipType.RotateNoneFlipX); else x += sf.Width / s;
+            G2.DrawImage(bmp,new RectangleF(x,y,sf.Width / s, sf.Height/s),new RectangleF(0,0,bmp.Width, bmp.Height ), GraphicsUnit.Pixel);
+
+
+//            G2.DrawString(String.Format("{0:N2}", Document.MouseX), F, new SolidBrush(Color.Yellow), 5 / S + (float)Document.MouseX, (float)Bounds.TopLeft.Y);
+
+
+            
         }
 
         private void pictureBox1_Resize(object sender, EventArgs e)
