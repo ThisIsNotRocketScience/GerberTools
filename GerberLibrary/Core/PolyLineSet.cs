@@ -1816,6 +1816,16 @@ namespace GerberLibrary
                     FitPoint(v);
                 }                
             }
+
+            public float GenerateTransformWithScaleOffset(Graphics g2, int width, int height, int margin, bool flipy, float scale, PointF offset)
+            {
+                var S = GenerateTransform(g2, width, height, margin, flipy);
+                g2.ScaleTransform(scale, scale);
+                g2.TranslateTransform(offset.X, offset.Y);
+                S *= scale;
+
+                return S;
+            }
         }
         //      public GerberParserState State = new GerberParserState();
 

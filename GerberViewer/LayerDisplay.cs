@@ -45,8 +45,12 @@ namespace GerberViewer
             InitializeComponent();
         }
 
+        public float Zoomlevel = 1.0f;
 
-
+        public PointF Offset = new PointF();
+        private bool MouseHovering;
+        private int lastY;
+        private int lastX;
 
         public void UpdateDocument(bool force = false)
         {
@@ -136,16 +140,7 @@ namespace GerberViewer
                 if (Document.Gerbers.Count > 0)
                 {
 
-                    float S = 1;
-                    if (DisplaySide == BoardSide.Bottom)
-                    {
-                        S = Bounds.GenerateTransform(G, Width, Height, 4, false);
-                    }
-                    else
-                    {
-                        S = Bounds.GenerateTransform(G, Width, Height, 4, true);
-
-                    }
+                    float S = GetScaleAndBuildTransform(G, Bounds);
                     if (DispGerb == null)
                     {
                         if (DisplaySide == BoardSide.Bottom)
@@ -204,59 +199,58 @@ namespace GerberViewer
                 {
                     if (Document.Gerbers.Count > 0)
                     {
-                        float S = 1;
-                        if (DisplaySide == BoardSide.Bottom)
-                        {
-                            S = Bounds.GenerateTransform(G2, Width, Height, 4, false);
-                        }
-                        else
-                        {
-                            S = Bounds.GenerateTransform(G2, Width, Height, 4, true);
+                        float S = GetScaleAndBuildTransform(G2, Bounds);
 
-                        }
 
-                        Pen P = new Pen(Color.FromArgb(255,255,200), 1.0f / S);
+                        Color DimensionColor = Color.FromArgb(255, 255, 200);
+                        Pen P = new Pen(DimensionColor, 1.0f / S);
 
                         P.DashPattern = new float[2] { 2, 2 };
 
                         G2.DrawLine(P, (float)Bounds.TopLeft.X - 1000, Document.MouseY, (float)Bounds.BottomRight.X+1000, Document.MouseY);
                         G2.DrawLine(P, (float)Document.MouseX, (float)Bounds.TopLeft.Y-1000, (float)Document.MouseX, (float)Bounds.BottomRight.Y+1000);
-                      
 
 
-                        DrawUpsideDown(G2, String.Format("{0:N2}", Document.MouseX), S, 12, Color.Yellow, 5 / S + (float)Document.MouseX, (float)Bounds.TopLeft.Y);
+                        DrawLabel(G2, String.Format("{0:N2}", Document.MouseX- Bounds.TopLeft.X),S, 12, DimensionColor, 5, 0, (float)Document.MouseX, (float)Bounds.TopLeft.Y, DisplaySide == BoardSide.Bottom);
+                        DrawLabel(G2, String.Format("{0:N2}", Document.MouseY - Bounds.TopLeft.Y), S, 12, DimensionColor, 0, -14,  (float)Bounds.TopLeft.X, (float)Document.MouseY, DisplaySide == BoardSide.Bottom);
+                        //DrawUpsideDown(G2, String.Format("{0:N2}", Document.MouseX), S, 12, Color.Yellow, 5 / S + (float)Document.MouseX, (float)Bounds.TopLeft.Y);
 
 
-                                         }
+                    }
                 }
             }
-
         }
 
-        private void DrawUpsideDown(Graphics G2, string v1, float s, float f, Color C, float x, float y, bool flipx = true)
+        private float GetScaleAndBuildTransform(Graphics G2, PolyLineSet.Bounds Bounds)
         {
-
-            Font F = new Font("Arial", f);
-
-            System.Drawing.StringFormat drawFormat = new System.Drawing.StringFormat();
-            // drawFormat.FormatFlags = StringFormatFlags.DirectionVertical;
-            SizeF sf = G2.MeasureString(v1, F, this.Height, drawFormat);
-            Bitmap bmp = new Bitmap((int)sf.Width, (int)sf.Height);
-            using (Graphics bmpGraphics = Graphics.FromImage(bmp))
+           float S = 1;
+            if (DisplaySide == BoardSide.Bottom)
             {
-                bmpGraphics.DrawString(v1, F, new SolidBrush(C), 0, 0, drawFormat);
+                S = Bounds.GenerateTransformWithScaleOffset(G2, Width, Height, 14, false, Zoomlevel, Offset);
+            }
+            else
+            {
+                S = Bounds.GenerateTransformWithScaleOffset(G2, Width, Height, 14, true, Zoomlevel, Offset);
+
             }
 
-            bmp.RotateFlip(RotateFlipType.Rotate180FlipNone);
-            if (flipx) bmp.RotateFlip(RotateFlipType.RotateNoneFlipX); else x += sf.Width / s;
-            G2.DrawImage(bmp,new RectangleF(x,y,sf.Width / s, sf.Height/s),new RectangleF(0,0,bmp.Width, bmp.Height ), GraphicsUnit.Pixel);
+            return S;
+        }
 
+        private void DrawLabel(Graphics G, string TEXT, float S, float FontSize, Color C, int Xoff, int Yoff, float X, float Y, bool v5)
+        {
+            var T = G.Transform.Clone();
 
-//            G2.DrawString(String.Format("{0:N2}", Document.MouseX), F, new SolidBrush(Color.Yellow), 5 / S + (float)Document.MouseX, (float)Bounds.TopLeft.Y);
+            G.TranslateTransform(X, Y);
+            G.ScaleTransform((1 / S) * (v5?-1:1), -1 / S);
+            
+            G.DrawString(TEXT, new Font("Consolas", FontSize), new SolidBrush(C), Xoff, Yoff);
 
-
+            G.Transform = T;
             
         }
+
+      
 
         private void pictureBox1_Resize(object sender, EventArgs e)
         {
@@ -267,6 +261,8 @@ namespace GerberViewer
 
         void SetXY(int x, int y)
         {
+            lastX = x;
+            lastY = y;
             if (Document.Gerbers.Count == 0) return;
             if (Cache == null) return;
 
@@ -277,18 +273,8 @@ namespace GerberViewer
             {
                 Bounds.AddBox(a.File.BoundingBox);
             }
-            float S = 1;
             Graphics G = Graphics.FromImage(Cache);
-
-            if (DisplaySide == BoardSide.Bottom)
-            {
-                S = Bounds.GenerateTransform(G, Width, Height, 4, false);
-            }
-            else
-            {
-                S = Bounds.GenerateTransform(G, Width, Height, 4, true);
-
-            }
+            float S = GetScaleAndBuildTransform(G, Bounds);
             var M = G.Transform.Clone();
             M.Invert();
             PointF[] P = new PointF[1] { new PointF(x, y) };
@@ -300,6 +286,7 @@ namespace GerberViewer
 
         private void pictureBox1_MouseEnter(object sender, EventArgs e)
         {
+            MouseHovering = true;
         }
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
@@ -310,8 +297,62 @@ namespace GerberViewer
 
         private void pictureBox1_MouseLeave(object sender, EventArgs e)
         {
+            MouseHovering = false;
             MainForm.MouseOut();
             pictureBox1.Invalidate();
+        }
+
+        private void LayerDisplay_KeyDown(object sender, KeyEventArgs e)
+        {
+            bool invalidate = false;
+            switch(e.KeyCode)
+            {
+                case Keys.Add: Zoomlevel *= 1.1f;invalidate = true; break;
+                case Keys.Subtract: Zoomlevel *= 0.8f; invalidate = true; break;
+            }
+
+            if (invalidate) pictureBox1.Invalidate();
+        }
+
+        private void LayerDisplay_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            bool invalidate = false;
+            switch (e.KeyChar)
+            {
+                case '+':
+                    {
+                        float NewZoomlevel = Zoomlevel * 1.1f;
+                        Offset.X -= (Document.MouseX * NewZoomlevel) - (Document.MouseX * Zoomlevel);
+                        Offset.Y -= (Document.MouseY * NewZoomlevel) - (Document.MouseY * Zoomlevel);
+                        invalidate = true;
+                        Zoomlevel = NewZoomlevel;
+                    }
+                    break;
+                    
+                case '-':
+                    {
+                        float NewZoomlevel = Zoomlevel * 0.9f;
+                        Offset.X -= (Document.MouseX * NewZoomlevel) - (Document.MouseX * Zoomlevel);
+                        Offset.Y -= (Document.MouseY * NewZoomlevel) - (Document.MouseY * Zoomlevel);
+                        invalidate = true;
+                        Zoomlevel = NewZoomlevel;
+                    }
+                    break;
+                case 'f':
+                case 'F':
+                    Zoomlevel = 1.0f;Offset.X = 0;Offset.Y = 0;
+                    invalidate = true;
+                    break;
+            }
+
+            if (invalidate)
+            {
+                SetXY(lastX, lastY);
+                ClearCache();
+                pictureBox1.Invalidate();
+            }
+
+
         }
     }
 }

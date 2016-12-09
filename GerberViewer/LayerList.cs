@@ -96,26 +96,29 @@ namespace GerberViewer
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
             dataGridView1.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
             dataGridView1.CellBorderStyle = DataGridViewCellBorderStyle.Single;
-            dataGridView1.GridColor = Color.Black;
+            dataGridView1.GridColor = Color.DarkGray;
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.CellClick += DataGridView1_CellClick;
             dataGridView1.Columns[0].Name = "Colour";
             dataGridView1.Columns[0].HeaderText = "";
-
             dataGridView1.Columns[0].Width = 20;
+
             dataGridView1.Columns[1].Name = "Name";
+
             dataGridView1.Columns[2].Name = "Layer";
             dataGridView1.Columns[2].Width = 80;
+
             dataGridView1.Columns[3].Name = "Side";
             dataGridView1.Columns[3].Width = 80;
 
-            DataGridViewCheckBoxColumn doWork = new DataGridViewCheckBoxColumn();
-            doWork.HeaderText = "";
-            doWork.FalseValue = "0";
-            doWork.Width = 20;
-            doWork.TrueValue = "1";
-            dataGridView1.Columns.Insert(0, doWork);
+            DataGridViewCheckBoxColumn VisibilityColumn = new DataGridViewCheckBoxColumn();
+
+            VisibilityColumn.HeaderText = "";
+            VisibilityColumn.FalseValue = "0";
+            VisibilityColumn.Width = 20;           
+            VisibilityColumn.TrueValue = "1";
+            dataGridView1.Columns.Insert(0, VisibilityColumn);
 
 
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;

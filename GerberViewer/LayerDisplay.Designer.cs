@@ -54,6 +54,8 @@
             this.Controls.Add(this.pictureBox1);
             this.Name = "LayerDisplay";
             this.Text = "LayerDisplay";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.LayerDisplay_KeyDown);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.LayerDisplay_KeyPress);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
