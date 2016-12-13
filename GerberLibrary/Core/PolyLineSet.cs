@@ -191,6 +191,78 @@ namespace GerberLibrary
             return Res;
         }
 
+
+        public static ParsedGerber LoadExcellonDrillFileFromStream(StreamReader s, string origfilename, bool Precombine = false, double drillscaler = 1.0)
+        {
+            ParsedGerber Gerb = new ParsedGerber();
+            Gerb.Name = origfilename;
+            Gerb.Shapes.Clear();
+            Gerb.DisplayShapes.Clear();
+            GerberParserState State = new GerberParserState();
+            State.Side = BoardSide.Both;
+            State.PreCombinePolygons = Precombine;
+            State.Layer = BoardLayer.Drill;
+
+            ExcellonFile EF = new ExcellonFile();
+            EF.Load(s, drillscaler);
+            foreach (var T in EF.Tools)
+            {
+                var Tool = T.Value;
+
+                int sides = (int)(Gerber.ArcQualityScaleFactor * Math.Max(2.0, Tool.Radius));
+
+
+                foreach (var Hole in Tool.Drills)
+                {
+                    PolyLine DispPL = new PolyLine();
+
+                    for (int i = 0; i < sides; i++)
+                    {
+                        double PP = i * 6.283f / (double)sides;
+                        DispPL.Add(Hole.X + (double)Math.Sin(PP) * (double)Tool.Radius, Hole.Y + (double)Math.Cos(PP) * (double)Tool.Radius);
+                    }
+                    DispPL.Close();
+                    DispPL.MyColor = Color.DarkGreen;
+                    Gerb.DisplayShapes.Add(DispPL);
+                }
+
+                foreach (var Slot in Tool.Slots)
+                {
+                    PolyLine DispPL = new PolyLine();
+
+                    double dy = Slot.End.Y - Slot.Start.Y;
+                    double dx = Slot.End.X - Slot.Start.X;
+
+                    double offangl = -Math.Atan2(dy, dx) + 3.1415;
+
+                    for (int i = 0; i < sides / 2; i++)
+                    {
+                        double PP = i * 6.283f / (double)sides;
+                        PP += offangl;
+                        DispPL.Add(Slot.Start.X + (double)Math.Sin(PP) * (double)Tool.Radius, Slot.Start.Y + (double)Math.Cos(PP) * (double)Tool.Radius);
+                    }
+
+                    for (int i = sides / 2; i < sides; i++)
+                    {
+                        double PP = i * 6.283f / (double)sides;
+                        PP += offangl;
+                        DispPL.Add(Slot.End.X + (double)Math.Sin(PP) * (double)Tool.Radius, Slot.End.Y + (double)Math.Cos(PP) * (double)Tool.Radius);
+                    }
+
+                    DispPL.Close();
+                    DispPL.MyColor = Color.DarkGreen;
+                    Gerb.DisplayShapes.Add(DispPL);
+                }
+            }
+            Gerb.Side = State.Side;
+            Gerb.Layer = State.Layer;
+            Gerb.State = State;
+
+            return Gerb;
+
+        }
+
+
         public static ParsedGerber LoadExcellonDrillFile(string drillfile, bool Precombine = false, double drillscaler = 1.0)
         {
             ParsedGerber Gerb = new ParsedGerber();
@@ -204,7 +276,6 @@ namespace GerberLibrary
 
             ExcellonFile EF = new ExcellonFile();
             EF.Load(drillfile, drillscaler);
-
             foreach (var T in EF.Tools)
             {
                 var Tool = T.Value;
@@ -1748,6 +1819,10 @@ namespace GerberLibrary
 
             public float GenerateTransform(Graphics g, int width, int height, int margin, bool flipY = false)
             {
+                if (Valid == false)
+                {
+                    return 1;
+                }
                 float scale = Math.Min((width - margin * 2) / (float)Width(), (height - margin * 2) / (float)Height());
                 g.TranslateTransform(width / 2, height / 2);
                 g.ScaleTransform(scale, scale);

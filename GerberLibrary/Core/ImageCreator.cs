@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GerberLibrary.Core;
 using GerberLibrary.Core.Primitives;
+using Ionic.Zip;
 
 namespace GerberLibrary
 {
@@ -22,6 +23,11 @@ namespace GerberLibrary
         private BoardRenderColorSet ActiveColorSet = new BoardRenderColorSet();
         bool hasgko = false;
         List<ParsedGerber> PLSs = new List<ParsedGerber>();
+        public int Count()
+        {
+            return PLSs.Count;
+        }
+
         public static void ApplyAASettings(Graphics G)
         {
             if (AA)
@@ -60,16 +66,66 @@ namespace GerberLibrary
         {
             foreach (var a in FileList)
             {
-                BoardSide aSide;
-                BoardLayer aLayer;
-                Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
+                BoardSide aSide = BoardSide.Unknown;
+                BoardLayer aLayer = BoardLayer.Unknown;
+                string ext = Path.GetExtension(a);
+                if (ext == ".zip")
+                {
+                    using (ZipFile zip1 = ZipFile.Read(a))
+                    {
+                        foreach (ZipEntry e in zip1)
+                        {
+                            MemoryStream MS = new MemoryStream();
+                            if (e.IsDirectory == false)
+                            {
+  //                              e.Extract(MS);
+//                                MS.Seek(0, SeekOrigin.Begin);
+                                Gerber.DetermineBoardSideAndLayer (e.FileName, out aSide, out aLayer);
+                                if (aLayer == BoardLayer.Outline) hasgko = true;
+
+                                //     AddFileStream(MS, e.FileName, drillscaler);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    
+                    Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
+                }
                 if (aLayer == BoardLayer.Outline) hasgko = true;
             }
 
             foreach (var a in FileList)
             {
                 if (Logger != null) Logger.AddString(String.Format("Loading {0}", Path.GetFileName(a)));
-                AddFileToSet(a, Logger);
+                string ext = Path.GetExtension(a);
+                if (ext == ".zip")
+                {
+                    using (ZipFile zip1 = ZipFile.Read(a))
+                    {
+                        foreach (ZipEntry e in zip1)
+                        {
+                            MemoryStream MS = new MemoryStream();
+                            if (e.IsDirectory == false)
+                            {
+                                if (Logger != null) Logger.AddString(String.Format("Loading inside zip: {0}", Path.GetFileName(e.FileName)));
+
+                                e.Extract(MS);
+                                MS.Seek(0, SeekOrigin.Begin);
+                                AddFileToSet(MS, e.FileName, Logger);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    MemoryStream MS2 = new MemoryStream();
+                    FileStream FS = File.OpenRead(a);
+                    FS.CopyTo(MS2);
+                    MS2.Seek(0, SeekOrigin.Begin);
+                    AddFileToSet(MS2, a, Logger);
+                }
             }
 
             if (fixgroup)
@@ -83,19 +139,32 @@ namespace GerberLibrary
 
             }
         }
+        Dictionary<string, MemoryStream> Streams = new Dictionary<string, MemoryStream>();
 
-        public ParsedGerber AddBoardToSet(string originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
+        public ParsedGerber AddBoardToSet(string _originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
         {
+            if (Streams.ContainsKey(_originalfilename))
+            {
+                return AddBoardToSet(Streams[_originalfilename], _originalfilename, forcezerowidth, precombinepolygons, drillscaler);
+            }
+            return null;
+        }
+
+
+            public ParsedGerber AddBoardToSet(MemoryStream MS, string _originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
+        {
+            Streams[_originalfilename] = MS;
             try
             {
-                string[] filesplit = originalfilename.Split('.');
-                string ext = filesplit[filesplit.Count() - 1].ToLower();
+             //   string[] filesplit = originalfilename.Split('.');
+           //     string ext = filesplit[filesplit.Count() - 1].ToLower();
 
-                var FileType = Gerber.FindFileType(originalfilename);
+                var FileType = Gerber.FindFileTypeFromStream(new StreamReader(MS), _originalfilename);
+                MS.Seek(0, SeekOrigin.Begin);
 
                 if (FileType == BoardFileType.Unsupported)
                 {
-                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Warning: {1}: files with extension {0} are not supported!", ext, Path.GetFileName(originalfilename));
+                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Warning: {1}: files with extension {0} are not supported!", Path.GetExtension( _originalfilename), Path.GetFileName(_originalfilename));
                     return null;
                 }
 
@@ -105,17 +174,19 @@ namespace GerberLibrary
 
                 if (FileType == BoardFileType.Drill)
                 {
-                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", originalfilename);
-                    PLS = PolyLineSet.LoadExcellonDrillFile(originalfilename, false, drillscaler);
+                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", _originalfilename);
+                    PLS = PolyLineSet.LoadExcellonDrillFileFromStream(new StreamReader(MS), _originalfilename, false, drillscaler);
+                    MS.Seek(0, SeekOrigin.Begin);
+
                     // ExcellonFile EF = new ExcellonFile();
                     // EF.Load(a);
                 }
                 else
                 {
-                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Gerber file: {0}", originalfilename);
+                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Gerber file: {0}", _originalfilename);
                     BoardSide Side = BoardSide.Unknown;
                     BoardLayer Layer = BoardLayer.Unknown;
-                    Gerber.DetermineBoardSideAndLayer(originalfilename, out Side, out Layer);
+                    Gerber.DetermineBoardSideAndLayer(_originalfilename, out Side, out Layer);
                     if (Layer == BoardLayer.Outline)
                     {
                         forcezerowidth = true;
@@ -123,7 +194,9 @@ namespace GerberLibrary
                     }
                     State.PreCombinePolygons = precombinepolygons;
 
-                    PLS = PolyLineSet.LoadGerberFile(originalfilename, forcezerowidth, false, State);
+                    PLS = PolyLineSet.LoadGerberFileFromStream(new StreamReader(MS), _originalfilename, forcezerowidth, false, State);
+                    MS.Seek(0, SeekOrigin.Begin);
+
                     PLS.Side = State.Side;
                     PLS.Layer = State.Layer;
                     if (Layer == BoardLayer.Outline)
@@ -135,7 +208,7 @@ namespace GerberLibrary
                 PLS.CalcPathBounds();
                 BoundingBox.AddBox(PLS.BoundingBox);
 
-                Console.WriteLine("Progress: Loaded {0}: {1:N1} x {2:N1} mm", Path.GetFileName(originalfilename), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
+                Console.WriteLine("Progress: Loaded {0}: {1:N1} x {2:N1} mm", Path.GetFileName(_originalfilename), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
                 PLSs.Add(PLS);
                 //     }
                 //     catch (Exception)
@@ -296,24 +369,38 @@ namespace GerberLibrary
             DrawToFile(TargetFileBaseName, BoardSide.Bottom, dpi, showimage, Logger);
         }
 
-        private void AddFileToSet(string a, ProgressLog Logger, double drillscaler = 1.0)
+        private void AddFileToSet(string aname, ProgressLog Logger, double drillscaler = 1.0)
         {
-            string[] filesplit = a.Split('.');
+            if (Streams.ContainsKey(aname))
+            {
+                AddFileToSet(Streams[aname], aname, Logger, drillscaler);
+            }
+            else
+            {
+                Logger.AddString(String.Format("[ERROR] no stream for {0}!!!", aname));
+            }
+        }
 
-            string ext = filesplit[filesplit.Count() - 1].ToLower();
+        private void AddFileToSet(MemoryStream MS, string aname, ProgressLog Logger, double drillscaler = 1.0)
+        {
+
+            Streams[aname] = MS;
+
+            ///string[] filesplit = a.Split('.');
+
             bool zerowidth = false;
             bool precombine = false;
 
             BoardSide aSide;
             BoardLayer aLayer;
-            Gerber.DetermineBoardSideAndLayer(a, out aSide, out aLayer);
+            Gerber.DetermineBoardSideAndLayer(aname, out aSide, out aLayer);
 
             if (aLayer == BoardLayer.Outline || (aLayer == BoardLayer.Mill && hasgko == false))
             {
                 zerowidth = true;
                 precombine = true;
             }
-            AddBoardToSet(a, zerowidth, precombine, drillscaler);
+            AddBoardToSet(MS, aname, zerowidth, precombine, drillscaler);
         }
 
         private void ApplyBumpMapping(Bitmap _Target, Bitmap _Bump, int w, int h)
@@ -566,24 +653,24 @@ namespace GerberLibrary
 
                     //InventOutline();
                     //return;
-                    foreach (var a in Unknowns)
-                    {
-                        PLSs.Remove(a);
-                        hasgko = true;
-                        a.Layer = BoardLayer.Outline;
-                        a.Side = BoardSide.Both;
-                        Console.WriteLine("Note: Using {0} as outline file", Path.GetFileName(a.Name));
+                    //foreach (var a in Unknowns)
+                    //{
+                    //    PLSs.Remove(a);
+                    //    hasgko = true;
+                    //    a.Layer = BoardLayer.Outline;
+                    //    a.Side = BoardSide.Both;
+                    //    Console.WriteLine("Note: Using {0} as outline file", Path.GetFileName(a.Name));
 
-                        if (Logger != null) Logger.AddString(String.Format("Note: Using {0} as outline file", Path.GetFileName(a.Name)));
+                    //    if (Logger != null) Logger.AddString(String.Format("Note: Using {0} as outline file", Path.GetFileName(a.Name)));
 
-                        bool zerowidth = true;
-                        bool precombine = true;
+                    //    bool zerowidth = true;
+                    //    bool precombine = true;
 
-                        var b = AddBoardToSet(a.Name, zerowidth, precombine, 1.0);
-                        b.Layer = BoardLayer.Outline;
-                        b.Side = BoardSide.Both;
+                    //    var b = AddBoardToSet(a.Name, zerowidth, precombine, 1.0);
+                    //    b.Layer = BoardLayer.Outline;
+                    //    b.Side = BoardSide.Both;
 
-                    }
+                    //}
                 }
             }
         }

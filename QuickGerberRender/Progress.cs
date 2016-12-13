@@ -54,7 +54,8 @@ namespace WindowsFormsApplication1
 
 
             bool fixgroup = true;
-            if (Files.Count == 1) fixgroup = false;
+            string ext1 = Path.GetExtension(Files[0]);
+            if (Files.Count == 1 && ext1 != ".zip") fixgroup = false;
             GIC.AddBoardsToSet(Files, fixgroup, this);
 
             if (GIC.Errors.Count > 0)
@@ -66,11 +67,19 @@ namespace WindowsFormsApplication1
             }
             try
             {
-                if (Files.Count > 1)
+                if (GIC.Count() > 1)
                 {
 
+                    if (Files.Count() == 1)
+                    {
+                        string justthefilename =Path.Combine( Path.GetDirectoryName(Files[0]) , Path.GetFileNameWithoutExtension(Files[0]));
+                        GIC.WriteImageFiles(justthefilename, 400, true, this);
 
-                    GIC.WriteImageFiles(Path.GetDirectoryName(Files[0]) + ".png", 400, true, this);
+                    }
+                    else
+                    {
+                        GIC.WriteImageFiles(Path.GetDirectoryName(Files[0]) + ".png", 400, true, this);
+                    }
                     //       GIC.DrawAllFiles(Path.GetDirectoryName(Files[0]) + "_Layer", 200, this);
                 }
                 else
