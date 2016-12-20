@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SickOfBeige
 {
-    class SickOfBeige: GerberLibrary.ProgressLog
+    class SickOfBeige : GerberLibrary.ProgressLog
     {
         enum Arguments
         {
@@ -55,10 +56,21 @@ namespace SickOfBeige
 
 
             GerberLibrary.Core.SickOfBeige Box = new GerberLibrary.Core.SickOfBeige();
-            List<string> Files = new List<string>() { InputFolder };
+            List<string> Files = new List<string>();
+
+            if (Directory.Exists(InputFolder))
+            {
+                Files.AddRange(Directory.GetFiles(InputFolder));
+            }
+            else
+            {
+                Files.Add(InputFolder);
+            }
+
             Box.AddBoardsToSet(Files, true, new SickOfBeige());
             Box.MinimalDXFSave(OutputFolder, offset, holediameter);
-            foreach(var a in Box.Errors)
+
+            foreach (var a in Box.Errors)
             {
                 Console.WriteLine("ERROR: {0}", a);
             }
@@ -66,7 +78,7 @@ namespace SickOfBeige
 
         public void AddString(string text, float progress = -1F)
         {
-            
+
         }
     }
 }

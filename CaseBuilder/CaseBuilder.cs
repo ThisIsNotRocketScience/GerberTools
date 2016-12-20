@@ -33,7 +33,6 @@ namespace CaseBuilder
                     {
                         LoadGerberFolder(Directory.GetFiles(S).ToList());
                     }
-
                     else
                     {
                         if (File.Exists(S)) files.Add(S);
@@ -49,8 +48,11 @@ namespace CaseBuilder
         private void LoadGerberFolder(List<string> list)
         {
             Box.AddBoardsToSet(list, true, this);
+            double offset = (double)offsetbox.Value;
+            double holediam = (double)holediamBox.Value;
+            
 
-            Box.BuildBox(list[0]);
+            System.Diagnostics.Process.Start(Box.MinimalDXFSave(list[0], offset, holediam));
         }
 
         private void Form1_DragEnter(object sender, DragEventArgs e)
@@ -69,13 +71,13 @@ namespace CaseBuilder
         {
             if (progress > -1)
             {
-                Console.WriteLine("{0:N1}: {1}", progress * 100.0f, text);
+                Console.WriteLine("Progress: {0:N1}: {1}", progress * 100.0f, text);
             }
             else
             {
-                Console.WriteLine("      {0}", text);
+                Console.WriteLine("Progress: {0}", text);
             }
-        }
+        }       
     }
 }
 

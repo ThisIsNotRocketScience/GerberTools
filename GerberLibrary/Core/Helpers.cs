@@ -603,11 +603,11 @@ namespace GerberLibrary.Core
                             Paths[endmatch].Points.AddRange(Paths[i].Points);
                             if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 4a", Paths[endmatch].Points.Count());
+                             //   Console.WriteLine("closed path with {0} points during stage 4a", Paths[endmatch].Points.Count());
                                 Paths[endmatch].Closed = true;
                             }
                             Paths.Remove(Paths[i]);
-                            Console.WriteLine(" 4a");
+                           // Console.WriteLine(" 4a");
                             return 1;
                         }
                         if (startmatch > -1)
@@ -617,11 +617,11 @@ namespace GerberLibrary.Core
                             Paths[i].Points.AddRange(Paths[startmatch].Points);
                             if (Paths[i].Points.First() == Paths[i].Points.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 4b", Paths[i].Points.Count());
+                               // Console.WriteLine("closed path with {0} points during stage 4b", Paths[i].Points.Count());
                                 Paths[i].Closed = true;
                             }
                             Paths.Remove(Paths[startmatch]);
-                            Console.WriteLine(" 4b");
+                            //Console.WriteLine(" 4b");
 
                             return 1;
                         }
@@ -665,11 +665,11 @@ namespace GerberLibrary.Core
                             Paths[endmatch].Points.AddRange(Paths[i].Points);
                             if (Paths[endmatch].Points.First() == Paths[endmatch].Points.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 4c", Paths[endmatch].Points.Count());
+                               // Console.WriteLine("closed path with {0} points during stage 4c", Paths[endmatch].Points.Count());
                                 Paths[endmatch].Closed = true;
                             }
                             Paths.Remove(Paths[i]);
-                            Console.WriteLine(" 4c");
+                          //  Console.WriteLine(" 4c");
 
                             return 1;
                         }
@@ -679,11 +679,11 @@ namespace GerberLibrary.Core
                             Paths[i].Points.AddRange(Paths[startmatch].Points);
                             if (Paths[i].Points.First() == Paths[i].Points.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 4d", Paths[i].Points.Count());
+                               // Console.WriteLine("closed path with {0} points during stage 4d", Paths[i].Points.Count());
                                 Paths[i].Closed = true;
                             }
                             Paths.Remove(Paths[startmatch]);
-                            Console.WriteLine(" 4d");
+                           // Console.WriteLine(" 4d");
 
                             return 1;
                         }

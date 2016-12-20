@@ -298,7 +298,7 @@ namespace GerberLibrary.Core
             }
         }
 
-        public  void CheckRelativeBoundingBoxes(ProgressLog Logger)
+        public void CheckRelativeBoundingBoxes(ProgressLog Logger)
         {
 
 
@@ -507,7 +507,7 @@ namespace GerberLibrary.Core
 
             return true;
         }
-     
+
         public void CreateBoxOutline()
         {
             PolyLine Box = new PolyLine();
@@ -531,11 +531,14 @@ namespace GerberLibrary.Core
 
     }
 
-    public class SickOfBeige: GerberSet
+    public class SickOfBeige : GerberSet
     {
-
-        public void MinimalDXFSave(string outputfile, double offset = 3.0, double holediameter = 3.2)
+        public string MinimalDXFSave(string outputfile, double offset = 3.0, double holediameter = 3.2)
         {
+            if (Directory.Exists(outputfile))
+            {
+                outputfile = Path.Combine(outputfile, "SickOfBeige");
+            }
             List<String> Lines = new List<string>();
 
             Lines.Add("0");
@@ -558,13 +561,13 @@ namespace GerberLibrary.Core
                     }
                 }
             }
+
             Polygons Offsetted = new Polygons();
+
             if (Biggest != null)
             {
                 Polygons clips = new Polygons();
                 clips.Add(Biggest.toPolygon());
-
-
                 Offsetted = Clipper.OffsetPolygons(clips, offset * 100000.0f, JoinType.jtRound);
                 foreach (var poly in Offsetted)
                 {
@@ -594,11 +597,11 @@ namespace GerberLibrary.Core
             }
             else
             {
-                Errors.Add("No longest outline found - not generating offset curve");            
+                Errors.Add("No longest outline found - not generating offset curve");
             }
 
-            
             List<PointF> Holes = new List<PointF>();
+            var holeradius = holediameter / 2.0;
             foreach (var a in Excellons)
             {
                 foreach (var t in a.Tools)
@@ -606,19 +609,17 @@ namespace GerberLibrary.Core
                     var R = t.Value.Radius;
                     if (Math.Abs(R * 2 - holediameter) < 0.05)
                     {
-
-                        //Console.WriteLine("3.2mm holes found: {0}", t.Value.Drills.Count);
                         foreach (var h in t.Value.Drills)
                         {
                             Holes.Add(new PointF((float)h.X, (float)h.Y));
-                            for (int i =0;i<40;i++)
+                            for (int i = 0; i < 40; i++)
                             {
                                 double P = i * Math.PI * 2.0 / 40.0;
-                                double P2 = (i+1) * Math.PI * 2.0 / 40.0;
-                                var C1 = Math.Cos(P);
-                                var C2 = Math.Cos(P2);
-                                var S1 = Math.Sin(P);
-                                var S2 = Math.Sin(P2);
+                                double P2 = (i + 1) * Math.PI * 2.0 / 40.0;
+                                var C1 = Math.Cos(P) * holeradius;
+                                var C2 = Math.Cos(P2) * holeradius;
+                                var S1 = Math.Sin(P) * holeradius;
+                                var S2 = Math.Sin(P2) * holeradius;
                                 double x1 = h.X + C1;
                                 double y1 = h.Y + S1;
                                 double x2 = h.X + C2;
@@ -629,14 +630,14 @@ namespace GerberLibrary.Core
                                 Lines.Add("8");
                                 Lines.Add("Holes");
                                 Lines.Add("10");
-                                Lines.Add(x1.ToString().Replace(',','.'));
+                                Lines.Add(x1.ToString().Replace(',', '.'));
                                 Lines.Add("20");
                                 Lines.Add(y1.ToString().Replace(',', '.'));
                                 Lines.Add("11");
                                 Lines.Add(x2.ToString().Replace(',', '.'));
                                 Lines.Add("21");
                                 Lines.Add(y2.ToString().Replace(',', '.'));
-                                
+
                             }
                         }
                     }
@@ -648,11 +649,11 @@ namespace GerberLibrary.Core
             Lines.Add("ENDSEC");
             Lines.Add("0");
             Lines.Add("EOF");
-            File.WriteAllLines(outputfile, Lines);
-            Console.WriteLine("STATUS: {0} M3 holes created in case ({1} spacers and {1} screws needed!)", Holes.Count, Holes.Count * 2);
+            File.WriteAllLines(outputfile + ".dxf", Lines);
+            Console.WriteLine("Report: {0} holes created in case ({1} spacers and {1} screws needed!)", Holes.Count, Holes.Count * 2);
             {
                 var BB = GetOutlineBoundingBox();
-                Bitmap B = new Bitmap((int)((BB.Width()+ offset*3) * 50.0), (int)((BB.Height()+offset*3) * 50.0));
+                Bitmap B = new Bitmap((int)((BB.Width() + offset * 3) * 50.0), (int)((BB.Height() + offset * 3) * 50.0));
                 Graphics G = Graphics.FromImage(B);
                 G.Clear(Color.Transparent);
                 G.Clear(Color.White);
@@ -660,14 +661,15 @@ namespace GerberLibrary.Core
                 G.ScaleTransform(50, 50);
                 G.TranslateTransform((float)+(BB.TopLeft.X + offset * 1.5), (float)-(BB.TopLeft.Y - offset * 1.5));
                 Pen pen = new Pen(Color.Black, 0.1f);
-                Pen pen2 = new Pen(Color.FromArgb(160,160,160), 0.1f);
+                Pen pen2 = new Pen(Color.FromArgb(160, 160, 160), 0.1f);
                 pen2.DashPattern = new float[2] { 2, 2 };
                 GerberImageCreator.ApplyAASettings(G);
-                RectangleF R = new RectangleF(0, 0, 3.2f, 3.2f);
+                RectangleF R = new RectangleF(0, 0, (float)holediameter, (float)holediameter);
+
                 foreach (var a in Holes)
                 {
-                    R.X = a.X - 1.6f;
-                    R.Y = a.Y - 1.6f;
+                    R.X = a.X - (float)holeradius;
+                    R.Y = a.Y - (float)holeradius;
                     G.DrawEllipse(pen, R);
                 }
 
@@ -690,33 +692,20 @@ namespace GerberLibrary.Core
                     PolyLine Pl = Biggest;
 
                     var Points = new List<PointF>(Pl.Vertices.Count);
+
                     for (int i = 0; i < Pl.Vertices.Count; i++)
                     {
                         Points.Add(Pl.Vertices[i].ToF());
-
                     }
+
                     Points.Add(Pl.Vertices[0].ToF());
                     G.DrawLines(pen2, Points.ToArray());
                 }
-                B.Save(outputfile + ".png");
-            }
-        }
-        
-        public void BuildBox(string outputpath)
-        {
-            string BaseFilename = outputpath;
-            if (File.Exists(outputpath))
-            {
-                BaseFilename = Path.Combine(Path.GetDirectoryName(outputpath), Path.GetFileNameWithoutExtension(outputpath) + "_BOX");
-            }
-            else
-            {
-                BaseFilename = Path.Combine(Path.GetDirectoryName(outputpath), "BOX");
 
+                var ImagePNG = outputfile + ".png";
+                B.Save(ImagePNG);
+                return ImagePNG;
             }
-            MinimalDXFSave(BaseFilename + ".dxf");
-            Console.WriteLine(BaseFilename);
         }        
-    }    
+    }
 }
-
