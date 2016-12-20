@@ -534,7 +534,7 @@ namespace GerberLibrary.Core
     public class SickOfBeige: GerberSet
     {
 
-        public void MinimalDXFSave(string outputfile, double offset = 5.0)
+        public void MinimalDXFSave(string outputfile, double offset = 3.0, double holediameter = 3.2)
         {
             List<String> Lines = new List<string>();
 
@@ -604,7 +604,7 @@ namespace GerberLibrary.Core
                 foreach (var t in a.Tools)
                 {
                     var R = t.Value.Radius;
-                    if (Math.Abs(R * 2 - 3.2) < 0.01)
+                    if (Math.Abs(R * 2 - holediameter) < 0.05)
                     {
 
                         //Console.WriteLine("3.2mm holes found: {0}", t.Value.Drills.Count);
