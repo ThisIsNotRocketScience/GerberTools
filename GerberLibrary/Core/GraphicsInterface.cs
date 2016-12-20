@@ -34,6 +34,7 @@ namespace GerberLibrary.Core
 
         bool IsFast { get; set; }
         CompositingMode CompositingMode { get; set; }
+        bool Dotted { get; set; }
 
         void DrawRectangle(Color color, float x, float y, float w, float h, float strokewidth = 1.0f);
         void FillRectangle(Color color, float x, float y, float w, float h);
@@ -153,6 +154,8 @@ namespace GerberLibrary.Core
                 G.CompositingMode = value;
             }
         }
+
+        public bool Dotted { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public void DrawRectangle(Color color, float x, float y, float w, float h)
         {

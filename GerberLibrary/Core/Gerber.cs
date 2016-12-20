@@ -23,7 +23,7 @@ namespace GerberLibrary
         public Color BoardRenderPadColor = Gerber.ParseColor("gold");
         public Color BoardRenderSilkColor = Gerber.ParseColor("white");
 
-        public Color BackgroundColor = Color.FromArgb(20,20,20);
+        public Color BackgroundColor = Color.FromArgb(10,10,40);
         public Color GetDefaultColor(BoardLayer layer, BoardSide side)
         {
             switch(layer)
@@ -343,28 +343,32 @@ namespace GerberLibrary
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Mill;
                     break;
-
+                case "oln":
                 case "gko":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Outline;
                     break;
-
+                case "l2":
                 case "gl1":
                     Side = BoardSide.Internal1;
                     Layer = BoardLayer.Copper;
                     break;
+
+                case "l3":
 
                 case "gl2":
                     Side = BoardSide.Internal2;
                     Layer = BoardLayer.Copper;
                     break;
 
+                case "l4":
                 case "gbl":
                 case "l2m":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Copper;
                     break;
 
+                case "l1":
                 case "l1m":
                 case "gtl":
                     Side = BoardSide.Top;
@@ -435,11 +439,13 @@ namespace GerberLibrary
                     Layer = BoardLayer.SolderMask;
                     break;
 
+                case "slk":
                 case "sst":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Silk;
                     break;
 
+                case "bsk":
                 case "ssb":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Silk;

@@ -255,8 +255,7 @@ namespace GerberViewer
 
         private void dataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (this.dataGridView1.Columns["Colour"].Index ==
-        e.ColumnIndex && e.RowIndex >= 0)
+            if (this.dataGridView1.Columns["Colour"].Index == e.ColumnIndex && e.RowIndex >= 0)
             {
                 Rectangle newRect = new Rectangle(e.CellBounds.X + 1,
                     e.CellBounds.Y + 1, e.CellBounds.Width - 4,

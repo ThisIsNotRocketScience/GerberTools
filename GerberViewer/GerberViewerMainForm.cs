@@ -1,4 +1,5 @@
-﻿using GerberLibrary.Core;
+﻿using GerberLibrary;
+using GerberLibrary.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,8 +19,12 @@ namespace GerberViewer
     {
         private DockPanel dockPanel;
         LoadedStuff Document = new LoadedStuff();
-        public GerberViewerMainForm()
+
+        public GerberViewerMainForm(string[] args)
         {
+            Gerber.ArcQualityScaleFactor = 20;
+
+
             InitializeComponent();
 
             this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
@@ -32,6 +37,24 @@ namespace GerberViewer
 
             dockPanel.UpdateDockWindowZOrder(DockStyle.Left, true);
             ShowDockContent();
+
+            List<String> files = new List<string>();
+            foreach (string S in args)
+            {
+                if (Directory.Exists(S))
+                {
+                    LoadGerberFolder(Directory.GetFiles(S).ToList());
+                }
+                else
+                {
+                    if (File.Exists(S)) files.Add(S);
+                }
+            }
+            if (files.Count > 0)
+            {
+                LoadGerberFolder(files);
+            }
+
         }
 
         LayerList TheList;
@@ -46,10 +69,10 @@ namespace GerberViewer
       
 
             TheTopDisplay = new LayerDisplay(Document, BoardSide.Top, this);
-            TheTopDisplay.Show(this.dockPanel, DockState.DockBottom);
+            TheTopDisplay.Show(this.dockPanel, DockState.Document);
             TheTopDisplay.Text = "Top";
             TheBottomDisplay = new LayerDisplay(Document, BoardSide.Bottom, this);
-            TheBottomDisplay.Show(TheTopDisplay.Pane, DockAlignment.Right, 0.5);
+            TheBottomDisplay.Show(this.dockPanel, DockState.Document);
             TheBottomDisplay.Text = "Bottom";
 
             TheList = new LayerList(this, Document);
@@ -73,10 +96,10 @@ namespace GerberViewer
 
             foreach (var a in Document.Gerbers)
             {
-                a.Panel = new LayerDisplay(Document, a, this);
-                a.Panel.Show(this.dockPanel, DockState.Document);
-                a.Panel.Text = a.File.ToString() ;
-                SingleLayers.Add(a.Panel);
+          //      a.Panel = new LayerDisplay(Document, a, this);
+           //     a.Panel.Show(this.dockPanel, DockState.Document);
+           //     a.Panel.Text = a.File.ToString() ;
+           //     SingleLayers.Add(a.Panel);
             }
 
 
@@ -84,10 +107,10 @@ namespace GerberViewer
 
         private void UpdateAll(bool reloadlist = true)
         {
-            Console.WriteLine("updating all");
+            //Console.WriteLine("updating all");
             TheTopDisplay.UpdateDocument(reloadlist);
             TheBottomDisplay.UpdateDocument(reloadlist);
-           if (reloadlist) TheList.UpdateLoadedStuff();
+            if (reloadlist) TheList.UpdateLoadedStuff();
             foreach(var a in SingleLayers)
             {
                 a.UpdateDocument(reloadlist);
@@ -101,8 +124,8 @@ namespace GerberViewer
                 a.Close();
                 
             }
-            TheTopDisplay.ClearCache();
-            TheBottomDisplay.ClearCache();
+            TheTopDisplay.ClearCache(true);
+            TheBottomDisplay.ClearCache(true);
             SingleLayers.Clear();
         }
         internal void ClearAll()
@@ -168,7 +191,7 @@ namespace GerberViewer
 
         internal void ActivateTab(int rowIndex)
         {
-            Document.Gerbers[rowIndex].Panel.Activate();
+        //    Document.Gerbers[rowIndex].Panel.Activate();
         }
     }
 }

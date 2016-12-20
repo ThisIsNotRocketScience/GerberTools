@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.25914.0
+VisualStudioVersion = 15.0.26014.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberLibrary", "..\GerberLibrary\GerberLibrary.csproj", "{E1C3AA23-3A02-485F-976B-50A96052F00A}"
 EndProject
@@ -48,6 +48,15 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontPanelImageToGerber", "..\ImageToGerber\FrontPanelImageToGerber.csproj", "{5D996BEE-BD2A-427A-808B-98EE1F397AE5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberViewer", "..\GerberViewer\GerberViewer.csproj", "{02887DBB-12F0-40A7-B5ED-B30B18C503F3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{00796066-7833-4827-BCFB-1724A5D2E636}"
+	ProjectSection(SolutionItems) = preProject
+		Performance1.psess = Performance1.psess
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaseBuilder", "..\CaseBuilder\CaseBuilder.csproj", "{12C70AD0-0172-48B3-B7B7-560B157887E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SickOfBeige", "..\DirtyPCBs\SickOfBeige\SickOfBeige.csproj", "{D8D9E743-7DE8-4865-B169-1253AC6732F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -209,6 +218,22 @@ Global
 		{02887DBB-12F0-40A7-B5ED-B30B18C503F3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{02887DBB-12F0-40A7-B5ED-B30B18C503F3}.Release|x86.ActiveCfg = Release|Any CPU
 		{02887DBB-12F0-40A7-B5ED-B30B18C503F3}.Release|x86.Build.0 = Release|Any CPU
+		{12C70AD0-0172-48B3-B7B7-560B157887E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12C70AD0-0172-48B3-B7B7-560B157887E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12C70AD0-0172-48B3-B7B7-560B157887E7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{12C70AD0-0172-48B3-B7B7-560B157887E7}.Debug|x86.Build.0 = Debug|Any CPU
+		{12C70AD0-0172-48B3-B7B7-560B157887E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12C70AD0-0172-48B3-B7B7-560B157887E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12C70AD0-0172-48B3-B7B7-560B157887E7}.Release|x86.ActiveCfg = Release|Any CPU
+		{12C70AD0-0172-48B3-B7B7-560B157887E7}.Release|x86.Build.0 = Release|Any CPU
+		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Debug|x86.Build.0 = Debug|Any CPU
+		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Release|x86.ActiveCfg = Release|Any CPU
+		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -233,5 +258,10 @@ Global
 		{8BD1969D-7C08-4193-B221-D588734B2292} = {F705564A-6956-4675-A941-6ED916ADC0AD}
 		{5D996BEE-BD2A-427A-808B-98EE1F397AE5} = {F705564A-6956-4675-A941-6ED916ADC0AD}
 		{02887DBB-12F0-40A7-B5ED-B30B18C503F3} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
+		{12C70AD0-0172-48B3-B7B7-560B157887E7} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
+		{D8D9E743-7DE8-4865-B169-1253AC6732F8} = {0EBAE71A-2E71-46F4-927D-F66D0A4D23F2}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

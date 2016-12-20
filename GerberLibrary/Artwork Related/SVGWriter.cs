@@ -122,6 +122,8 @@ namespace GerberLibrary
             }
         }
 
+        public bool Dotted { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public Color BackgroundColor = Color.White;
         public List<string> OutputLines = new List<string>();
         public void Clear(Color color)

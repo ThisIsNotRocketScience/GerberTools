@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace GerberViewer
+namespace CaseBuilder
 {
     static class Program
     {
@@ -12,11 +12,11 @@ namespace GerberViewer
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new GerberViewerMainForm(args));
+            Application.Run(new CaseBuilder());
         }
     }
 }

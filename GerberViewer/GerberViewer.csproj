@@ -11,6 +11,8 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -42,6 +44,14 @@
       <HintPath>..\GerberProjects\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="OpenTK, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\GerberProjects\packages\OpenTK.Next.1.2.2336.6514-pre\lib\net20\OpenTK.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OpenTK.GLControl, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\GerberProjects\packages\OpenTK.Next.GLControl.1.2.2336.6514-pre\lib\net20\OpenTK.GLControl.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,6 +63,10 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="Triangle, Version=0.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\GerberProjects\packages\Triangle.0.0.6-Beta3\lib\net45\Triangle.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=2.11.0.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
       <HintPath>..\GerberProjects\packages\DockPanelSuite.2.11.0\lib\net40\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
       <Private>True</Private>
@@ -63,12 +77,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FBO.cs" />
     <Compile Include="GerberViewerMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GerberViewerMainForm.Designer.cs">
       <DependentUpon>GerberViewerMainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GLGraphicsInterface.cs" />
     <Compile Include="LayerDisplay.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -102,6 +118,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

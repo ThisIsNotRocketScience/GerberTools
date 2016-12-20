@@ -1,6 +1,6 @@
-﻿namespace GerberViewer
+﻿namespace CaseBuilder
 {
-    partial class LayerDisplay
+    partial class CaseBuilder
     {
         /// <summary>
         /// Required designer variable.
@@ -30,16 +30,16 @@
         {
             this.SuspendLayout();
             // 
-            // LayerDisplay
+            // Form1
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(600, 417);
-            this.Name = "LayerDisplay";
-            this.Text = "LayerDisplay";
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.LayerDisplay_KeyDown);
-            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.LayerDisplay_KeyPress);
-            this.Resize += new System.EventHandler(this.LayerDisplay_Resize);
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "Form1";
+            this.Text = "Case Builder";
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.Form1_DragEnter);
             this.ResumeLayout(false);
 
         }
@@ -47,3 +47,4 @@
         #endregion
     }
 }
+

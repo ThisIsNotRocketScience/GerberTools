@@ -96,6 +96,7 @@
     <Compile Include="Core\Primitives\GerberNumberFormat.cs" />
     <Compile Include="Core\Primitives\PointD.cs" />
     <Compile Include="Core\Primitives\PolyLine.cs" />
+    <Compile Include="Core\SickOfBeige.cs" />
     <Compile Include="Deprecated\OldCNCRelated.cs" />
     <Compile Include="External\clipper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
