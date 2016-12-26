@@ -52,7 +52,7 @@ namespace CaseBuilder
             double holediam = (double)holediamBox.Value;
             
 
-            System.Diagnostics.Process.Start(Box.MinimalDXFSave(list[0], offset, holediam));
+            System.Diagnostics.Process.Start(Box.MinimalDXFSave(Path.Combine(Path.GetDirectoryName(list[0]),Path.GetFileNameWithoutExtension(list[0])), offset, holediam));
         }
 
         private void Form1_DragEnter(object sender, DragEventArgs e)

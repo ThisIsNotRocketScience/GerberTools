@@ -1787,11 +1787,16 @@ namespace GerberLibrary
             {
                 foreach (var a in Shapes)
                 {
-                    foreach (var r in a.Vertices)
-                    {
-                        FitPoint(new PointD(r.X, r.Y));
-                    }
+                    AddPolyLine(a);
 
+                }
+            }
+
+            public void AddPolyLine(PolyLine a)
+            {
+                foreach (var r in a.Vertices)
+                {
+                    FitPoint(new PointD(r.X, r.Y));
                 }
             }
 
@@ -1900,6 +1905,21 @@ namespace GerberLibrary
                 S *= scale;
 
                 return S;
+            }
+
+            public void AddPolygons(Polygons Polies)
+            {
+                foreach(var a in Polies)
+                {
+                    AddPolygon(a);
+                }                
+            }
+
+            public void AddPolygon(Polygon a)
+            {
+                PolyLine P = new PolyLine();
+                P.fromPolygon(a);
+                AddPolyLine(P);
             }
         }
         //      public GerberParserState State = new GerberParserState();

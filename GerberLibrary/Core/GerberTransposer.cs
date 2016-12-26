@@ -26,7 +26,8 @@ namespace GerberLibrary
                 Console.WriteLine("hmm");
             }
         }
-                /// <summary>
+        
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="sourcefile"></param>
@@ -99,14 +100,19 @@ namespace GerberLibrary
                 string FinalLine = lines[i].Replace("%", "").Replace("*", "").Trim();
 
                 bool DumpToOutput = false;
+                bool metaopen = false;
                 if (lines[i][0] == '%')
                 {
                     DumpToOutput = true;
+                    metaopen = true;
+
                 }
                 else
                 {
                     GS.Split(lines[i], CoordinateFormat);
                 }
+
+
                 switch (FinalLine)
                 {
                     case "G71": CoordinateFormat.SetMetricMode(); break;
@@ -208,6 +214,21 @@ namespace GerberLibrary
                     if (DumpToOutput)
                     {
                         outlines.Add(lines[i]);
+                        if (lines[i].Contains("LNData"))
+                        {
+                            Console.WriteLine(" heh");
+                        }
+                        if (lines[i][0] == '%')
+                        {
+                            int starti = i;
+                            if (lines[i].Length == 1) i++;
+                            while (lines[i][lines[i].Length - 1] != '%')
+                            {
+                                if (i > starti) outlines.Add(lines[i]);
+                                i++;
+                            }
+                            if (i>starti) outlines.Add(lines[i]); 
+                        }
                     }
                     else
                     {

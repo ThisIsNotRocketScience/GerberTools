@@ -121,13 +121,14 @@ namespace GerberLibrary.Core.Primitives
                 if (isscaled) getval = GNF._ScaleMMToFile(scaledvalue);
                 if (boundparam > -1)
                 {
+
                     if (rotation != 0 && isrotationparam)
                     {
                         return String.Format("{1}+${0}", boundparam + 1, Gerber.ToFloatingPointString(rotation).Replace(',', '.'));
                     }
                     else
                     {
-                        return String.Format("{1}X${0}", boundparam + 1, Gerber.ToFloatingPointString(getval).Replace(',', '.'));
+                        return String.Format("${0}", boundparam + 1);
                     }
                 }
                 else

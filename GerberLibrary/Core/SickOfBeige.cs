@@ -650,16 +650,21 @@ namespace GerberLibrary.Core
             Lines.Add("0");
             Lines.Add("EOF");
             File.WriteAllLines(outputfile + ".dxf", Lines);
+            float scalefac = 10;
             Console.WriteLine("Report: {0} holes created in case ({1} spacers and {1} screws needed!)", Holes.Count, Holes.Count * 2);
             {
-                var BB = GetOutlineBoundingBox();
-                Bitmap B = new Bitmap((int)((BB.Width() + offset * 3) * 50.0), (int)((BB.Height() + offset * 3) * 50.0));
+                var BB = new GerberLibrary.PolyLineSet.Bounds();
+                BB.AddPolygons(Offsetted);
+                BB.AddPolyLine(Biggest);
+
+                Bitmap B = new Bitmap((int)((BB.Width() ) * scalefac) + 6, (int)((BB.Height()) * scalefac) +6);
                 Graphics G = Graphics.FromImage(B);
                 G.Clear(Color.Transparent);
                 G.Clear(Color.White);
 
-                G.ScaleTransform(50, 50);
-                G.TranslateTransform((float)+(BB.TopLeft.X + offset * 1.5), (float)-(BB.TopLeft.Y - offset * 1.5));
+                G.TranslateTransform(3,3);
+                G.ScaleTransform(scalefac, scalefac);
+                G.TranslateTransform((float)-(BB.TopLeft.X ), (float)-(BB.TopLeft.Y ));
                 Pen pen = new Pen(Color.Black, 0.1f);
                 Pen pen2 = new Pen(Color.FromArgb(160, 160, 160), 0.1f);
                 pen2.DashPattern = new float[2] { 2, 2 };
