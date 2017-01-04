@@ -61,7 +61,7 @@ namespace GerberViewer
                 BoardSide Side = BoardSide.Unknown;
                 BoardLayer Layer = BoardLayer.Unknown;
                 Gerber.DetermineBoardSideAndLayer(origfilename, out Side, out Layer);
-                if (Layer == BoardLayer.Outline)
+                if (Layer == BoardLayer.Outline || Layer == BoardLayer.Mill)
                 {
                     forcezerowidth = true;
                     precombinepolygons = true;

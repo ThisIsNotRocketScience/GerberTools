@@ -68,6 +68,7 @@ namespace GerberLibrary
             switch(layer)
             {
 
+                case BoardLayer.Mill: R = 11; break;
                 case BoardLayer.Silk: R = 101;break;
                 case BoardLayer.Paste: R = 10; break;
                 case BoardLayer.SolderMask: R = 102; break;

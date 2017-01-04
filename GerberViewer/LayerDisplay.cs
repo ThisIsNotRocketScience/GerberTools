@@ -173,7 +173,7 @@ void main()
             GL.Uniform1(MainShader.Uniforms["linescale"].address, 1.0f/S);
             GL.UniformMatrix4(MainShader.Uniforms["trans"].address, false, ref M);
             GL.UniformMatrix4(MainShader.Uniforms["view"].address, false, ref View);
-            // GL.Enable(EnableCap.Blend);
+             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
             VBOCache.RenderVBO(MainShader);
             MainShader.UnBind();
@@ -382,7 +382,8 @@ void main()
                         {
                             if (a.File.Layer != BoardLayer.Drill)
                             {
-                                var C = a.Color;
+                                var C =  Color.FromArgb(100, a.Color);
+                                
                                 if (a.File.Side == BoardSide.Top) C = MathHelpers.Interpolate(C, Document.Colors.BackgroundColor, 0.4f);
                                 DrawGerber(GGI, a.File, C);
                             }

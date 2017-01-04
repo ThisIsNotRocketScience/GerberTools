@@ -313,18 +313,27 @@ namespace GerberViewer
             }
             polygon.AddContour(V);
 
-               
-            var options = new ConstraintOptions() {  };
-            var quality = new QualityOptions() {  };
-
-            var mesh = polygon.Triangulate(options, quality);
-            
-            foreach (var t in mesh.Triangles)
+            if (V.Count >= 3)
             {
-                var A = t.GetVertex(0);
-                var B = t.GetVertex(1);
-                var C = t.GetVertex(2);
-                AddTriangle((float)A.X, (float)A.Y, (float)B.X, (float)B.Y, (float)C.X, (float)C.Y, c);
+                try
+                {
+                    var options = new ConstraintOptions() { };
+                    var quality = new QualityOptions() { };
+
+                    var mesh = polygon.Triangulate(options, quality);
+
+                    foreach (var t in mesh.Triangles)
+                    {
+                        var A = t.GetVertex(0);
+                        var B = t.GetVertex(1);
+                        var C = t.GetVertex(2);
+                        AddTriangle((float)A.X, (float)A.Y, (float)B.X, (float)B.Y, (float)C.X, (float)C.Y, c);
+                    }
+                }
+                catch(Exception E)
+                {
+
+                }
             }
         }
 
