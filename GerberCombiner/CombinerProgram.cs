@@ -13,6 +13,10 @@ namespace GerberCombiner
     {
         static void Main(string[] args)
         {
+
+            GerberSplitter GS = new GerberSplitter();
+            GS.Split("G03*", new GerberLibrary.Core.Primitives.GerberNumberFormat());
+            Console.WriteLine("{0}", GS.Pairs.Count);
             Gerber.ShowProgress = true;
             if (args.Count() < 2)
             {

@@ -336,6 +336,22 @@ namespace GerberLibrary
 
                                                 }
                                             }
+
+
+                                            if (GS.Has("I"))
+                                            {
+
+                                                var I = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("I"));
+                                                OutLine += String.Format("I{0}", GNF.Format(GNF._ScaleMMToFile(I)));
+
+                                            }
+                                            if (GS.Has("J"))
+                                            {
+                                                var J = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("J"));
+                                                OutLine += String.Format("J{0}", GNF.Format(GNF._ScaleMMToFile(J)));
+                                            }
+
+
                                             if (GS.Has("D"))
                                             {
                                                 OutLine += String.Format("D{0}", ((int)GS.Get("D")).ToString("D2"));
@@ -523,6 +539,22 @@ namespace GerberLibrary
 
                                                     }
                                                 }
+
+
+                                                if (GS.Has("I"))
+                                                {
+
+                                                    var I = otherfile.State.CoordinateFormat.ScaleFileToMM(GS.Get("I"));
+                                                    OutLine += String.Format("I{0}", GNF.Format(GNF._ScaleMMToFile(I)));
+
+                                                }
+                                                if (GS.Has("J"))
+                                                {
+                                                    var J = otherfile.State.CoordinateFormat.ScaleFileToMM(GS.Get("J"));
+                                                    OutLine += String.Format("J{0}", GNF.Format(GNF._ScaleMMToFile(J)));
+                                                }
+
+
                                                 if (GS.Has("D"))
                                                 {
                                                     OutLine += String.Format("D{0}", ((int)GS.Get("D")).ToString("D2"));
@@ -727,7 +759,7 @@ namespace GerberLibrary
                                     if ((int)GCC.numbercommands[0] == 3 || (int)GCC.numbercommands[0] == 2 || (int)GCC.numbercommands[0] == 1)
                                 {
                              
-                                    GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
+                                    //GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
                                     GS.ScaleToMM(File1Parsed.State.CoordinateFormat);
                                     GS.ScaleToFile(GNF);
                                     
@@ -825,6 +857,19 @@ namespace GerberLibrary
 
                                                 }
                                             }
+
+                                            if (GS.Has("I"))
+                                            {
+
+                                                var I = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("I"));
+                                                OutLine += String.Format("I{0}", GNF.Format(GNF._ScaleMMToFile(I)));
+
+                                            }
+                                            if (GS.Has("J"))
+                                            {
+                                                var J  = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("J"));
+                                                OutLine += String.Format("J{0}", GNF.Format(GNF._ScaleMMToFile(J)));
+                                            }
                                             if (GS.Has("D"))
                                             {
                                                 OutLine += String.Format("D{0}", ((int)GS.Get("D")).ToString("D2"));
@@ -917,7 +962,7 @@ namespace GerberLibrary
                                             {
                                                //double X = 0;
                                            //     double Y = 0;
-                                               GS.Split(GCC.originalline, File2Parsed.State.CoordinateFormat);
+                                              // GS.Split(GCC.originalline, File2Parsed.State.CoordinateFormat);
                                                GS.ScaleToMM(File2Parsed.State.CoordinateFormat);
                                                 GS.ScaleToFile(GNF);
                                                 //         if (GS.Has("X")) GS.Set("X", File2Parsed.CoordinateFormat.ScaleFileToMM(GS.Get("X")));
@@ -1005,6 +1050,21 @@ namespace GerberLibrary
 
                                                 }
                                             }
+
+
+                                            if (GS.Has("I"))
+                                            {
+
+                                                var I = File2Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("I"));
+                                                OutLine += String.Format("I{0}", GNF.Format(GNF._ScaleMMToFile(I)));
+
+                                            }
+                                            if (GS.Has("J"))
+                                            {
+                                                var J = File2Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("J"));
+                                                OutLine += String.Format("J{0}", GNF.Format(GNF._ScaleMMToFile(J)));
+                                            }
+
                                             if (GS.Has("D"))
                                             {
                                                 OutLine += String.Format("D{0}", ((int)GS.Get("D")).ToString("D2"));
