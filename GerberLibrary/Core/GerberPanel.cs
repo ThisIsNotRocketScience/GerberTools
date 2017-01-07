@@ -10,6 +10,7 @@ using System.Xml.Serialization;
 using Polygons = System.Collections.Generic.List<System.Collections.Generic.List<ClipperLib.IntPoint>>;
 using GerberLibrary.Core.Primitives;
 using GerberLibrary.Core;
+using Ionic.Zip;
 
 namespace GerberLibrary
 {
@@ -37,6 +38,12 @@ namespace GerberLibrary
 
         public List<string> AddGerberFolder(string path, bool add = true)
         {
+            if (File.Exists(path) && (Path.GetExtension(path).ToLower() == ".zip" || Path.GetExtension(path).ToLower() == "zip"))
+            {
+                return AddGerberZip(path, add);
+                
+            }
+
             List<string> res = new List<string>();
             if (add) TheSet.LoadedOutlines.Add(path);
             string foldername = Path.GetDirectoryName(path + Path.DirectorySeparatorChar);
@@ -101,7 +108,93 @@ namespace GerberLibrary
             }
             return res;
         }
-        
+
+        private List<string> AddGerberZip(string path, bool add)
+        {
+            List<string> res = new List<string>();
+            Dictionary<string, MemoryStream> Files = new Dictionary<string, MemoryStream>();
+            using (Ionic.Zip.ZipFile zip1 = Ionic.Zip.ZipFile.Read(path))
+            {
+                foreach (ZipEntry e in zip1)
+                {
+                    MemoryStream MS = new MemoryStream();
+                    if (e.IsDirectory == false)
+                    {
+                        e.Extract(MS);
+                        MS.Seek(0, SeekOrigin.Begin);
+                        Files[e.FileName] = MS;
+                    }
+                }
+            }
+
+            if (add) TheSet.LoadedOutlines.Add(path);
+            string foldername = Path.GetDirectoryName(path + Path.DirectorySeparatorChar);
+            Console.WriteLine("adding zip file {0}", foldername);
+            bool had = false;
+
+            string[] FileNames = Files.Keys.ToArray();
+            List<string> outlinefiles = new List<string>();
+            List<string> millfiles = new List<string>();
+            List<string> copperfiles = new List<string>();
+
+            foreach (var F in FileNames)
+            {
+                BoardSide BS = BoardSide.Unknown;
+                BoardLayer BL = BoardLayer.Unknown;
+                Files[F].Seek(0, SeekOrigin.Begin);
+                if (Gerber.FindFileTypeFromStream(new StreamReader(Files[F]),F) == BoardFileType.Gerber)
+                {
+                    Gerber.DetermineBoardSideAndLayer(F, out BS, out BL);
+                    if (BS == BoardSide.Both && BL == BoardLayer.Outline)
+                    {
+                        outlinefiles.Add(F);
+                    }
+                    else
+                    {
+                        if (BS == BoardSide.Both && BL == BoardLayer.Mill)
+                        {
+                            millfiles.Add(F);
+                        }
+                        else
+                        {
+                            if (BL == BoardLayer.Copper)
+                            {
+                                copperfiles.Add(F);
+                            }
+                        }
+                    }
+                }
+            }
+            foreach (var a in outlinefiles)
+            {
+                Files[a].Seek(0, SeekOrigin.Begin);
+                GerberOutlines[path] = new GerberOutline(new StreamReader(Files[a]), a);
+                if (GerberOutlines[path].TheGerber.DisplayShapes.Count > 0) had = true;
+            }
+
+            if (had == false)
+            {
+                foreach (var a in millfiles)
+                {
+                    Files[a].Seek(0, SeekOrigin.Begin);
+                    GerberOutlines[path] = new GerberOutline(new StreamReader(Files[a]), a);
+                    if (GerberOutlines[path].TheGerber.DisplayShapes.Count > 0) had = true;
+                }
+
+            }
+            if (had == false)
+            {
+                // TODO: extract an outline from other layers? THIS IS DANGEROUS!
+                Console.WriteLine("{0} has no outline available?", path);
+            }
+            else
+            {
+                res.Add(path);
+            }
+            return res;
+
+        }
+
         public Dictionary<string, GerberOutline> GerberOutlines = new Dictionary<string, GerberOutline>();
 
         /// <summary>
@@ -1007,7 +1100,7 @@ namespace GerberLibrary
                 foreach (var b in TheSet.Instances)
                 {
                     // Polygons clips = new Polygons();
-                    if (b.GerberPath.Contains("???") == false)
+                   // if (b.GerberPath.Contains("???") == false)
                     {
                         var a = GerberOutlines[b.GerberPath];
                         foreach (var c in a.TheGerber.OutlineShapes)
@@ -1657,6 +1750,8 @@ namespace GerberLibrary
     {
         public string GerberPath;
         public bool Generated = false;
+
+       
     }
 
     public class BreakTab : AngledThing
@@ -1688,8 +1783,9 @@ namespace GerberLibrary
         public List<string> SaveTo(string p, Dictionary<string, GerberOutline> GerberOutlines, ProgressLog Logger)
         {
             List<string> GeneratedFiles = new List<string>();
-            int isntid = 1;
-            GerberTransposer GT = new GerberTransposer();
+            List<String> UnzippedList = new List<string>();
+
+            int isntid = 1;            
             int current = 0;
             foreach (var a in Instances)
             {
@@ -1698,7 +1794,44 @@ namespace GerberLibrary
                 if (a.GerberPath.Contains("???") == false)
                 {
                     var outline = GerberOutlines[a.GerberPath];
-                    foreach (var f in Directory.GetFiles(a.GerberPath))
+                    List<String> FileList = new List<string>();
+
+                    if (Directory.Exists(a.GerberPath))
+                    {
+                        FileList = Directory.GetFiles(a.GerberPath).ToList();
+                    }
+                    else
+                    {
+                        if (File.Exists(a.GerberPath) && (Path.GetExtension(a.GerberPath).ToLower() == ".zip" || Path.GetExtension(a.GerberPath).ToLower() == "zip"))
+                        {
+                            string BaseUnzip = Path.Combine(p, "unzipped");
+                            if (Directory.Exists(BaseUnzip)== false)
+                            {
+                                Directory.CreateDirectory(BaseUnzip);
+                            }
+                            using (Ionic.Zip.ZipFile zip1 = Ionic.Zip.ZipFile.Read(a.GerberPath))
+                            {
+                                foreach (ZipEntry e in zip1)
+                                {
+                                    if (e.IsDirectory == false)
+                                    {
+                                        string Unzipped = Path.Combine(BaseUnzip, (isntid++).ToString() + "_" +Path.GetFileName( e.FileName));
+                                        FileStream FS = new FileStream(Unzipped, FileMode.CreateNew);
+                                        FileList.Add(Unzipped);
+                                        UnzippedList.Add(Unzipped);
+                                        e.Extract(FS);
+                                        FS.Close();
+
+                                        
+                                        
+                                        
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    foreach (var f in FileList)
                     {
                         var FileType = Gerber.FindFileType(f);
 
@@ -1731,7 +1864,7 @@ namespace GerberLibrary
                                     string ext = Path.GetExtension(f).ToLower();
                                     string Filename = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
 
-                                    GT.Transform(f, Filename, a.Center.X, a.Center.Y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, a.Angle);
+                                    GerberTransposer.Transform(f, Filename, a.Center.X, a.Center.Y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, a.Angle);
                                     GeneratedFiles.Add(Filename);
                                 }
                                 catch (Exception E)
@@ -1749,7 +1882,11 @@ namespace GerberLibrary
                     isntid++;
                 } 
             }
-            return GeneratedFiles;
+            foreach(var a in UnzippedList)
+            {
+                File.Delete(a);
+            }
+                return GeneratedFiles;
         }
     }
 
@@ -1768,6 +1905,28 @@ namespace GerberLibrary
                     a.CheckIfHole();
                 }
             }
+            else
+            {
+                TheGerber = new ParsedGerber();
+            }
+        }
+
+        public GerberOutline(StreamReader sr,  string originalfilename)
+        {
+         
+                TheGerber = PolyLineSet.LoadGerberFileFromStream(sr, originalfilename, true, false, new GerberParserState() { PreCombinePolygons = false });
+                TheGerber.FixPolygonWindings();
+                foreach (var a in TheGerber.OutlineShapes)
+                {
+                    a.CheckIfHole();
+                }
+           
+        }
+
+        public PointD GetActualCenter()
+        {
+            return TheGerber.BoundingBox.Middle();
+            
         }
     }
 }

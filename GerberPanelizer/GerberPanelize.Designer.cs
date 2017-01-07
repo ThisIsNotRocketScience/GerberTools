@@ -60,6 +60,7 @@
             this.generateArtOffsetCurvesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateArtFieldLinesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateArtReactedBlobsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.generateArtPrototypeStripToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.milToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -71,7 +72,6 @@
             this.directoryEntry1 = new System.DirectoryServices.DirectoryEntry();
             this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
             this.hScrollBar1 = new System.Windows.Forms.HScrollBar();
-            this.generateArtPrototypeStripToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
@@ -254,7 +254,7 @@
             this.generateArtReactedBlobsToolStripMenuItem,
             this.generateArtPrototypeStripToolStripMenuItem});
             this.contextMenuStrip2.Name = "contextMenuStrip2";
-            this.contextMenuStrip2.Size = new System.Drawing.Size(276, 214);
+            this.contextMenuStrip2.Size = new System.Drawing.Size(276, 186);
             this.contextMenuStrip2.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip2_Opening);
             // 
             // deleteToolStripMenuItem
@@ -298,6 +298,13 @@
             this.generateArtReactedBlobsToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
             this.generateArtReactedBlobsToolStripMenuItem.Text = "Generate Art: Reacted Blobs";
             this.generateArtReactedBlobsToolStripMenuItem.Click += new System.EventHandler(this.generateArtReactedBlobsToolStripMenuItem_Click);
+            // 
+            // generateArtPrototypeStripToolStripMenuItem
+            // 
+            this.generateArtPrototypeStripToolStripMenuItem.Name = "generateArtPrototypeStripToolStripMenuItem";
+            this.generateArtPrototypeStripToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
+            this.generateArtPrototypeStripToolStripMenuItem.Text = "Generate Art: Prototype Strip";
+            this.generateArtPrototypeStripToolStripMenuItem.Click += new System.EventHandler(this.generateArtPrototypeStripToolStripMenuItem_Click);
             // 
             // statusStrip1
             // 
@@ -370,10 +377,10 @@
             this.glControl1.AllowDrop = true;
             this.glControl1.BackColor = System.Drawing.Color.Black;
             this.glControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.glControl1.Location = new System.Drawing.Point(0, 0);
+            this.glControl1.Location = new System.Drawing.Point(0, 28);
             this.glControl1.Margin = new System.Windows.Forms.Padding(5);
             this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(632, 295);
+            this.glControl1.Size = new System.Drawing.Size(632, 267);
             this.glControl1.TabIndex = 5;
             this.glControl1.VSync = false;
             this.glControl1.DragDrop += new System.Windows.Forms.DragEventHandler(this.glControl1_DragDrop);
@@ -387,9 +394,9 @@
             // vScrollBar1
             // 
             this.vScrollBar1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.vScrollBar1.Location = new System.Drawing.Point(611, 0);
+            this.vScrollBar1.Location = new System.Drawing.Point(611, 28);
             this.vScrollBar1.Name = "vScrollBar1";
-            this.vScrollBar1.Size = new System.Drawing.Size(21, 295);
+            this.vScrollBar1.Size = new System.Drawing.Size(21, 267);
             this.vScrollBar1.TabIndex = 6;
             this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
             // 
@@ -401,13 +408,6 @@
             this.hScrollBar1.Size = new System.Drawing.Size(611, 21);
             this.hScrollBar1.TabIndex = 7;
             this.hScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hScrollBar1_Scroll);
-            // 
-            // generateArtPrototypeStripToolStripMenuItem
-            // 
-            this.generateArtPrototypeStripToolStripMenuItem.Name = "generateArtPrototypeStripToolStripMenuItem";
-            this.generateArtPrototypeStripToolStripMenuItem.Size = new System.Drawing.Size(275, 26);
-            this.generateArtPrototypeStripToolStripMenuItem.Text = "Generate Art: Prototype Strip";
-            this.generateArtPrototypeStripToolStripMenuItem.Click += new System.EventHandler(this.generateArtPrototypeStripToolStripMenuItem_Click);
             // 
             // GerberPanelize
             // 

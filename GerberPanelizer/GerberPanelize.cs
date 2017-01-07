@@ -669,7 +669,7 @@ namespace GerberCombinerBuilder
                 string[] D = e.Data.GetData(DataFormats.FileDrop) as string[];
                 foreach (string S in D)
                 {
-                    if (Directory.Exists(S))
+                    if (Directory.Exists(S) || (File.Exists(S) && (Path.GetExtension(S).ToLower() == ".zip" || Path.GetExtension(S).ToLower()=="zip")))
                     {
                         Console.WriteLine("Adding dropped folder: {0}", S);
                         var R = ThePanel.AddGerberFolder(S);

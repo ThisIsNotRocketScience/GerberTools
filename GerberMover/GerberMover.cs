@@ -87,8 +87,7 @@ namespace GerberMover
                 BoardLayer Layer;
                 Gerber.DetermineBoardSideAndLayer(args[0], out Side, out Layer);
 
-                GerberTransposer GT = new GerberTransposer();
-                GT.Transform(filename, outfile, dx, dy, cx, cy, angle);
+                GerberTransposer.Transform(filename, outfile, dx, dy, cx, cy, angle);
 
                 Gerber.SaveGerberFileToImage(outfile, outfile + "_render.png", 200, Color.Black, Color.White);
 

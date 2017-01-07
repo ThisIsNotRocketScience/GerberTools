@@ -58,6 +58,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaseBuilder", "..\CaseBuild
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SickOfBeige", "..\DirtyPCBs\SickOfBeige\SickOfBeige.csproj", "{D8D9E743-7DE8-4865-B169-1253AC6732F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoPanelBuilder", "AutoPanelBuilder\AutoPanelBuilder.csproj", "{8E978054-B515-4581-B65D-DCB7DC7C3D52}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -234,6 +236,14 @@ Global
 		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Release|x86.ActiveCfg = Release|Any CPU
 		{D8D9E743-7DE8-4865-B169-1253AC6732F8}.Release|x86.Build.0 = Release|Any CPU
+		{8E978054-B515-4581-B65D-DCB7DC7C3D52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E978054-B515-4581-B65D-DCB7DC7C3D52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E978054-B515-4581-B65D-DCB7DC7C3D52}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8E978054-B515-4581-B65D-DCB7DC7C3D52}.Debug|x86.Build.0 = Debug|Any CPU
+		{8E978054-B515-4581-B65D-DCB7DC7C3D52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E978054-B515-4581-B65D-DCB7DC7C3D52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E978054-B515-4581-B65D-DCB7DC7C3D52}.Release|x86.ActiveCfg = Release|Any CPU
+		{8E978054-B515-4581-B65D-DCB7DC7C3D52}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -260,6 +270,7 @@ Global
 		{02887DBB-12F0-40A7-B5ED-B30B18C503F3} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{12C70AD0-0172-48B3-B7B7-560B157887E7} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{D8D9E743-7DE8-4865-B169-1253AC6732F8} = {0EBAE71A-2E71-46F4-927D-F66D0A4D23F2}
+		{8E978054-B515-4581-B65D-DCB7DC7C3D52} = {F705564A-6956-4675-A941-6ED916ADC0AD}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
