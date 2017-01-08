@@ -201,6 +201,8 @@ namespace GerberLibrary.Core.Primitives
         {
             return new PointD(X, Y);
         }
+
+        
     }
 
 }

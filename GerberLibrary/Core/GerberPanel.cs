@@ -211,11 +211,11 @@ namespace GerberLibrary
             {
                 Polygons clips = new Polygons();
                 var a = GerberOutlines[b.GerberPath];
-                foreach (var c in a.TheGerber.OutlineShapes)
+                foreach (var c in b.TransformedOutlines)
                 {
-                    PolyLine PL = new PolyLine();
-                    PL.FillTransformed(c, new PointD(b.Center), b.Angle);
-                    clips.Add(PL.toPolygon());
+             //       PolyLine PL = new PolyLine();
+               //     PL.FillTransformed(c, new PointD(b.Center), b.Angle);
+                    clips.Add(c.toPolygon());
                 }
 
                 Clipper cp = new Clipper();
@@ -297,6 +297,30 @@ namespace GerberLibrary
         public void UpdateShape()
         {
             CombinedOutline.Clear();
+          
+            foreach (var a in TheSet.Instances)
+            {
+                if (GerberOutlines.ContainsKey(a.GerberPath))
+                {
+                    bool doit = false;
+                    if (a.LastCenter == null) doit = true;
+                    if (doit || (PointD.Distance(new PointD(a.Center), a.LastCenter) != 0 || a.Angle != a.LastAngle))
+                    {
+                        a.LastAngle = a.Angle;
+                        a.LastCenter = new PointD(a.Center.X, a.Center.Y);
+                        a.TransformedOutlines = new List<PolyLine>();
+                        var GO = GerberOutlines[a.GerberPath];
+                        foreach (var b in GO.TheGerber.OutlineShapes)
+                        {
+                            PolyLine PL = new PolyLine();
+                            PL.FillTransformed(b, new PointD(a.Center), a.Angle);
+                            a.TransformedOutlines.Add(PL);
+                        }
+                        a.CreateOffsetLines(TheSet.ExtraTabDrillDistance);
+                    }
+
+                }
+            }
 
             if (TheSet.ConstructNegativePolygon)
             {
@@ -309,9 +333,10 @@ namespace GerberLibrary
                 G.TheGerber.DisplayShapes = Neg;
                 G.TheGerber.FixPolygonWindings();
                 GerberOutlines["???_negative"] = G;
-                AddInstance("???_negative", new PointD(0, 0));
+                AddInstance("???_negative", new PointD(0, 0), true);
             }
 
+           
             FindOutlineIntersections();
             
         }
@@ -992,11 +1017,11 @@ namespace GerberLibrary
                 if (GerberOutlines.ContainsKey(b.GerberPath))
                 {
                     var a = GerberOutlines[b.GerberPath];
-                    foreach (var c in a.TheGerber.OutlineShapes)
+                    foreach (var c in b.TransformedOutlines)
                     {
-                        PolyLine PL = new PolyLine();
-                        PL.FillTransformed(c, new PointD(b.Center), b.Angle);
-                        SplitPolyLineAndAddSegs(PL);
+                      //  PolyLine PL = new PolyLine();
+                      //  PL.FillTransformed(c, new PointD(b.Center), b.Angle);
+                        SplitPolyLineAndAddSegs(c);
 
                     }
                 }
@@ -1019,9 +1044,9 @@ namespace GerberLibrary
 
         private void SplitPolyLineAndAddSegs(PolyLine PL)
         {
-            List<LineSeg> Segs = new List<LineSeg>();
             int adjust = 0;
             if (PL.Vertices.First() == PL.Vertices.Last()) adjust = 1;
+            List<LineSeg> Segs = new List<LineSeg>(Math.Max(1, PL.Vertices.Count - adjust+100));
             for (int i = 0; i < PL.Vertices.Count - adjust; i++)
             {
                 Segs.Add(new LineSeg() { PStart = PL.Vertices[i].Copy(), PEnd = PL.Vertices[(i + 1) % PL.Vertices.Count].Copy() });
@@ -1113,31 +1138,32 @@ namespace GerberLibrary
                         {
                             //Console.WriteLine("{0},{1}", a.TheGerber.BoundingBox, C);
 
-                            foreach (var c in a.TheGerber.OutlineShapes)
+                            for(int i = 0;i< b.TransformedOutlines.Count;i++)
                             {
+                                var c = b.TransformedOutlines[i];
 
-                                var poly = c.toPolygon();
-                                bool winding = Clipper.Orientation(poly);
+                              //  var poly = c.toPolygon();
+                               // bool winding = Clipper.Orientation(poly);
 
 
-                                PolyLine PL = new PolyLine();
-                                PL.FillTransformed(c, new PointD(b.Center), b.Angle);
+                              //  PolyLine PL = new PolyLine();
+                               // PL.FillTransformed(c, new PointD(b.Center), b.Angle);
 
-                                if (Helpers.IsInPolygon(PL.Vertices, new PointD(t.Center), false))
+                                if (Helpers.IsInPolygon(c.Vertices, new PointD(t.Center), false))
                                 {
                                     t.EvenOdd++;
                                     // t.Errors.Add("inside a polygon!");
                                     //  t.Valid = false;
                                 }
 
-                                BuildDrillsForTabAndPolyLine(t, PL);
+                                BuildDrillsForTabAndPolyLine(t, c, b.OffsetOutlines[i]);
 
                                 //bool inside = false;
                                 //bool newinside = false;
                                 // List<PolyLine> Lines = new List<PolyLine>();
 
                                 //PolyLine Current = null;
-                                AddIntersectionsForTabAndPolyLine(t, Intersections, PL);
+                                AddIntersectionsForTabAndPolyLine(t, Intersections, c);
 
                             }
                         }
@@ -1237,20 +1263,13 @@ namespace GerberLibrary
             }
         }
 
-        private void BuildDrillsForTabAndPolyLine(BreakTab t, PolyLine PL)
+        private void BuildDrillsForTabAndPolyLine(BreakTab t, PolyLine PL, List<PolyLine> Offsetted)
         {
-            Polygons clips = new Polygons();
-            var poly = PL.toPolygon();
-            bool winding = Clipper.Orientation(poly);
-            
-            clips.Add(poly);
-            double offset = 0.25 * 100000.0f  +  TheSet.ExtraTabDrillDistance;
-            if (winding == false) offset *= -1;
-            Polygons clips2 = Clipper.OffsetPolygons(clips, offset, JoinType.jtRound);
-            foreach (var subpoly in clips2)
+          
+            foreach (var sub in Offsetted)
             {
-                PolyLine sub = new PolyLine();
-                sub.fromPolygon(subpoly);
+              //  PolyLine sub = new PolyLine();
+            //    sub.fromPolygon(subpoly);
                 double Len = 0;
                 PointD last = sub.Vertices.Last();
                 for (int i = 0; i < sub.Vertices.Count; i++)
@@ -1494,10 +1513,25 @@ namespace GerberLibrary
 
         }
 
-        public GerberInstance AddInstance(string path, PointD coord)
+        public GerberInstance AddInstance(string path, PointD coord, bool generateTransformed = false)
         {
             GerberInstance GI = new GerberInstance() { GerberPath = path, Center = coord.ToF() };
             TheSet.Instances.Add(GI);
+            if (generateTransformed)
+            {
+                if (GerberOutlines.ContainsKey(path))
+                {
+                    var GO = GerberOutlines[path];
+                    foreach(var b in GO.TheGerber.OutlineShapes)
+                    {
+                        PolyLine PL = new PolyLine();
+                        PL.FillTransformed(b, new PointD(GI.Center), GI.Angle);
+                        GI.TransformedOutlines.Add(PL);
+                        
+                    }
+                    GI.CreateOffsetLines(TheSet.ExtraTabDrillDistance);
+                }
+            }
             return GI;
         }
 
@@ -1544,16 +1578,13 @@ namespace GerberLibrary
                 {
                     var a = GerberOutlines[b.GerberPath];
                     int cc = 0;
-                    foreach (var c in a.TheGerber.OutlineShapes)
+                    foreach (var c in b.TransformedOutlines)
                     {
 
-                        PolyLine PL = new PolyLine();
-                        PL.FillTransformed(c, new PointD(b.Center), b.Angle);
-
-                        if (Helpers.IsInPolygon(PL.Vertices, pt))
+                       
+                        if (Helpers.IsInPolygon(c.Vertices, pt))
                         {
                             cc++;
-
                         }
                     }
                     if (cc % 2 == 1) return b; 
@@ -1708,7 +1739,7 @@ namespace GerberLibrary
         public BreakTab AddTab(PointD center)
         {
 
-            BreakTab BT = new BreakTab() { Radius = 4, Center = center.ToF()};
+            BreakTab BT = new BreakTab() { Radius = 3, Center = center.ToF()};
             TheSet.Tabs.Add(BT);
 
             return BT;
@@ -1762,7 +1793,42 @@ namespace GerberLibrary
         public string GerberPath;
         public bool Generated = false;
 
-       
+        [System.Xml.Serialization.XmlIgnore]
+        public List<PolyLine> TransformedOutlines = new List<PolyLine>();
+
+        [System.Xml.Serialization.XmlIgnore]
+        public List<List<PolyLine>> OffsetOutlines = new List<List<PolyLine>>();
+
+        [System.Xml.Serialization.XmlIgnore]
+        internal float LastAngle;
+        [System.Xml.Serialization.XmlIgnore]
+        internal PointD LastCenter ;
+
+        internal void CreateOffsetLines(double extradrilldistance)
+        {
+            OffsetOutlines = new List<List<PolyLine>>(TransformedOutlines.Count);
+            for (int i = 0;i< TransformedOutlines.Count;i++)
+            {
+                var L = new List<PolyLine>();
+                Polygons clips = new Polygons();
+                var poly = TransformedOutlines[i].toPolygon();
+                bool winding = Clipper.Orientation(poly);
+
+                clips.Add(poly);
+                double offset = 0.25 * 100000.0f + extradrilldistance;
+                if (winding == false) offset *= -1;
+                Polygons clips2 = Clipper.OffsetPolygons(clips, offset, JoinType.jtRound);
+                foreach(var a in clips2)
+                {
+                    PolyLine P = new PolyLine();
+                    P.fromPolygon(a);
+                    L.Add(P);
+                }
+
+                OffsetOutlines.Add(L);
+            }
+            
+        }
     }
 
     public class BreakTab : AngledThing
@@ -1898,6 +1964,17 @@ namespace GerberLibrary
                 File.Delete(a);
             }
                 return GeneratedFiles;
+        }
+
+        internal void ClearTransformedOutlines()
+        {
+            foreach(var a in Instances)
+            {
+               
+                a.TransformedOutlines = new List<PolyLine>();
+                
+            }
+            
         }
     }
 

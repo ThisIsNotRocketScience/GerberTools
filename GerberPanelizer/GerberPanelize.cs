@@ -146,6 +146,7 @@ namespace GerberCombinerBuilder
         private bool ShapeMarkedForUpdate = true;
         internal void Redraw(bool refreshshape = true)
         {
+            if (SuspendRedraw) return;
             if (refreshshape)
             {
                 ShapeMarkedForUpdate = true;
@@ -207,6 +208,7 @@ namespace GerberCombinerBuilder
         {
 
             var BT = ThePanel.AddTab(MouseToMM(center));
+
             TV.BuildTree(this, ThePanel.TheSet);
             SetSelectedInstance(BT);
             Redraw(true);
@@ -371,7 +373,8 @@ namespace GerberCombinerBuilder
             }
         }
 
-        PointD LastMouseMove = new PointD(0,0); 
+        PointD LastMouseMove = new PointD(0,0);
+        public bool SuspendRedraw = false;
 
         private void DoMouseMove(MouseEventArgs e)
         {

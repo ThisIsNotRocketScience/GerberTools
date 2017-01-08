@@ -24,7 +24,9 @@ namespace GerberCombinerBuilder
         public void UpdateBoxes(GerberPanelize newTarget)
         {
             TargetInstance = newTarget;
+
             if (TargetInstance == null || TargetInstance.SelectedInstance == null) { panel1.Enabled = false; return; } else { panel1.Enabled = true; }
+            newTarget.SuspendRedraw = true;
             double x = TargetInstance.SelectedInstance.Center.X;
             double y = TargetInstance.SelectedInstance.Center.Y;
             double r = TargetInstance.SelectedInstance.Angle;
@@ -55,6 +57,8 @@ namespace GerberCombinerBuilder
             rbox.Value = (decimal)r;
             radiusbox.Value = (decimal) rad;
             Initializing = false;
+            newTarget.SuspendRedraw = false;
+
         }
 
         void UpdateInstance()
