@@ -11,6 +11,9 @@ using Polygons = System.Collections.Generic.List<System.Collections.Generic.List
 using GerberLibrary.Core.Primitives;
 using GerberLibrary.Core;
 using Ionic.Zip;
+using TriangleNet;
+using TriangleNet.Geometry;
+
 
 namespace GerberLibrary
 {
@@ -195,6 +198,168 @@ namespace GerberLibrary
 
         }
 
+        public void BuildAutoTabs(GerberArtWriter GAW = null, GerberArtWriter GAW2 = null)
+        {
+            if (TheSet.Instances.Count < 3) return;
+            List<Vertex> Vertes = new List<Vertex>();
+
+            Dictionary<Vertex, GerberLibrary.GerberInstance> InstanceMap = new Dictionary<Vertex, GerberLibrary.GerberInstance>();
+
+            foreach (var a in TheSet.Instances)
+            {
+                if (a.GerberPath.Contains("???") == false)
+                {
+                    var outline = GerberOutlines[a.GerberPath];
+                    var P = outline.GetActualCenter();
+                    P = P.Rotate(a.Angle);
+                    P.X += a.Center.X;
+                    P.Y += a.Center.Y;
+                    var V = new Vertex(P.X, P.Y);
+                    InstanceMap[V] = a;
+                    Vertes.Add(V);
+                }
+            }
+            UpdateShape();
+
+            var M = new TriangleNet.Meshing.GenericMesher();
+            var R = M.Triangulate(Vertes);
+
+
+            foreach (var a in R.Edges)
+            {
+                var A = R.Vertices.ElementAt(a.P0);
+                var B = R.Vertices.ElementAt(a.P1);
+                PolyLine P = new PolyLine();
+                P.Add(A.X, A.Y);
+                P.Add(B.X, B.Y);
+                GerberLibrary.GerberInstance iA = null;
+                GerberLibrary.GerberInstance iB = null;
+                for (int i = 0; i < InstanceMap.Count; i++)
+                {
+                    var V = InstanceMap.Keys.ElementAt(i);
+                    if (V.ID == A.ID) iA = InstanceMap.Values.ElementAt(i);
+                    if (V.ID == B.ID) iB = InstanceMap.Values.ElementAt(i);
+                }
+
+                if (iA != null && iB != null)
+                {
+                    PointD vA = new PointD(A.X, A.Y);
+                    PointD vB = new PointD(B.X, B.Y);
+
+                    PointD diffA = vB;
+                    diffA.X -= iA.Center.X;
+                    diffA.Y -= iA.Center.Y;
+                    diffA = diffA.Rotate(-iA.Angle);
+
+
+
+                    PointD diffB = vA;
+                    diffB.X -= iB.Center.X;
+                    diffB.Y -= iB.Center.Y;
+                    diffB = diffB.Rotate(-iB.Angle);
+
+
+
+                    var outlineA = GerberOutlines[iA.GerberPath];
+                    var outlineB = GerberOutlines[iB.GerberPath];
+                    PointD furthestA = new PointD();
+                    PointD furthestB = new PointD();
+                    double furthestdistA = 0.0;
+
+                    var acA = outlineA.GetActualCenter();
+                    var acB = outlineB.GetActualCenter();
+                    foreach (var s in outlineA.TheGerber.OutlineShapes)
+                    {
+                        List<PointD> intersect = s.GetIntersections(diffA, acA);
+                        if (intersect != null && intersect.Count > 0)
+                        {
+                            for (int i = 0; i < intersect.Count; i++)
+                            {
+                                double newD = PointD.Distance(acA, intersect[i]);
+
+                                PolyLine PL = new PolyLine();
+                                var CP = intersect[i].Rotate(iA.Angle);
+                                CP.X += iA.Center.X;
+                                CP.Y += iA.Center.Y;
+                                PL.MakeCircle(1);
+                                PL.Translate(CP.X, CP.Y);
+
+                                if (GAW!=null) GAW.AddPolygon(PL);
+
+                                if (newD > furthestdistA)
+                                {
+                                    furthestdistA = newD;
+                                    furthestA = intersect[i];
+                                }
+                            }
+                        }
+                    }
+                    double furthestdistB = 0.0;
+
+                    foreach (var s in outlineB.TheGerber.OutlineShapes)
+                    {
+                        List<PointD> intersect = s.GetIntersections(diffB, acB);
+                        if (intersect != null && intersect.Count > 0)
+                        {
+                            for (int i = 0; i < intersect.Count; i++)
+                            {
+                                double newD = PointD.Distance(acB, intersect[i]);
+                                PolyLine PL = new PolyLine();
+                                var CP = intersect[i].Rotate(iB.Angle);
+                                CP.X += iB.Center.X;
+                                CP.Y += iB.Center.Y;
+                                PL.MakeCircle(1);
+                                PL.Translate(CP.X, CP.Y);
+                                if (GAW != null) GAW.AddPolygon(PL);
+
+                                if (newD > furthestdistB)
+                                {
+                                    furthestdistB = newD;
+                                    furthestB = intersect[i];
+                                }
+                            }
+                        }
+                    }
+
+                    if (furthestdistB != 0 && furthestdistA != 0)
+                    {
+                        furthestA = furthestA.Rotate(iA.Angle);
+                        furthestA.X += iA.Center.X;
+                        furthestA.Y += iA.Center.Y;
+
+                        furthestB = furthestB.Rotate(iB.Angle);
+                        furthestB.X += iB.Center.X;
+                        furthestB.Y += iB.Center.Y;
+
+                        var Distance = PointD.Distance(furthestA, furthestB);
+                        if (Distance < 7)
+                        {
+                            var CP = new PointD((furthestA.X + furthestB.X) / 2, (furthestA.Y + furthestB.Y) / 2);
+                            var T = AddTab(CP);
+                            T.Radius = (float)Math.Max(Distance / 1.5, 3.2f);
+
+                            PolyLine PL = new PolyLine();
+                            PL.MakeCircle(T.Radius);
+                            PL.Translate(CP.X, CP.Y);
+                            if (GAW2 != null) GAW2.AddPolygon(PL);
+                        }
+
+                    }
+                    else
+                    {
+                        var T = AddTab(new PointD((A.X + B.X) / 2, (A.Y + B.Y) / 2));
+                        T.Radius = 3.0f;
+                    }
+                }
+                if (GAW != null) GAW.AddPolyLine(P, 0.1);
+            }
+
+
+            UpdateShape();
+            RemoveAllTabs(true);
+            UpdateShape();
+        }
+
         public Dictionary<string, GerberOutline> GerberOutlines = new Dictionary<string, GerberOutline>();
 
         /// <summary>
@@ -306,17 +471,7 @@ namespace GerberLibrary
                     if (a.LastCenter == null) doit = true;
                     if (doit || (PointD.Distance(new PointD(a.Center), a.LastCenter) != 0 || a.Angle != a.LastAngle))
                     {
-                        a.LastAngle = a.Angle;
-                        a.LastCenter = new PointD(a.Center.X, a.Center.Y);
-                        a.TransformedOutlines = new List<PolyLine>();
-                        var GO = GerberOutlines[a.GerberPath];
-                        foreach (var b in GO.TheGerber.OutlineShapes)
-                        {
-                            PolyLine PL = new PolyLine();
-                            PL.FillTransformed(b, new PointD(a.Center), a.Angle);
-                            a.TransformedOutlines.Add(PL);
-                        }
-                        a.CreateOffsetLines(TheSet.ExtraTabDrillDistance);
+                        a.RebuildTransformed(GerberOutlines[a.GerberPath], TheSet.ExtraTabDrillDistance);
                     }
 
                 }
@@ -336,7 +491,10 @@ namespace GerberLibrary
                 AddInstance("???_negative", new PointD(0, 0), true);
             }
 
-           
+            foreach (var aa in TheSet.Instances)
+            {
+                aa.Tabs.Clear();
+            }
             FindOutlineIntersections();
             
         }
@@ -443,16 +601,35 @@ namespace GerberLibrary
                 {
 
                     var a = GerberOutlines[GI.GerberPath];
-                    foreach (var Shape in a.TheGerber.DisplayShapes)
+                  //  a.BuildShapeCache();
+                    float R = 0;
+                    float Gf = 0;
+                    float B = 0;
+                    float A = 0.8f;
+                    switch (GI.Tabs.Count)
                     {
-                        DrawShape(G, P, Shape);
+                        case 0:
+                            R = .70f;
+                            break;
+                        case 1:
+                            R = .70f; Gf = 0.35f;
+                            break;
+                        case 2:
+                            R = .70f; Gf = 0.70f;
+                            break;
+
+                        default:
+                            Gf = 1.0f;
+                            break;
                     }
+                    //G.FillTriangles(a.TheGerber.ShapeCacheTriangles, Color.FromArgb((byte)(A * 255.0), (byte)(R * 255.0), (byte)(Gf * 255.0), (byte)(B * 255.0)));
+
                     foreach (var Shape in a.TheGerber.OutlineShapes)
                     {
 
                         if (Shape.Hole == false)
                         {
-                            FillShape(G, new SolidBrush(Color.FromArgb(100, 255, 255, 255)), Shape);
+                            //FillShape(G, new SolidBrush(Color.FromArgb(100, 255, 255, 255)), Shape);
                         }
                         else
                         {
@@ -468,7 +645,10 @@ namespace GerberLibrary
                             DrawShape(G, active ? ActiveP : P, Shape);
                         }
                     }
-
+                    foreach (var Shape in a.TheGerber.DisplayShapes)
+                    {
+                        DrawShape(G, active ? ActiveP : P, Shape);
+                    }
                     var width = (int)(Math.Ceiling(a.TheGerber.BoundingBox.BottomRight.X - a.TheGerber.BoundingBox.TopLeft.X));
                     var height = (int)(Math.Ceiling(a.TheGerber.BoundingBox.BottomRight.Y - a.TheGerber.BoundingBox.TopLeft.Y));
 
@@ -479,9 +659,10 @@ namespace GerberLibrary
                     double Z = 1;
                     if (Ext.X > width) Z = width/Ext.X;
                     if (Ext.Y * Z > height) Z = height / Ext.Y;
-                    
 
-                    G.DrawString(new PointD(ox, oy), Path.GetFileName(GI.GerberPath), Z*30, true,0.0f,0.0f,0.0f,0.8f);
+                    
+                    
+                    G.DrawString(new PointD(ox, oy), Path.GetFileName(GI.GerberPath), Z*30, true,R,Gf,B,A);
 
 
                 }
@@ -535,7 +716,7 @@ namespace GerberLibrary
         /// <param name="targetwidth"></param>
         /// <param name="targetheight"></param>
         /// <param name="SelectedInstance"></param>
-        public void DrawBoardBitmap(float PW = 1, GraphicsInterface G = null, int targetwidth = 0, int targetheight = 0, AngledThing SelectedInstance = null, AngledThing Hoverinstance = null)
+        public void DrawBoardBitmap(float PW = 1, GraphicsInterface G = null, int targetwidth = 0, int targetheight = 0, AngledThing SelectedInstance = null, AngledThing Hoverinstance = null, double snapdistance = 1)
         {
             if (G == null)
             {
@@ -547,7 +728,7 @@ namespace GerberLibrary
             if (G.IsFast)
             {
                 G.FillRectangle(System.Drawing.ColorTranslator.FromHtml("#f5f4e8"), -2, -2, (int)TheSet.Width + 4, (int)TheSet.Height + 4);
-                Helpers.DrawMMGrid(G, PW, (float)TheSet.Width, (float)TheSet.Height);
+                Helpers.DrawMMGrid(G, PW, (float)TheSet.Width, (float)TheSet.Height, (float)snapdistance, (float)snapdistance * 10.0f);
 
             }
             else
@@ -557,8 +738,8 @@ namespace GerberLibrary
                     Graphics G2 = Graphics.FromImage(MMGrid);
                     G2.SmoothingMode = SmoothingMode.HighQuality;
                     G2.Transform = G.Transform;
-                    Helpers.DrawMMGrid(new GraphicsGraphicsInterface(G2), PW, (float)TheSet.Width, (float)TheSet.Height);
-                    Console.WriteLine("building new millimeter grid!");
+                    Helpers.DrawMMGrid(new GraphicsGraphicsInterface(G2), PW, (float)TheSet.Width, (float)TheSet.Height, (float)snapdistance, (float)snapdistance * 10.0f);
+                Console.WriteLine("building new millimeter grid!");
                 }
             G.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
             G.DrawImage(MMGrid, RR.Left, RR.Bottom, RR.Width, -RR.Height);
@@ -637,8 +818,8 @@ namespace GerberLibrary
         /// <param name="Shape"></param>
         private void FillShape(GraphicsInterface G, SolidBrush BR, PolyLine Shape)
         {
-           
-           // G.FillShape(BR, Shape);
+           // todo: cache the triangulated polygon!
+           //G.FillShape(BR, Shape);
         }
 
         /// <summary>
@@ -1163,7 +1344,10 @@ namespace GerberLibrary
                                 // List<PolyLine> Lines = new List<PolyLine>();
 
                                 //PolyLine Current = null;
-                                AddIntersectionsForTabAndPolyLine(t, Intersections, c);
+                                if (AddIntersectionsForTabAndPolyLine(t, Intersections, c))
+                                {
+                                    b.Tabs.Add(t);
+                                }
 
                             }
                         }
@@ -1187,12 +1371,12 @@ namespace GerberLibrary
             CombineGeneratedArcsAndCutlines();
         }
 
-        private static void AddIntersectionsForTabAndPolyLine(BreakTab t, List<TabIntersection> Intersections, PolyLine PL)
+        private static bool AddIntersectionsForTabAndPolyLine(BreakTab t, List<TabIntersection> Intersections, PolyLine PL)
         {
-         //   Polygons clips = new Polygons();
-            var poly = PL.toPolygon();
-            bool winding = Clipper.Orientation(poly);
-           
+            //   Polygons clips = new Polygons();
+            //var poly = PL.toPolygon();
+            //bool winding = Clipper.Orientation(poly);
+            bool ret = false;
             for (int i = 0; i < PL.Vertices.Count; i++)
             {
                 PointD V1 = PL.Vertices[i];
@@ -1211,6 +1395,7 @@ namespace GerberLibrary
                 int ints = Helpers.FindLineCircleIntersections(t.Center.X, t.Center.Y, t.Radius, V1, V2, out I1, out I2);
                 if (ints > 0)
                 {
+                    ret = true;
                     if (ints == 1)
                     {
                         TabIntersection TI = new TabIntersection();
@@ -1261,6 +1446,7 @@ namespace GerberLibrary
 
 
             }
+            return ret;
         }
 
         private void BuildDrillsForTabAndPolyLine(BreakTab t, PolyLine PL, List<PolyLine> Offsetted)
@@ -1804,6 +1990,10 @@ namespace GerberLibrary
         [System.Xml.Serialization.XmlIgnore]
         internal PointD LastCenter ;
 
+        [System.Xml.Serialization.XmlIgnore]
+        public List<BreakTab> Tabs = new List<BreakTab>();
+
+
         internal void CreateOffsetLines(double extradrilldistance)
         {
             OffsetOutlines = new List<List<PolyLine>>(TransformedOutlines.Count);
@@ -1829,6 +2019,22 @@ namespace GerberLibrary
             }
             
         }
+
+        public void RebuildTransformed(GerberOutline gerberOutline, double extra)
+        {
+            LastAngle = Angle;
+            LastCenter = new PointD(Center.X, Center.Y);
+            TransformedOutlines = new List<PolyLine>();
+            var GO = gerberOutline;
+            foreach (var b in GO.TheGerber.OutlineShapes)
+            {
+                PolyLine PL = new PolyLine();
+                PL.FillTransformed(b, new PointD(Center), Angle);
+                TransformedOutlines.Add(PL);
+            }
+            CreateOffsetLines(extra);
+
+        }
     }
 
     public class BreakTab : AngledThing
@@ -1841,6 +2047,7 @@ namespace GerberLibrary
         
         [System.Xml.Serialization.XmlIgnore]
         public int EvenOdd;
+
     }
 
     public class GerberLayoutSet
@@ -2015,6 +2222,11 @@ namespace GerberLibrary
         {
             return TheGerber.BoundingBox.Middle();
             
+        }
+
+        internal void BuildShapeCache()
+        {
+            TheGerber.BuildShapeCache();
         }
     }
 }

@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace GerberCombinerBuilder
 {
-    public partial class Treeview : Form
+    public partial class Treeview :  Form
     {
         TreeNode Gerbers;
         TreeNode BreakTabs;

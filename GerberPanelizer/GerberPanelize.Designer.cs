@@ -40,12 +40,12 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
-            this.mergeOverlappingBreaktabsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.doItAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomToFitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scale11ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ProcessButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.AutoProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
@@ -86,7 +86,9 @@
             this.autosortAlgo1ToolStripMenuItem,
             this.breaktabsToolStripMenuItem,
             this.panelPropertiesToolStripMenuItem,
-            this.viewToolStripMenuItem});
+            this.viewToolStripMenuItem,
+            this.ProcessButton,
+            this.AutoProcess});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(8, 2, 0, 2);
@@ -132,9 +134,7 @@
             this.insertBoardJoinToolStripMenuItem,
             this.toolStripMenuItem1,
             this.toolStripMenuItem2,
-            this.toolStripMenuItem3,
-            this.mergeOverlappingBreaktabsToolStripMenuItem,
-            this.doItAllToolStripMenuItem});
+            this.toolStripMenuItem3});
             this.breaktabsToolStripMenuItem.Name = "breaktabsToolStripMenuItem";
             this.breaktabsToolStripMenuItem.Size = new System.Drawing.Size(86, 24);
             this.breaktabsToolStripMenuItem.Text = "Breaktabs";
@@ -167,20 +167,6 @@
             this.toolStripMenuItem3.Text = "Delete all Breaktabs with errors";
             this.toolStripMenuItem3.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
             // 
-            // mergeOverlappingBreaktabsToolStripMenuItem
-            // 
-            this.mergeOverlappingBreaktabsToolStripMenuItem.Name = "mergeOverlappingBreaktabsToolStripMenuItem";
-            this.mergeOverlappingBreaktabsToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
-            this.mergeOverlappingBreaktabsToolStripMenuItem.Text = "Merge Overlapping Breaktabs";
-            this.mergeOverlappingBreaktabsToolStripMenuItem.Click += new System.EventHandler(this.mergeOverlappingBreaktabsToolStripMenuItem_Click);
-            // 
-            // doItAllToolStripMenuItem
-            // 
-            this.doItAllToolStripMenuItem.Name = "doItAllToolStripMenuItem";
-            this.doItAllToolStripMenuItem.Size = new System.Drawing.Size(291, 26);
-            this.doItAllToolStripMenuItem.Text = "Do it all.";
-            this.doItAllToolStripMenuItem.Click += new System.EventHandler(this.doItAllToolStripMenuItem_Click);
-            // 
             // panelPropertiesToolStripMenuItem
             // 
             this.panelPropertiesToolStripMenuItem.Name = "panelPropertiesToolStripMenuItem";
@@ -210,6 +196,23 @@
             this.scale11ToolStripMenuItem.Size = new System.Drawing.Size(160, 26);
             this.scale11ToolStripMenuItem.Text = "Scale 1:1";
             this.scale11ToolStripMenuItem.Click += new System.EventHandler(this.scale11ToolStripMenuItem_Click);
+            // 
+            // ProcessButton
+            // 
+            this.ProcessButton.Name = "ProcessButton";
+            this.ProcessButton.Size = new System.Drawing.Size(70, 24);
+            this.ProcessButton.Text = "Process";
+            this.ProcessButton.Click += new System.EventHandler(this.ProcessButton_Click_1);
+            // 
+            // AutoProcess
+            // 
+            this.AutoProcess.BackColor = System.Drawing.Color.Gold;
+            this.AutoProcess.Checked = true;
+            this.AutoProcess.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.AutoProcess.Name = "AutoProcess";
+            this.AutoProcess.Size = new System.Drawing.Size(102, 24);
+            this.AutoProcess.Text = "AutoProcess";
+            this.AutoProcess.Click += new System.EventHandler(this.AutoProcess_Click);
             // 
             // folderBrowserDialog1
             // 
@@ -255,7 +258,6 @@
             this.generateArtPrototypeStripToolStripMenuItem});
             this.contextMenuStrip2.Name = "contextMenuStrip2";
             this.contextMenuStrip2.Size = new System.Drawing.Size(276, 186);
-            this.contextMenuStrip2.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip2_Opening);
             // 
             // deleteToolStripMenuItem
             // 
@@ -430,6 +432,7 @@
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.GerberPanelize_FormClosed);
             this.Load += new System.EventHandler(this.GerberPanelize_Load);
             this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
+            this.Resize += new System.EventHandler(this.GerberPanelize_Resize);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
@@ -472,8 +475,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem addGerberFolderToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem mergeOverlappingBreaktabsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem doItAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomToFitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem scale11ToolStripMenuItem;
@@ -485,6 +486,8 @@
         private System.Windows.Forms.ToolStripMenuItem generateArtFieldLinesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem generateArtReactedBlobsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem generateArtPrototypeStripToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ProcessButton;
+        private System.Windows.Forms.ToolStripMenuItem AutoProcess;
     }
 }
 

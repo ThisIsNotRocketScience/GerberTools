@@ -9,6 +9,15 @@ using System.Drawing.Drawing2D;
 
 namespace GerberLibrary.Core
 {
+
+    public class Triangle
+    {
+        public PointD A;
+        public PointD B;
+        public PointD C;
+    }
+
+
     public interface GraphicsInterface
     {
         void Clear(Color color);
@@ -17,6 +26,7 @@ namespace GerberLibrary.Core
 
         RectangleF ClipBounds { get; }
 
+        void FillTriangles(List<Triangle> triangles, Color C);
         void DrawImage(Bitmap MMGrid, float p1, float p2, float p3, float p4);
 
         System.Drawing.Drawing2D.InterpolationMode InterpolationMode { get; set; }
@@ -221,6 +231,11 @@ namespace GerberLibrary.Core
         public void FillPolygon(SolidBrush solidBrush, PointF[] pointF)
         {
             G.FillPolygon(solidBrush, pointF);            
+        }
+
+        public void FillTriangles(List<Triangle> triangles, Color C)
+        {
+            throw new NotImplementedException();
         }
     }
 

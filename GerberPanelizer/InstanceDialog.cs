@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace GerberCombinerBuilder
 {
-    public partial class InstanceDialog : Form
+    public partial class InstanceDialog :Form
     {
         GerberPanelize TargetInstance;
         public InstanceDialog()

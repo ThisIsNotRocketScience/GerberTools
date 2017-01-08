@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GerberLibrary.Core;
 using GerberLibrary.Core.Primitives;
 
 namespace GerberLibrary
@@ -69,7 +70,7 @@ namespace GerberLibrary
             }
         }
 
-        public InterpolationMode InterpolationMode
+        public System.Drawing.Drawing2D.InterpolationMode InterpolationMode
         {
             get
             {
@@ -123,6 +124,7 @@ namespace GerberLibrary
         }
 
         public bool Dotted { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        System.Drawing.Drawing2D.InterpolationMode GraphicsInterface.InterpolationMode { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public Color BackgroundColor = Color.White;
         public List<string> OutputLines = new List<string>();
@@ -304,6 +306,11 @@ namespace GerberLibrary
             Points.Add(new PointF((float)Width, (float)Height));
             Points.Add(new PointF(0, (float)Height));
             DrawPolyline(new Pen(Color.Black, 0.25f), Points, true);
+        }
+
+        public void FillTriangles(List<Triangle> triangles, Color C)
+        {
+            throw new NotImplementedException();
         }
     }
 

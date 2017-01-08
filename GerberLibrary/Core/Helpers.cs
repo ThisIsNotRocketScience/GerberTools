@@ -981,24 +981,25 @@ namespace GerberLibrary.Core
             return Math.Atan2(a.Y - b.Y, a.X - b.X);
         }
 
-        public static void DrawMMGrid(GraphicsInterface G, float PW, float width, float height)
+        public static void DrawMMGrid(GraphicsInterface G, float PW, float width, float height, float minorGrid, float majorGrid)
         {
+            if (minorGrid < 0) return;
 
             Pen P = new Pen(System.Drawing.ColorTranslator.FromHtml("#c4e5ff"), PW * 0.5f);
-            for (float X = 0; X <= width; X += 1)
+            for (float X = 0; X <= width; X += minorGrid)
             {
                 G.DrawLine(P, X, 0, X, height);
             }
-            for (float X = 0; X <= height; X += 1)
+            for (float X = 0; X <= height; X += minorGrid)
             {
                 G.DrawLine(P, 0.0f, X, width, X);
             }
             P = new Pen(System.Drawing.ColorTranslator.FromHtml("#bad7ed"), PW);
-            for (float X = 0; X <= width; X += 10)
+            for (float X = 0; X <= width; X += majorGrid)
             {
                 G.DrawLine(P, X, 0, X, height);
             }
-            for (float X = 0; X <= height; X += 10)
+            for (float X = 0; X <= height; X += majorGrid)
             {
                 G.DrawLine(P, 0.0f, X, width, X);
             }

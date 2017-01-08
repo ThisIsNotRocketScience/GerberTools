@@ -305,5 +305,21 @@ namespace GerberCombinerBuilder
         {
             throw new NotImplementedException();
         }
+
+        public void FillTriangles(List<Triangle> triangles, Color C)
+        {
+            GL.Begin(BeginMode.Triangles);
+            GL.Color4(C.R, C.G, C.B, C.A);
+            foreach (var T in triangles)
+            {
+                foreach (var t in triangles)
+                {                  
+                    GL.Vertex2(t.A.X, t.A.Y);
+                    GL.Vertex2(t.B.X, t.B.Y);
+                    GL.Vertex2(t.C.X, t.C.Y);
+                }
+            }
+            GL.End();
+        }
     }
 }

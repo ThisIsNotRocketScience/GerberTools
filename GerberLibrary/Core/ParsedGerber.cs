@@ -5,9 +5,14 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using TriangleNet.Geometry;
 using static GerberLibrary.PolyLineSet;
-using Polygon = System.Collections.Generic.List<ClipperLib.IntPoint>;
+using ClipperPolygon = System.Collections.Generic.List<ClipperLib.IntPoint>;
 using Polygons = System.Collections.Generic.List<System.Collections.Generic.List<ClipperLib.IntPoint>>;
+
+using TriangleNet.Geometry;
+using TriangleNet.IO;
+using TriangleNet.Meshing;
 
 
 namespace GerberLibrary.Core
@@ -16,7 +21,7 @@ namespace GerberLibrary.Core
     {
         public override string ToString()
         {
-            return String.Format("{0} {1}: {2}", Side, Layer, Path.GetFileName( Name));
+            return String.Format("{0} {1}: {2}", Side, Layer, Path.GetFileName(Name));
         }
         public PointD TranslationSinceLoad = new PointD();
         public GerberParserState State;
@@ -234,8 +239,8 @@ namespace GerberLibrary.Core
             if (OutlineShapes.Count == 0) return null;
 
             List<Tuple<double, PolyLine>> Polies = new List<Tuple<double, PolyLine>>();
-            
-            foreach(var a in OutlineShapes)
+
+            foreach (var a in OutlineShapes)
             {
                 var area = Core.Helpers.PolygonSurfaceArea(a.Vertices);
                 var bounds = new Bounds();
@@ -243,8 +248,48 @@ namespace GerberLibrary.Core
                 Polies.Add(new Tuple<double, PolyLine>(bounds.Area(), a));
             }
 
-            return  (from a in Polies orderby a.Item1 descending select a).First();
+            return (from a in Polies orderby a.Item1 descending select a).First();
+        }
+
+        bool shapecache = false;
+        public List<Triangle> ShapeCacheTriangles = new List<Triangle>();
+
+        public void BuildShapeCache()
+        {
+            if (shapecache) return;
+            shapecache = true;
+
+            foreach (var a in OutlineShapes)
+            {
+                if (a.Hole == false)
+                {
+                    var polygon = new Polygon();
+                    List<Vertex> V = new List<Vertex>();
+                    for (int i = 0; i < a.Count(); i++)
+                    {
+                        V.Add(new Vertex(a.Vertices[i].X, a.Vertices[i].Y));
+                    }
+
+                    polygon.AddContour(V);
+
+                    var options = new ConstraintOptions() { ConformingDelaunay = false};
+                    var quality = new QualityOptions() { };
+                    var mesh = polygon.Triangulate(options, quality);
+
+                    foreach (var t in mesh.Triangles)
+                    {
+                        var A = t.GetVertex(0);
+                        var B = t.GetVertex(1);
+                        var C = t.GetVertex(2);
+                        ShapeCacheTriangles.Add(new Triangle()
+                        {
+                            A = new PointD(A.X, A.Y),
+                            B = new PointD(B.X, B.Y),
+                            C = new PointD(C.X, C.Y)
+                        });
+                    }
+                }
+            }
         }
     }
-
 }

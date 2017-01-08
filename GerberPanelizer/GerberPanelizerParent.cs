@@ -215,6 +215,7 @@ namespace GerberCombinerBuilder
                  childForm.glControl1_DragDrop(sender, e);
                  ActivePanelizeInstance = childForm;
                  childForm.ThePanel.MaxRectPack();
+                    childForm.ThePanel.BuildAutoTabs();
                  childForm.ZoomToFit();
                  
                  childForm.Redraw(true);
