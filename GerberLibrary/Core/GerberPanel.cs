@@ -1103,32 +1103,43 @@ namespace GerberLibrary
                    // if (b.GerberPath.Contains("???") == false)
                     {
                         var a = GerberOutlines[b.GerberPath];
-                        foreach (var c in a.TheGerber.OutlineShapes)
+                        var C = new PointD(t.Center);
+                        C.X -= b.Center.X;
+                        C.Y -= b.Center.Y;
+                        C = C.Rotate(-b.Angle);
+                        var Box2 = a.TheGerber.BoundingBox.Grow(t.Radius * 2);
+
+                        if (Box2.Contains(C))
                         {
+                            //Console.WriteLine("{0},{1}", a.TheGerber.BoundingBox, C);
 
-                            var poly = c.toPolygon();
-                            bool winding = Clipper.Orientation(poly);
-
-
-                            PolyLine PL = new PolyLine();
-                            PL.FillTransformed(c, new PointD(b.Center), b.Angle);
-
-                            if (Helpers.IsInPolygon(PL.Vertices, new PointD(t.Center), false))
+                            foreach (var c in a.TheGerber.OutlineShapes)
                             {
-                                t.EvenOdd++;
-                                // t.Errors.Add("inside a polygon!");
-                                //  t.Valid = false;
+
+                                var poly = c.toPolygon();
+                                bool winding = Clipper.Orientation(poly);
+
+
+                                PolyLine PL = new PolyLine();
+                                PL.FillTransformed(c, new PointD(b.Center), b.Angle);
+
+                                if (Helpers.IsInPolygon(PL.Vertices, new PointD(t.Center), false))
+                                {
+                                    t.EvenOdd++;
+                                    // t.Errors.Add("inside a polygon!");
+                                    //  t.Valid = false;
+                                }
+
+                                BuildDrillsForTabAndPolyLine(t, PL);
+
+                                //bool inside = false;
+                                //bool newinside = false;
+                                // List<PolyLine> Lines = new List<PolyLine>();
+
+                                //PolyLine Current = null;
+                                AddIntersectionsForTabAndPolyLine(t, Intersections, PL);
+
                             }
-
-                            BuildDrillsForTabAndPolyLine(t, PL);
-
-                            //bool inside = false;
-                            //bool newinside = false;
-                            // List<PolyLine> Lines = new List<PolyLine>();
-
-                            //PolyLine Current = null;
-                            AddIntersectionsForTabAndPolyLine(t, Intersections, PL);
-
                         }
                     }
                 }
@@ -1618,7 +1629,7 @@ namespace GerberLibrary
         public bool MaxRectPack(MaxRectPacker.FreeRectChoiceHeuristic strategy = MaxRectPacker.FreeRectChoiceHeuristic.RectBestAreaFit, double randomness = 0, bool allowrotation = true)
         {
             bool Succes = true;
-            allowrotation = true;
+            //allowrotation = true;
             MaxRectPacker MRP = new MaxRectPacker((int)(TheSet.Width + TheSet.MarginBetweenBoards), (int)(TheSet.Height + TheSet.MarginBetweenBoards), allowrotation); // mm is base unit for packing!
 
             List<Tuple<GerberInstance, double>> Instances = new List<Tuple<GerberInstance, double>>();

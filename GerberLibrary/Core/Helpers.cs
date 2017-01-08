@@ -719,6 +719,27 @@ namespace GerberLibrary.Core
 
         }
 
+        public static PointD SegmentSegmentIntersect(PointD P0, PointD P1, PointD P2, PointD P3)
+        {
+            PointD S1 = P1 - P0;
+            PointD S2 = P3 - P2;
+
+
+            double s, t;
+            s = (-S1.Y * (P0.X - P2.X) + S1.X * (P0.Y - P2.Y)) / (-S2.X * S1.Y + S1.X * S2.Y);
+            t = (S2.X * (P0.Y - P2.Y) - S2.Y * (P0.X - P2.X)) / (-S2.X * S1.Y + S1.X * S2.Y);
+
+            if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+            {
+                double X = P0.X + (t * S1.X); ;
+                double Y = P0.Y + (t * S1.Y);
+                return new PointD(X, Y);
+            }
+
+            return null; // No collision
+            
+        }
+
         public static double HermiteInterpolate(double y0, double y1, double y2, double y3, double mu)
         {
             var mu2 = mu * mu;

@@ -1769,7 +1769,13 @@ namespace GerberLibrary
         public class Bounds
         {
             public PointD BottomRight = new PointD(0, 0);
-
+            public bool Contains(PointD inp)
+            {
+                if (inp.X >= TopLeft.X && inp.X < BottomRight.X
+                    && inp.Y >= TopLeft.Y && inp.Y < BottomRight.Y) return true;
+                return false;
+                   
+            }
             public PointD TopLeft = new PointD(0, 0);
 
             public bool Valid = false;
@@ -1920,6 +1926,15 @@ namespace GerberLibrary
                 PolyLine P = new PolyLine();
                 P.fromPolygon(a);
                 AddPolyLine(P);
+            }
+
+            public Bounds Grow(double v)
+            {
+                Bounds B = new Bounds();
+                B.TopLeft = TopLeft - new PointD(v, v);
+                B.BottomRight = BottomRight + new PointD(v, v);
+
+                return B;
             }
         }
         //      public GerberParserState State = new GerberParserState();

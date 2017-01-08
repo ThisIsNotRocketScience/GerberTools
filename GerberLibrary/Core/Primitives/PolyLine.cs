@@ -235,6 +235,21 @@ namespace GerberLibrary.Core.Primitives
             return new PointD(centerX / accumulatedArea, centerY / accumulatedArea);
         }
 
+        public List<PointD> GetIntersections(PointD diffA, PointD cA)
+        {
+            List<PointD> res = new List<PointD>();
+            for (int i = 0;i< Vertices.Count-1;i++)
+            {
+                var D = Helpers.SegmentSegmentIntersect(diffA, cA, Vertices[i], Vertices[i + 1]);
+                if (D != null) res.Add(D);
+            }
+            var D2 = Helpers.SegmentSegmentIntersect(diffA, cA, Vertices[Vertices.Count-1], Vertices[0]);
+            if (D2 != null) res.Add(D2);
+
+
+            return res;
+        }
+
         internal void SetObround(double W, double H)
         {
 
