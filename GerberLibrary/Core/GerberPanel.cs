@@ -727,7 +727,7 @@ namespace GerberLibrary
             RectangleF RR = G.ClipBounds;
             if (G.IsFast)
             {
-                G.FillRectangle(System.Drawing.ColorTranslator.FromHtml("#f5f4e8"), -2, -2, (int)TheSet.Width + 4, (int)TheSet.Height + 4);
+                G.FillRectangle(System.Drawing.ColorTranslator.FromHtml("#f5f4e8"), 0, 0, (int)TheSet.Width , (int)TheSet.Height );
                 Helpers.DrawMMGrid(G, PW, (float)TheSet.Width, (float)TheSet.Height, (float)snapdistance, (float)snapdistance * 10.0f);
 
             }
