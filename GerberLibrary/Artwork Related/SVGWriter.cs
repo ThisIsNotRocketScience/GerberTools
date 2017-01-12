@@ -122,9 +122,9 @@ namespace GerberLibrary
                 throw new NotImplementedException();
             }
         }
-
-        public bool Dotted { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        System.Drawing.Drawing2D.InterpolationMode GraphicsInterface.InterpolationMode { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        bool _Dotted;
+        public bool Dotted { get { return _Dotted; } set { _Dotted = value; }}
+        System.Drawing.Drawing2D.InterpolationMode GraphicsInterface.InterpolationMode { get { return System.Drawing.Drawing2D.InterpolationMode.Default; } set {; }}
 
         public Color BackgroundColor = Color.White;
         public List<string> OutputLines = new List<string>();

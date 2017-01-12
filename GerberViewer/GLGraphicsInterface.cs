@@ -128,9 +128,10 @@ namespace GerberViewer
 
         }
 
-        public CompositingMode CompositingMode { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public System.Drawing.Drawing2D.InterpolationMode InterpolationMode { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public bool IsFast { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public CompositingMode CompositingMode { get { return CompositingMode.SourceCopy; } set {; }}
+        public System.Drawing.Drawing2D.InterpolationMode InterpolationMode { get { return System.Drawing.Drawing2D.InterpolationMode.Default; } set {; } }
+
+        public bool IsFast { get { return true; } set {; } }
         private System.Drawing.Drawing2D.Matrix trans = new System.Drawing.Drawing2D.Matrix();
 
         public System.Drawing.Drawing2D.Matrix Transform
@@ -428,6 +429,11 @@ namespace GerberViewer
         public void TranslateTransform(float p1, float p2)
         {
 
+        }
+
+        public void FillTriangles(List<Triangle> triangles, Color C)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -734,7 +740,8 @@ namespace GerberViewer
             }
         }
 
-        public bool Dotted { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        bool _Dotted;
+        public bool Dotted { get { return _Dotted; } set { _Dotted = value; }}
 
         public void DrawString(PointD pos, string text, double scale, bool center, float r = 0.2f, float g = 0.2f, float b = 0.2f, float a = 1.0f)
         {
@@ -870,6 +877,11 @@ namespace GerberViewer
         internal Matrix4 GetGlMatrix()
         {
             return Mat4FromMat(trans);
+        }
+
+        public void FillTriangles(List<Triangle> triangles, Color C)
+        {
+            throw new NotImplementedException();
         }
     }
 }

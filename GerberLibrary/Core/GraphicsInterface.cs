@@ -165,7 +165,8 @@ namespace GerberLibrary.Core
             }
         }
 
-        public bool Dotted { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        bool _Dotted = false;
+        public bool Dotted { get { return _Dotted; } set { _Dotted = value; }}
 
         public void DrawRectangle(Color color, float x, float y, float w, float h)
         {
