@@ -209,7 +209,8 @@ namespace GerberLibrary.Core.Primitives
                         PolyLine P = new PolyLine();
                         for (int i = 0; i < OutlineVertices.Count; i++)
                         {
-                            P.Add(OutlineVertices[i].X, OutlineVertices[i].Y);
+                            PointD B = OutlineVertices[i].Get(Params);
+                            P.Add(B.X, B.Y);
                         }
                         P.RotateDegrees(rotationdegrees);
                         for (int i = 0; i < P.Vertices.Count(); i++)
@@ -222,8 +223,9 @@ namespace GerberLibrary.Core.Primitives
                     {
                         for (int i = 0; i < OutlineVertices.Count; i++)
                         {
+                            PointD B = OutlineVertices[i].Get(Params);
 
-                            res += String.Format("{0},{1}," + Gerber.LineEnding, Gerber.ToFloatingPointString(GNF._ScaleMMToFile(OutlineVertices[i].X)).Replace(',', '.'), Gerber.ToFloatingPointString(GNF._ScaleMMToFile(OutlineVertices[i].Y)).Replace(',', '.'));
+                            res += String.Format("{0},{1}," + Gerber.LineEnding, Gerber.ToFloatingPointString(GNF._ScaleMMToFile(B.X)).Replace(',', '.'), Gerber.ToFloatingPointString(GNF._ScaleMMToFile(B.Y)).Replace(',', '.'));
                         }
                     }
                     res += "0";
@@ -380,7 +382,12 @@ namespace GerberLibrary.Core.Primitives
                     break;
                 case ApertureMacroTypes.Outline:
                     if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for outline. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
-                    AT.SetCustom(OutlineVertices);
+                    OutlineVerticesPostProc = new List<PointD>();
+                    foreach(var a in OutlineVertices)
+                    {
+                        OutlineVerticesPostProc.Add(a.Get(Params));
+                    }
+                    AT.SetCustom(OutlineVerticesPostProc);
                     break;
                 case ApertureMacroTypes.Circle:
                     if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for circle. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
@@ -519,8 +526,25 @@ namespace GerberLibrary.Core.Primitives
 
             return AT;
         }
+        public class OutlineParameterPoint
+        {
+            public PointD Point = new PointD();
+            public int xparamID = -1;
+            public int yparamID = -1;
+            public bool xParamBound = false;
+            public bool yParamBound = false;
 
-        public List<PointD> OutlineVertices;
+            internal PointD Get(List<ApertureMacroParam> theparams)
+            {
+                if (xParamBound == false && yParamBound == false) return Point;
+                PointD R = new PointD(Point.X, Point.Y);
+                if (xParamBound) R.X = theparams[xparamID].value;
+                if (yParamBound) R.Y = theparams[yparamID].value;
+                return R;
+            }
+        }
+        public List<OutlineParameterPoint> OutlineVertices;
+        public List<PointD> OutlineVerticesPostProc;
         private double Xend;
         private double Yend;
         private double OuterDiameter;
@@ -533,7 +557,7 @@ namespace GerberLibrary.Core.Primitives
 
         public void DecodeOutline(string line, GerberNumberFormat GNF)
         {
-            OutlineVertices = new List<PointD>();
+            OutlineVertices = new List< OutlineParameterPoint>();
             string[] v = line.Split(',');
 
             //  if (Gerber.Verbose) Console.WriteLine("decoding {0}", lines[currentline]);
@@ -542,24 +566,48 @@ namespace GerberLibrary.Core.Primitives
             int idx = 2;
             int i = 0;
             if ((v.Length - 3 - vertices * 2) < 0) vertices--;
+            double X = 0;
+            double Y = 0;
             while (i < vertices && v[idx + 1].Contains("*") == false)
             //            for (int i = 0; i < vertices; i++)
             {
-
+                bool xparambound = false;
+                bool yparambound = false;
+                int xid = -1;
+                int yid = -1;
 
                 idx++;
                 //  if (Gerber.Verbose) Console.Write("{1}| reading X from {0}: ", idx, i);            
-                double X = Gerber.ParseDouble(v[idx]);
+                if (v[idx].Contains("$"))
+                {
+                    Console.WriteLine("{0}", v[idx]);
+                    xparambound = true;
+                    xid = int.Parse(v[idx].Substring(1));
+                }
+                else
+                {
+
+                     X = Gerber.ParseDouble(v[idx]);
+                }
                 //  if (Gerber.Verbose) Console.WriteLine(" {0} ", X);
                 idx++;
                 // if (Gerber.Verbose) Console.Write("{1}| reading Y from {0}: ", idx,i);            
+                if (v[idx].Contains("$"))
+                {
+                    Console.WriteLine("{0}", v[idx]);
+                    yparambound = true;
+                    yid = int.Parse(v[idx].Substring(1));
 
-                double Y = Gerber.ParseDouble(v[idx]);
+                }
+                else
+                {
+                    Y = Gerber.ParseDouble(v[idx]);
+                }
                 //if (Gerber.Verbose) Console.WriteLine(" {0} ", Y);
 
                 X = GNF.ScaleFileToMM(X);
                 Y = GNF.ScaleFileToMM(Y);
-                OutlineVertices.Add(new PointD(X, Y));
+                OutlineVertices.Add(new OutlineParameterPoint() { Point = new PointD(X, Y) , xParamBound =xparambound, yparamID = yid, xparamID = xid, yParamBound = yparambound});
                 i++;
 
             }
