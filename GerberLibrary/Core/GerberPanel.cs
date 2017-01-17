@@ -1641,11 +1641,7 @@ namespace GerberLibrary
                 {
                     Logger.AddString("Writing board bitmaps", 0.95f);
                     GerberImageCreator GIC = new GerberImageCreator();
-
-                    foreach (var a in FinalFiles)
-                    {
-                        GIC.AddBoardToSet(a);
-                    }
+                    GIC.AddBoardsToSet(FinalFiles);
 
                     GIC.WriteImageFiles(Path.Combine(targetfolder, BaseName), 400, Gerber.DirectlyShowGeneratedBoardImages, Logger);
                 }

@@ -184,7 +184,7 @@ namespace GerberLibrary
             }
             // stuff goes here.
             //OutputLines.Add(String.Format("G04 :starting {0}", Path.GetFileNameWithoutExtension(file1)));
-            string CurrentPolarity = "";
+            string CurrentPolarity = "LPD";
             for (int i = 0; i < File1Lines.Count; i++)
             {
                 string CurrentLine = File1Lines[i];
@@ -204,11 +204,11 @@ namespace GerberLibrary
                                 switch (FinalLine)
                                 {
                                     case "LPD":
-                                        if (CurrentPolarity != CurrentLine) { OutputLines.Add("%LPD*%"); CurrentPolarity = CurrentLine; }
+                                        if (CurrentPolarity != "LPD") { OutputLines.Add("%LPD*%"); CurrentPolarity = "LPD"; }
 
                                         break;
                                     case "LPC":
-                                        if (CurrentPolarity != CurrentLine) { OutputLines.Add("%LPC*%"); CurrentPolarity = CurrentLine; }
+                                        if (CurrentPolarity != "LPC") { OutputLines.Add("%LPC*%"); CurrentPolarity = "LPC"; }
                                         break;
                                     default:
                                         if (CurrentLine.Length > 1 && CurrentLine[CurrentLine.Length - 1] != '%')
@@ -389,6 +389,8 @@ namespace GerberLibrary
                     Console.WriteLine("File 2 format: {0}", otherfile.State.CoordinateFormat);
                 }
                 OutputLines.Add("G04 next file*");
+                if (CurrentPolarity != "LPD") { OutputLines.Add("%LPD*%"); CurrentPolarity = "LPD"; }
+
                 //OutputLines.Add( String.Format("G04 :starting {0}", Path.GetFileNameWithoutExtension(file2)));
                 for (int i = 0; i < otherfile.OriginalLines.Count; i++)
                 {
@@ -406,11 +408,11 @@ namespace GerberLibrary
                                     switch (FinalLine)
                                     {
                                         case "LPD":
-                                            if (CurrentPolarity != CurrentLine) { OutputLines.Add("%LPD*%"); CurrentPolarity = CurrentLine; }
+                                            if (CurrentPolarity != "LPD") { OutputLines.Add("%LPD*%"); CurrentPolarity = "LPD"; }
 
                                             break;
                                         case "LPC":
-                                            if (CurrentPolarity != CurrentLine) { OutputLines.Add("%LPC*%"); CurrentPolarity = CurrentLine; }
+                                            if (CurrentPolarity != "LPC") { OutputLines.Add("%LPC*%"); CurrentPolarity = "LPC"; }
 
 
                                             break;
@@ -705,7 +707,7 @@ namespace GerberLibrary
             }
             // stuff goes here.
             //OutputLines.Add(String.Format("G04 :starting {0}", Path.GetFileNameWithoutExtension(file1)));
-            string CurrentPolarity = ""; 
+            string CurrentPolarity = "LPD"; 
             for (int i = 0; i < File1Lines.Count; i++)
             {
                 string CurrentLine = File1Lines[i];
@@ -901,6 +903,9 @@ namespace GerberLibrary
                 Console.WriteLine("File 2 format: {0}", File2Parsed.State.CoordinateFormat);
             }
             OutputLines.Add("G04 next file*");
+
+            if (CurrentPolarity != "LPD") { OutputLines.Add("%LPD*%"); CurrentPolarity = "LPD"; }
+
             //OutputLines.Add( String.Format("G04 :starting {0}", Path.GetFileNameWithoutExtension(file2)));
             for (int i = 0; i < File2Lines.Count; i++)
             {
@@ -918,11 +923,11 @@ namespace GerberLibrary
                                 switch (FinalLine)
                                 {
                                     case "LPD":
-                                        if (CurrentPolarity != CurrentLine) { OutputLines.Add("%LPD*%"); CurrentPolarity = CurrentLine; }
+                                        if (CurrentPolarity != "LPD") { OutputLines.Add("%LPD*%"); CurrentPolarity = "LPD"; }
                                         
                                         break;
                                     case "LPC":
-                                      if (CurrentPolarity != CurrentLine) { OutputLines.Add("%LPC*%" ); CurrentPolarity = CurrentLine; }
+                                      if (CurrentPolarity != "LPC") { OutputLines.Add("%LPC*%" ); CurrentPolarity = "LPC"; }
                                         
 
                                         break;
