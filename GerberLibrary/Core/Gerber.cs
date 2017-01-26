@@ -344,6 +344,7 @@ namespace GerberLibrary
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Mill;
                     break;
+                case "fabrd":
                 case "oln":
                 case "gko":
                     Side = BoardSide.Both;
@@ -354,7 +355,18 @@ namespace GerberLibrary
                     Side = BoardSide.Internal1;
                     Layer = BoardLayer.Copper;
                     break;
-
+                case "adtop":
+                    Side = BoardSide.Top;
+                    Layer = BoardLayer.Assembly;
+                    break;
+                case "adbottom":
+                    Side = BoardSide.Bottom;
+                    Layer = BoardLayer.Assembly;
+                    break;
+                case "notes":
+                    Side = BoardSide.Both;
+                    Layer = BoardLayer.Notes;
+                    break;
                 case "l3":
 
                 case "gl2":
@@ -377,35 +389,42 @@ namespace GerberLibrary
                     break;
 
                 case "gbp":
+                case "spbottom":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Paste;
                     break;
 
                 case "gtp":
+                case "sptop":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Paste;
                     break;
 
                 case "gbo":
                 case "ss2":
+                case "ssbottom":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Silk;
                     break;
 
                 case "gto":
                 case "ss1":
+                case "sstop":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Silk;
                     break;
 
                 case "gbs":
                 case "sm2":
+                case "smbottom":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.SolderMask;
                     break;
 
                 case "gts":
                 case "sm1":
+                case "smtop":
+
                     Side = BoardSide.Top;
                     Layer = BoardLayer.SolderMask;
                     break;
@@ -425,6 +444,7 @@ namespace GerberLibrary
                     Layer = BoardLayer.Copper;
                     break;
 
+                case "bottom":
                 case "bot":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Copper;
@@ -461,7 +481,7 @@ namespace GerberLibrary
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Paste;
                     break;
-
+                case "drill_TOP_BOTTOM":
                 case "drl":
                 case "drill":
                 case "drillnpt":

@@ -58,7 +58,7 @@ namespace GerberCombinerBuilder
         public GerberPanelize(GerberPanelizerParent Host, Treeview tv, InstanceDialog id)
         {
             ParentFrame = Host;
-            Gerber.ArcQualityScaleFactor = 0.1;
+            Gerber.ArcQualityScaleFactor = 15;
             InitializeComponent();
             UpdateAutoProcessButton();
             UpdateSnapBox(SnapMode.MM1);

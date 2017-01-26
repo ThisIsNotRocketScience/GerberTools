@@ -209,7 +209,7 @@ namespace GerberLibrary
             {
                 var Tool = T.Value;
 
-                int sides = (int)(Gerber.ArcQualityScaleFactor * Math.Max(2.0, Tool.Radius));
+                int sides = Math.Max(10,(int)(Gerber.ArcQualityScaleFactor * Math.Max(2.0, Tool.Radius)));
 
 
                 foreach (var Hole in Tool.Drills)

@@ -16,7 +16,9 @@ namespace GerberLibrary.Core
         Drill,
         Outline,
         Mill,
-        Unknown
+        Unknown,
+        Notes,
+        Assembly
     }
 
     public enum BoardSide

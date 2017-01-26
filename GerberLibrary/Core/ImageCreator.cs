@@ -177,9 +177,11 @@ namespace GerberLibrary
                     if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", _originalfilename);
                     PLS = PolyLineSet.LoadExcellonDrillFileFromStream(new StreamReader(MS), _originalfilename, false, drillscaler);
                     MS.Seek(0, SeekOrigin.Begin);
-
+                    PLS.Side = BoardSide.Both;
+                    PLS.Layer = BoardLayer.Drill;
                     // ExcellonFile EF = new ExcellonFile();
                     // EF.Load(a);
+                    
                 }
                 else
                 {
@@ -400,6 +402,7 @@ namespace GerberLibrary
                 zerowidth = true;
                 precombine = true;
             }
+            MS.Seek(0, SeekOrigin.Begin);
             AddBoardToSet(MS, aname, zerowidth, precombine, drillscaler);
         }
 
