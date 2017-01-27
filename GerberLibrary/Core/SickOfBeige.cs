@@ -539,20 +539,45 @@ namespace GerberLibrary.Core
             {
                 outputfile = Path.Combine(outputfile, "SickOfBeige");
             }
-            List<String> Lines = new List<string>();
-
-            Lines.Add("0");
-            Lines.Add("SECTION");
-            Lines.Add("2 ");
-            Lines.Add("ENTITIES");
 
             PolyLine Biggest = null;
             double BiggestArea = 0;
+            List<PointD> Holes = new List<PointD>();
+            var holeradius = holediameter / 2.0;
+
+
+            double Circumference = 2 * Math.PI * holeradius;
+
             foreach (var a in PLSs.Where(x => x.Layer == BoardLayer.Outline))
             {
                 foreach (var b in a.OutlineShapes)
                 {
                     var A = b.toPolygon();
+                    double LRatio = (b.OutlineLength() / Circumference);
+                    double Lperc = Math.Abs(LRatio - 1);
+                    if (Lperc < 0.1)
+                    {
+                        if (b.Vertices.Count > 5)
+                        {
+                            var C = b.GetCentroid();
+                            bool round = true;
+                            foreach(var v in b.Vertices)
+                            {
+                                var L = (C - v).Length();
+                                if (Math.Abs(L - holeradius)>  0.2)
+                                {
+                                    // not very round!
+                                    round = false;
+                                }
+                            }
+                            if (round)
+                            {
+                                Console.WriteLine("Hole detected in outline:{0} {1} {2} {3} {4} {5}", a.Layer, a.Side, C, LRatio, Lperc, b.Vertices.Count);
+                                Holes.Add(C);
+                            }
+                        }
+                        // might be hole!
+                    }
                     var Area = Clipper.Area(A);
                     if (Area > BiggestArea)
                     {
@@ -563,6 +588,14 @@ namespace GerberLibrary.Core
             }
 
             Polygons Offsetted = new Polygons();
+
+            List<String> Lines = new List<string>();
+
+            Lines.Add("0");
+            Lines.Add("SECTION");
+            Lines.Add("2 ");
+            Lines.Add("ENTITIES");
+
 
             if (Biggest != null)
             {
@@ -600,8 +633,6 @@ namespace GerberLibrary.Core
                 Errors.Add("No longest outline found - not generating offset curve");
             }
 
-            List<PointF> Holes = new List<PointF>();
-            var holeradius = holediameter / 2.0;
             foreach (var a in Excellons)
             {
                 foreach (var t in a.Tools)
@@ -611,39 +642,44 @@ namespace GerberLibrary.Core
                     {
                         foreach (var h in t.Value.Drills)
                         {
-                            Holes.Add(new PointF((float)h.X, (float)h.Y));
-                            for (int i = 0; i < 40; i++)
-                            {
-                                double P = i * Math.PI * 2.0 / 40.0;
-                                double P2 = (i + 1) * Math.PI * 2.0 / 40.0;
-                                var C1 = Math.Cos(P) * holeradius;
-                                var C2 = Math.Cos(P2) * holeradius;
-                                var S1 = Math.Sin(P) * holeradius;
-                                var S2 = Math.Sin(P2) * holeradius;
-                                double x1 = h.X + C1;
-                                double y1 = h.Y + S1;
-                                double x2 = h.X + C2;
-                                double y2 = h.Y + S2;
-
-                                Lines.Add("0");
-                                Lines.Add("LINE");
-                                Lines.Add("8");
-                                Lines.Add("Holes");
-                                Lines.Add("10");
-                                Lines.Add(x1.ToString().Replace(',', '.'));
-                                Lines.Add("20");
-                                Lines.Add(y1.ToString().Replace(',', '.'));
-                                Lines.Add("11");
-                                Lines.Add(x2.ToString().Replace(',', '.'));
-                                Lines.Add("21");
-                                Lines.Add(y2.ToString().Replace(',', '.'));
-
-                            }
+                            Holes.Add(h);
+                           
                         }
                     }
                 }
             }
 
+
+            foreach(var a in Holes)
+            {
+                for (int i = 0; i < 40; i++)
+                {
+                    double P = i * Math.PI * 2.0 / 40.0;
+                    double P2 = (i + 1) * Math.PI * 2.0 / 40.0;
+                    var C1 = Math.Cos(P) * holeradius;
+                    var C2 = Math.Cos(P2) * holeradius;
+                    var S1 = Math.Sin(P) * holeradius;
+                    var S2 = Math.Sin(P2) * holeradius;
+                    double x1 = a.X + C1;
+                    double y1 = a.Y + S1;
+                    double x2 = a.X + C2;
+                    double y2 = a.Y + S2;
+
+                    Lines.Add("0");
+                    Lines.Add("LINE");
+                    Lines.Add("8");
+                    Lines.Add("Holes");
+                    Lines.Add("10");
+                    Lines.Add(x1.ToString().Replace(',', '.'));
+                    Lines.Add("20");
+                    Lines.Add(y1.ToString().Replace(',', '.'));
+                    Lines.Add("11");
+                    Lines.Add(x2.ToString().Replace(',', '.'));
+                    Lines.Add("21");
+                    Lines.Add(y2.ToString().Replace(',', '.'));
+
+                }
+            }
 
             Lines.Add("0");
             Lines.Add("ENDSEC");
@@ -673,8 +709,8 @@ namespace GerberLibrary.Core
 
                 foreach (var a in Holes)
                 {
-                    R.X = a.X - (float)holeradius;
-                    R.Y = a.Y - (float)holeradius;
+                    R.X = (float)a.X - (float)holeradius;
+                    R.Y = (float)a.Y - (float)holeradius;
                     G.DrawEllipse(pen, R);
                 }
 

@@ -238,12 +238,12 @@ namespace GerberLibrary.Core.Primitives
         public List<PointD> GetIntersections(PointD diffA, PointD cA)
         {
             List<PointD> res = new List<PointD>();
-            for (int i = 0;i< Vertices.Count-1;i++)
+            for (int i = 0; i < Vertices.Count - 1; i++)
             {
                 var D = Helpers.SegmentSegmentIntersect(diffA, cA, Vertices[i], Vertices[i + 1]);
                 if (D != null) res.Add(D);
             }
-            var D2 = Helpers.SegmentSegmentIntersect(diffA, cA, Vertices[Vertices.Count-1], Vertices[0]);
+            var D2 = Helpers.SegmentSegmentIntersect(diffA, cA, Vertices[Vertices.Count - 1], Vertices[0]);
             if (D2 != null) res.Add(D2);
 
 
@@ -369,6 +369,16 @@ namespace GerberLibrary.Core.Primitives
 
                 Close();
             }
+        }
+
+        internal double OutlineLength()
+        {
+            double L = 0;
+            for (int i = 0; i < Vertices.Count-1; i++)
+            {
+                L += (Vertices[i] - Vertices[i + 1]).Length();
+            }
+            return L;
         }
     }
 
