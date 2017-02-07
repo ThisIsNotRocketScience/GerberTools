@@ -19,19 +19,25 @@ namespace IconScanner
             }
 
             string inputfolder = args[0];
+            string outputfolder = "";
 
+            if (args.Length > 1)
+            {
+                outputfolder = args[1];
+                if (Directory.Exists(outputfolder) == false) Directory.CreateDirectory(outputfolder);
+            }
             if (Directory.Exists(inputfolder) == false)
             {
                 Console.WriteLine("Directory not found!");
                 return;
 
             }
-            ScanFolder(inputfolder);
+            ScanFolder(inputfolder, outputfolder);
             
             
         }
 
-        private static void ScanFolder(string inputfolder)
+        private static void ScanFolder(string inputfolder, string outputfolder)
         {
             foreach (var a in Directory.GetFiles(inputfolder))
             {
@@ -55,6 +61,18 @@ namespace IconScanner
                                 Console.WriteLine("Creating icon for \"{0}\"", Label);
 
                                 Artwork.TINRSArtWorkRenderer.SaveMultiIcon(a, Label);
+                                if (outputfolder.Length > 0)
+                                {
+                                    string fileName = Label + ".ico";
+                                    foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+                                    {
+                                        fileName = fileName.Replace(c, '_');
+                                    }                                  
+
+                                    Artwork.TINRSArtWorkRenderer.SaveMultiIcon(Path.Combine(outputfolder, fileName), Label);
+                                }
+
+
                             }
                         }
                     }
@@ -62,7 +80,7 @@ namespace IconScanner
             }
             foreach(var d in Directory.GetDirectories(inputfolder))
             {
-                ScanFolder(d);
+                ScanFolder(d, outputfolder);
             }
         }
     }
