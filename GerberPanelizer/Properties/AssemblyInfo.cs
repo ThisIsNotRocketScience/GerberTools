@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("A tool to combine several gerber files in to a single larger board")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("This Is Not Rocket Science")]
-[assembly: AssemblyProduct("Gerber Panelizer")]
+[assembly: AssemblyProduct("PNL")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
