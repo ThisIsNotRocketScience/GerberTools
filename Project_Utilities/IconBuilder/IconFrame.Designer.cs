@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(IconFrame));
             this.pb32 = new System.Windows.Forms.PictureBox();
             this.pb48 = new System.Windows.Forms.PictureBox();
             this.pb64 = new System.Windows.Forms.PictureBox();
@@ -105,6 +106,7 @@
             this.Controls.Add(this.pb64);
             this.Controls.Add(this.pb48);
             this.Controls.Add(this.pb32);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "IconFrame";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.pb32)).EndInit();

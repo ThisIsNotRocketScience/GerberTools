@@ -65,6 +65,9 @@
     <EmbeddedResource Include="IconFrame.resx">
       <DependentUpon>IconFrame.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="IconHost.resx">
+      <DependentUpon>IconHost.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

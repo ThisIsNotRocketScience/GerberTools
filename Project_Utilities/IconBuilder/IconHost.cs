@@ -16,7 +16,7 @@ namespace IconBuilder
         {
             InitializeComponent();
 
-            List<String> Icons = new List<string>() { "PNL", "GBR", ".49\"", "3Dg", "Boot", "POKE" };
+            List<String> Icons = new List<string>() { "PNL", "RNDR", ".49\"", "View", "Boot", "Poke" };
             int c = 0;
             int LW = 0;
             int LH = 0;

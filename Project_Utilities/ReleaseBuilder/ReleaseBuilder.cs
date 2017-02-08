@@ -106,9 +106,9 @@ namespace ReleaseBuilder
                     if (ext == ".exe" && (IgnoreFile(a) == false))
                     {
 
-                        FileVersionInfo myFileVersionInfo = FileVersionInfo.GetVersionInfo(a);
-                        Artwork.TINRSArtWorkRenderer.SaveMultiIcon(a.Substring(0, a.Length - 4) + ".ico", myFileVersionInfo.ProductName);
-                        Console.WriteLine(myFileVersionInfo.ProductName);
+//                        FileVersionInfo myFileVersionInfo = FileVersionInfo.GetVersionInfo(a);
+  //                      Artwork.TINRSArtWorkRenderer.SaveMultiIcon(a.Substring(0, a.Length - 4) + ".ico", myFileVersionInfo.ProductName);
+    //                    Console.WriteLine(myFileVersionInfo.ProductName);
 
                     }
                     if (IgnoreExt(ext) == false && IgnoreFile(a) == false)

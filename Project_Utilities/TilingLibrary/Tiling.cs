@@ -22,7 +22,7 @@ namespace Artwork
         public ArtMode Mode = ArtMode.Tiling;
         public int MaxSubDiv = 5;
         public float DegreesOff = 0;
-
+        public Random Rand = new Random();
         public int Threshold = 30;
         public bool InvertSource = false;
         public bool InvertOutput = false;

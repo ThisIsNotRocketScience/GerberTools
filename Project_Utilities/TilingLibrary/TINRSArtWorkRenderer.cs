@@ -85,16 +85,10 @@ namespace Artwork
                 FS.WriteByte(0);
                 FS.WriteByte(0);
 
-
-
                 MemoryStream MS = new MemoryStream();
                 b.Save(MS, System.Drawing.Imaging.ImageFormat.Png);
                 MS.Seek(0, SeekOrigin.Begin);
                 Files.Add(MS);
-
-
-
-
             }
 
             long CurrentOff = FS.Length;
@@ -163,12 +157,17 @@ namespace Artwork
                 return OriginalFont;
             }
         }
-        public static void DrawIcon(int w, int h, Graphics G, string Label)
+
+
+        public static void DrawIcon(int w, int h, Graphics G, string Label, float huerange = -1)
         {
             Bitmap Output = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             Graphics g = Graphics.FromImage(Output);
             TINRSArtWorkRenderer Rend = new TINRSArtWorkRenderer();
-            Settings TheSettings = Rend.GetHashSettings(Label);
+            Settings TheSettings = Rend.GetHashSettings(Label, huerange);
+
+
+
             TheSettings.InvertSource = true;
             //TheSettings.MaxSubDiv = 4;
 
@@ -201,11 +200,16 @@ namespace Artwork
             G2.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
             G2.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
             G2.SmoothingMode = SmoothingMode.AntiAlias;
-            G2.FillEllipse(new SolidBrush(Color.Black), new RectangleF(x1 + 2, y1 + 2, x2 - x1 - 4, y2 - y1 - 4));
+
+            RenderIconBackdrop(G2, Color.Black, TheSettings, x1, x2, y1, y2, 2, Rend);
+            G2.DrawPath(new Pen(Color.Black, 5), GP);
+
 
             //            G2.DrawString(Letter.Text, F, new SolidBrush(Color.White), w / 2 - S.Width / 2, h / 2 - S.Height / 2);
             G2.DrawPath(new Pen(Color.White, Math.Max(2.0f, 6 * BaseScale)), GP);
             G2.FillPath(new SolidBrush(Color.White), GP);
+
+            g.DrawPath(new Pen(TheSettings.BackGroundColor, 5), GP);
 
             Rend.BuildTree(M, TheSettings);
             Rend.BuildStuff(M, TheSettings);
@@ -214,11 +218,15 @@ namespace Artwork
             g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+            float BaseScale2 = 1.0f;
 
             // g.FillPath(new SolidBrush(Color.Teal), GP);
-            g.FillEllipse(new SolidBrush(TheSettings.BackGroundColor), new RectangleF(x1, y1, x2 - x1, y2 - y1));
-            Rend.DrawTiling(TheSettings, M, G3, TheSettings.BackgroundHighlight, Color.Black, 3 * BaseScale, false);
-            Rend.DrawTiling(TheSettings, M, G3, Color.FromArgb(100, 255, 255, 0), Color.Black, 1.4f * BaseScale, false);
+             TheSettings = Rend.GetHashSettings(Label, huerange);
+          
+            RenderIconBackdrop(g, TheSettings.BackGroundColor,  TheSettings, x1, x2, y1, y2, 0, Rend);
+            Rend.DrawTiling(TheSettings, M, G3, Color.FromArgb(40, Color.Black), Color.Black, Math.Max(3, 4.5f * BaseScale2), false);
+            Rend.DrawTiling(TheSettings, M, G3, TheSettings.BackgroundHighlight, Color.Black, Math.Max(1.4f, 3 * BaseScale2), false);
+            Rend.DrawTiling(TheSettings, M, G3, Color.FromArgb(100, 255, 255, 0), Color.Black, Math.Max(1.0f, 1.4f * BaseScale2), false);
 
             for (var i = 0; i < h; i++)
             {
@@ -235,69 +243,71 @@ namespace Artwork
                 }
             }
 
-            //   g.DrawPath(new Pen(Color.Teal,Math.Max(4.0f,  10 *BaseScale)), GP);
             g.DrawPath(new Pen(Color.FromArgb(60, Color.Black), 3), GP);
             g.FillPath(new SolidBrush(Color.FromArgb(255, 255, 255)), GP);
-            GP.Reset();
-            List<PointF> P1 = new List<PointF>();
 
-
-            float R = (float)w / 2.0f + 1;
-
-            for (int i = 0; i < 81; i++)
-            {
-                float phase = i * (float)Math.PI / (2.0f * 20.0f); ;
-                P1.Add(new PointF(w / 2.0f - (float)Math.Sin(-phase) * R, h / 2.0f - (float)Math.Cos(-phase) * R));
-            }
-
-            P1.Add(new PointF(w / 2, h + 1));
-            P1.Add(new PointF(w + 1, h + 1));
-            P1.Add(new PointF(w + 1, -1));
-
-            P1.Add(new PointF(-1, -1));
-            P1.Add(new PointF(-1, h + 1));
-            P1.Add(new PointF(w / 2, h + 1));
-
-
-
-            GP.AddPolygon(P1.ToArray());
-            g.CompositingMode = CompositingMode.SourceCopy;
-            g.FillPath(Brushes.Transparent, GP);
 
             G.DrawImage(Output, 0, 0);
-            //g.DrawString(Letter.Text, F, new SolidBrush(Color.FromArgb(255,255,200)), w / 2 - S.Width / 2, h / 2 - S.Height / 2);
+
         }
 
-        public static void SaveMultiIcon(string outputfile, string label)
+        private static void RenderIconBackdrop(Graphics g,Color C, Settings TheSettings, float x1, float x2, float y1, float y2, int offset, TINRSArtWorkRenderer R)
         {
-            Bitmap B1 = new Bitmap(16, 16, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            Graphics.FromImage(B1).Clear(Color.Transparent); ;
-            B1.MakeTransparent(Color.Transparent);
+            R.TD.Create(TheSettings.TileType);
+            var M = R.TD.NormalizeSize();
+            var T = R.TD.DivisionSet[0];
 
-            Artwork.TINRSArtWorkRenderer.DrawIcon(B1.Width, B1.Height, Graphics.FromImage(B1), label);
+            float w = x2 - x1;
+            float h = y2 - y1;
+
+            for (float s = 0.6f; s < 2.0; s += 0.5f)
+            {
+
+                List<PointF> P = new List<PointF>();
+                P.Add(new PointF((T.A.x - M.x) * w * s + w / 2, (T.A.y - M.y) * h * s + h / 2));
+                P.Add(new PointF((T.B.x - M.x) * w * s + w / 2, (T.B.y - M.y) * h * s + h / 2));
+                P.Add(new PointF((T.C.x - M.x) * w * s + w / 2, (T.C.y - M.y) * h * s + h / 2));
+
+                Matrix Mm = new Matrix();
+                Mm.RotateAt(360.0f *(float)TheSettings.Rand.NextDouble(), new PointF(w / 2, h / 2));
+                var Pa = P.ToArray();
+                Mm.TransformPoints(Pa);
+                g.FillPolygon(new SolidBrush(C), Pa);
+            }
+
+//            g.FillEllipse(new SolidBrush(C), new RectangleF(x1 + 7, y1 + 7 , x2 - x1, y2 - y1));
+        }
+
+        public static void SaveMultiIcon(string outputfile, string label, float huerange = -1)
+        {
+            //Bitmap B1 = new Bitmap(16, 16, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            //Graphics.FromImage(B1).Clear(Color.Transparent); ;
+            //B1.MakeTransparent(Color.Transparent);
+
+            //Artwork.TINRSArtWorkRenderer.DrawIcon(B1.Width, B1.Height, Graphics.FromImage(B1), label, huerange);
 
             Bitmap B2 = new Bitmap(32, 32, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             Graphics.FromImage(B2).Clear(Color.Transparent); ;
             B2.MakeTransparent(Color.Transparent);
-            Artwork.TINRSArtWorkRenderer.DrawIcon(B2.Width, B2.Height, Graphics.FromImage(B2), label);
+            Artwork.TINRSArtWorkRenderer.DrawIcon(B2.Width, B2.Height, Graphics.FromImage(B2), label, huerange);
 
             Bitmap B2b = new Bitmap(48, 48, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             Graphics.FromImage(B2b).Clear(Color.Transparent); ;
             B2b.MakeTransparent(Color.Transparent);
-            Artwork.TINRSArtWorkRenderer.DrawIcon(B2b.Width, B2b.Height, Graphics.FromImage(B2b), label);
+            Artwork.TINRSArtWorkRenderer.DrawIcon(B2b.Width, B2b.Height, Graphics.FromImage(B2b), label, huerange);
 
 
             Bitmap B3 = new Bitmap(64, 64, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             Graphics.FromImage(B3).Clear(Color.Transparent); ;
             B3.MakeTransparent(Color.Transparent);
-            Artwork.TINRSArtWorkRenderer.DrawIcon(B3.Width, B3.Height, Graphics.FromImage(B3), label);
+            Artwork.TINRSArtWorkRenderer.DrawIcon(B3.Width, B3.Height, Graphics.FromImage(B3), label, huerange);
 
 
             Bitmap B4 = new Bitmap(128, 128, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             Graphics.FromImage(B4).Clear(Color.Transparent); ;
             B4.MakeTransparent(Color.Transparent);
 
-            Artwork.TINRSArtWorkRenderer.DrawIcon(B4.Width, B4.Height, Graphics.FromImage(B4), label);
+            Artwork.TINRSArtWorkRenderer.DrawIcon(B4.Width, B4.Height, Graphics.FromImage(B4), label, huerange);
 
             List<Bitmap> IcoBMPs = new List<Bitmap>() { B2, B2b, B3, B4 };
             Artwork.TINRSArtWorkRenderer.SaveAsIcon(IcoBMPs, outputfile);
@@ -350,21 +360,29 @@ namespace Artwork
             }
         }
 
-        public Color GetHashColor(string text)
+        public static Color GetHashColor(string text)
         {
-            double H = HashHue(text);
-            int r, g, b;
-            GerberLibrary.MathHelpers.HsvToRgb(H, 0.8, 0.5, out r, out g, out b);
-            return Color.FromArgb(r, g, b);
+             return MakeColor( HashHue(text));
         }
 
-        public Color GetHashHighlight(string text)
+        public static Color GetHashHighlight(string text)
         {
-            double H = HashHue(text);
+            return MakeHighlight(HashHue(text));
+        }
+
+        public static Color MakeColor(double H)
+        {
+            int r, g, b;
+            GerberLibrary.MathHelpers.HsvToRgb(H, 1.0, 0.5, out r, out g, out b);
+            return Color.FromArgb(r, g, b);
+
+        }
+        public static Color MakeHighlight(double H)
+        {
             int r, g, b;
             double DH = ((H + 60) % 120) - 60;
             H -= DH * 0.4;
-            GerberLibrary.MathHelpers.HsvToRgb(H, 0.8, 0.7, out r, out g, out b);
+            GerberLibrary.MathHelpers.HsvToRgb(H, 1.0, 0.7, out r, out g, out b);
             return Color.FromArgb(r, g, b);
         }
 
@@ -373,25 +391,31 @@ namespace Artwork
             double H = 0;
             for (int i = 0; i < text.Length; i++)
             {
-                H += ((text[i] - 'A') % 26) * 112.123;
+                H += ((text[i] - 'A') % 26) * (360.0/26);
                 H = H % 360;
             }
 
             return H;
         }
 
-        public Settings GetHashSettings(string text)
+        public Settings GetHashSettings(string text, float huerange = -1)
         {
             Settings S = new Settings();
             S.BackGroundColor = GetHashColor(text);
+            S.BackgroundHighlight = GetHashHighlight(text);
+            if (huerange > -1)
+            {
+                S.BackGroundColor = MakeColor(huerange * 360.0f);
+                S.BackgroundHighlight = MakeHighlight(huerange * 360.0f);
+            }
             S.TileType = Tiling.TilingType.Conway;
             S.MaxSubDiv = 6;
-            S.BackgroundHighlight = GetHashHighlight(text);
             for (int i = 0; i < text.Length; i++)
             {
                 S.DegreesOff += (int)(text[i] * 112.123);
                 S.DegreesOff = S.DegreesOff % 360;
             }
+            S.Rand = new Random((int)(S.DegreesOff * 100.0));
 
             return S;
         }
