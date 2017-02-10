@@ -381,7 +381,7 @@ namespace Artwork
         {
             int r, g, b;
             double DH = ((H + 60) % 120) - 60;
-            H -= DH * 0.4;
+            H += DH * 0.4;
             GerberLibrary.MathHelpers.HsvToRgb(H, 1.0, 0.7, out r, out g, out b);
             return Color.FromArgb(r, g, b);
         }

@@ -39,6 +39,9 @@ namespace IconScanner
                 foreach (var a in Generated.OrderBy(x => x.Label.ToLower()))
                 {
                     File.Delete(a.Outputfilename);
+
+                    Console.WriteLine("Creating icon: \"{0}\"", a.Label);
+
                     Artwork.TINRSArtWorkRenderer.SaveMultiIcon(a.Outputfilename, a.Label, (float)c/(float)Generated.Count);
                     if (outputfolder.Length > 0)
                     {
@@ -104,7 +107,7 @@ namespace IconScanner
 
 
                                 string Label = l.Substring(i1 + 1, i2 - i1 - 1);
-                                Console.WriteLine("Creating icon for \"{0}\"", Label);
+                                Console.WriteLine("Found icon to build: \"{0}\" in {1}", Label, V);
                                 Res.Add(new IcoEntry() { Label = Label, Outputfilename = a });
 
 
