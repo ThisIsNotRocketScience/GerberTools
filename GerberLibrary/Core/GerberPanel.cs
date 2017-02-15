@@ -777,7 +777,7 @@ namespace GerberLibrary
             foreach (var FinalPoly in FinalPolygonsWithTabs)
             {
                 PolyLine PL2 = new PolyLine();
-                PL2.Vertices = FinalPoly;
+                PL2.Vertices = FinalPoly.Vertices;
                 DrawShape(G, OO3, PL2);
                 //  DrawMarker(G, PL2.Vertices.First(), 1, PW);
                 //  DrawMarker(G, PL2.Vertices.Last(), 1, PW);
@@ -1505,20 +1505,20 @@ namespace GerberLibrary
 
         }
 
-        List<List<PointD>> FinalPolygonsWithTabs = new List<List<PointD>>();
+        List<PathDefWithClosed> FinalPolygonsWithTabs = new List<PathDefWithClosed>();
 
         private void CombineGeneratedArcsAndCutlines()
         {
-            List<List<PointD>> SourceLines = new List<List<PointD>>();
+            List<PathDefWithClosed> SourceLines = new List<PathDefWithClosed>();
             foreach (var a in GeneratedArcs)
             {
-                SourceLines.Add(a.Vertices);
+                SourceLines.Add(new PathDefWithClosed() { Vertices = a.Vertices , Width = 0});
             }
             foreach (var cl in CutLines)
             {
                 foreach (var l in cl.Lines)
                 {
-                    SourceLines.Add(l);
+                    SourceLines.Add(new PathDefWithClosed() { Vertices = l, Width = 0 });
                 }
             }
             FinalPolygonsWithTabs = Helpers.LineSegmentsToPolygons(SourceLines, true);
@@ -1543,7 +1543,9 @@ namespace GerberLibrary
             foreach (var a in FinalPolygonsWithTabs)
             {
                 PolyLine PL = new PolyLine();
-                PL.Vertices = a;
+                PL.Vertices = a.Vertices;
+                // todo: check if closed/opened things need special treatment here. 
+                // width is defaulted to 0
                 GOW.AddPolyLine(PL);
             }
             GOW.Write(Path.Combine(p, OutlineFile));

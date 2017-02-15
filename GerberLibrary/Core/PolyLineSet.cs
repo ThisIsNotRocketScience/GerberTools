@@ -15,7 +15,20 @@ using System.IO;
 
 namespace GerberLibrary
 {
+    public class PathDefWithClosed
+    {
+        public bool Closed = false;
+        public List<PointD> Vertices = new List<PointD>();
+        public double Width;
 
+        public override string ToString()
+        {
+            string r = "";
+            foreach (var a in Vertices)
+                r += a.ToString() + "  ";
+            return string.Format("closed: {0} verts: {1}", Closed, r);
+        }
+    }
     public class GerberParserState
     {
         public Dictionary<string, GerberApertureMacro> ApertureMacros = new Dictionary<string, GerberApertureMacro>();
@@ -415,11 +428,11 @@ namespace GerberLibrary
                 }
             }
 
-            List<List<PointD>> shapelist = new List<List<PointD>>();
+            List<PathDefWithClosed> shapelist = new List<PathDefWithClosed>();
             for (int i = 0; i < State.NewThinShapes.Count; i++)
             {
                 //     DisplayShapes.Add(NewThinShapes[i]);
-                shapelist.Add(State.NewThinShapes[i].Vertices);
+                shapelist.Add(new PathDefWithClosed() { Vertices = State.NewThinShapes[i].Vertices, Width = State.NewThinShapes[i].Width });
             }
 
             var shapeslinked = Helpers.LineSegmentsToPolygons(shapelist);
@@ -427,7 +440,7 @@ namespace GerberLibrary
             foreach (var a in shapeslinked)
             {
                 PolyLine PL = new PolyLine();
-                PL.Vertices = a;
+                PL.Vertices = a.Vertices;
                 PL.Thin = true;
                 Gerb.DisplayShapes.Add(PL);
                 Gerb.Shapes.Add(PL);
@@ -1000,6 +1013,7 @@ namespace GerberLibrary
 
                             var C = State.NewThinShapes[i];
                             PolyLine P = new PolyLine();
+                            P.Width = C.Width;
                             foreach (var a in C.Vertices)
                             {
                                 P.Vertices.Add(new PointD(a.X + xoff, a.Y + yoff));
@@ -1010,6 +1024,7 @@ namespace GerberLibrary
                         {
                             var C = State.NewShapes[i];
                             PolyLine P = new PolyLine();
+                            P.Width = C.Width;
                             foreach (var a in C.Vertices)
                             {
                                 P.Vertices.Add(new PointD(a.X + xoff, a.Y + yoff));
@@ -1631,6 +1646,7 @@ namespace GerberLibrary
                                                                 {
                                                                     State.ThinLine = new PolyLine();
                                                                     State.ThinLine.ClearanceMode = State.ClearanceMode;
+                                                                    State.ThinLine.Width = State.CurrentAperture.CircleRadius;
                                                                     //Console.WriteLine("Start: {0:N2} , {1:N2} - {2}", State.LastX, State.LastY, Line);
                                                                     State.ThinLine.Add(State.LastX, State.LastY);
                                                                 }

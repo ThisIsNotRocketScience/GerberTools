@@ -129,6 +129,8 @@ namespace GerberLibrary.Core.Primitives
         public Color MyColor = Color.DarkGreen;
         public bool Thin = false;
         public bool ClearanceMode;
+        public double Width;
+
         public Color GetColor()
         {
             return MyColor;

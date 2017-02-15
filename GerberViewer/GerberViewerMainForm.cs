@@ -96,10 +96,10 @@ namespace GerberViewer
 
             foreach (var a in Document.Gerbers)
             {
-           //    a.Panel = new LayerDisplay(Document, a, this);
-             //  a.Panel.Show(this.dockPanel, DockState.Document);
-            //    a.Panel.Text = a.File.ToString() ;
-              //  SingleLayers.Add(a.Panel);
+               a.Panel = new LayerDisplay(Document, a, this);
+               a.Panel.Show(this.dockPanel, DockState.Document);
+                a.Panel.Text = a.File.ToString() ;
+                SingleLayers.Add(a.Panel);
             }
 
 
@@ -191,7 +191,7 @@ namespace GerberViewer
 
         internal void ActivateTab(int rowIndex)
         {
-        //    Document.Gerbers[rowIndex].Panel.Activate();
+            Document.Gerbers[rowIndex].Panel.Activate();
         }
     }
 }

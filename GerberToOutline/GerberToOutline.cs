@@ -80,14 +80,17 @@ namespace GerberToOutline
         private static void DrawToInterface(ParsedGerber PLS, SVGGraphicsInterface SG)
         {
             Random R = new Random();
+
+            
             foreach (var a in PLS.DisplayShapes)
             {
-                Pen P = new Pen(Color.FromArgb((byte)R.Next(), (byte)R.Next(), (byte)R.Next()));
+                
+                Pen P = new Pen(Color.FromArgb((byte)R.Next(), (byte)R.Next(), (byte)R.Next()), 0.1f);
                 for (int i = 0; i < a.Vertices.Count; i++)
                 {
                     var v1 = a.Vertices[i];
                     var v2 = a.Vertices[(i + 1) % a.Vertices.Count];
-                    SG.DrawLine(P, (float)v1.X, (float)v1.Y, (float)v2.X, (float)v2.Y);
+                    SG.DrawLine(P, (float)v1.X, (float)v1.Y, (float)v2.X , (float)v2.Y);
                 }
 
             }
