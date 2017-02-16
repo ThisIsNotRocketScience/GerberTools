@@ -67,7 +67,8 @@ namespace GerberToOutline
                 }
 
             }
-            SVGGraphicsInterface SG = new SVGGraphicsInterface(PLS.BoundingBox.Width(), PLS.BoundingBox.Height());
+            SVGGraphicsInterface SG = new SVGGraphicsInterface(PLS.BoundingBox.Width()*100, PLS.BoundingBox.Height()*100);
+            SG.ScaleTransform(10, 10);
             SG.TranslateTransform((float)-PLS.BoundingBox.TopLeft.X, (float)-PLS.BoundingBox.TopLeft.Y);
             DrawToInterface(PLS, SG);
             SG.Save(outfile);
@@ -81,16 +82,19 @@ namespace GerberToOutline
         {
             Random R = new Random();
 
-            
+            int i2 = 0;
             foreach (var a in PLS.DisplayShapes)
             {
-                
+                i2++;
                 Pen P = new Pen(Color.FromArgb((byte)R.Next(), (byte)R.Next(), (byte)R.Next()), 0.1f);
                 for (int i = 0; i < a.Vertices.Count; i++)
                 {
                     var v1 = a.Vertices[i];
                     var v2 = a.Vertices[(i + 1) % a.Vertices.Count];
-                    SG.DrawLine(P, (float)v1.X, (float)v1.Y, (float)v2.X , (float)v2.Y);
+                   
+                    SG.DrawLine(P, 54.2f + (float)v1.X + i2*12.4f, (float)v1.Y,54.2f+ (float)v2.X + i2*12.4f , (float)v2.Y);
+                    SG.DrawLine(P, (float)v1.X , (float)v1.Y, (float)v2.X , (float)v2.Y);
+
                 }
 
             }

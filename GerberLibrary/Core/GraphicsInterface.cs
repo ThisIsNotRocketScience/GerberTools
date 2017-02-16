@@ -220,7 +220,7 @@ namespace GerberLibrary.Core
 
         public void DrawString(string text, Font font, SolidBrush solidBrush, float x, float y, StringFormat sF)
         {
-            throw new NotImplementedException();
+            G.DrawString(text, font, solidBrush, new PointF(x, y));
         }
 
         public void DrawPath(Color black, GraphicsPath pATH, float v)

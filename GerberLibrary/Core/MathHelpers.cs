@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GerberLibrary.Core.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -258,9 +259,20 @@ namespace GerberLibrary
             return new PointF((float)(D.Y / L), (float)(-D.X / L));
         }
 
+        public static PointD Normal(PointD p1, PointD p2)
+        {
+            var L = (p1- p2).Length();
+            var D = Difference(p2, p1);
+            return new PointD((D.Y / L), (-D.X / L));
+        }
+
         public static PointF Difference(PointF p1, PointF p2)
         {
             return new PointF(p1.X - p2.X, p1.Y - p2.Y);
+        }
+        public static PointD Difference(PointD p1, PointD p2)
+        {
+            return new PointD(p1.X - p2.X, p1.Y - p2.Y);
         }
 
         public static PointF Add(PointF p1, PointF p2)

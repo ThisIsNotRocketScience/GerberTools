@@ -26,7 +26,7 @@ namespace GerberLibrary
             string r = "";
             foreach (var a in Vertices)
                 r += a.ToString() + "  ";
-            return string.Format("closed: {0} verts: {1}", Closed, r);
+            return string.Format("closed: {0} verts: ({1} {2}) ({3} {4})", Closed, r[0], r[1], r[Vertices.Count()-2], r[Vertices.Count() - 1] );
         }
     }
     public class GerberParserState
@@ -833,12 +833,11 @@ namespace GerberLibrary
             gerb.Normalize();
         }
 
-
-
         public override string ToString()
         {
             return Name;
         }
+
         private static void AddExtrudedCurveSegment(ref double LastX, ref double LastY, List<PolyLine> NewShapes, GerberApertureType CurrentAperture, bool ClearanceMode, double X, double Y)
         {
             PolyLine PL = new PolyLine();

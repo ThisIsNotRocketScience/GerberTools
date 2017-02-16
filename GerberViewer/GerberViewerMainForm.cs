@@ -152,7 +152,13 @@ namespace GerberViewer
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-
+                if (Document.Gerbers.Count >0)
+                {
+                    if (MessageBox.Show("Clear first?", "Clear?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        ClearAll();   
+                    }
+                }
                 string[] D = e.Data.GetData(DataFormats.FileDrop) as string[];
                 List<String> files = new List<string>();
                 foreach (string S in D)
