@@ -582,6 +582,7 @@ namespace GerberCombinerBuilder
                 //Console.WriteLine("updating shape..");
                 ThePanel.UpdateShape(); // check if needed?
                 ShapeMarkedForUpdate = false;
+                ForceShapeUpdate = false;
             }
 
             glControl1.MakeCurrent();

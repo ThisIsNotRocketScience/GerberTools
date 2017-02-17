@@ -22,6 +22,7 @@ namespace GerberLibrary
         public double scale = 25.0f / 25.4f; // dpi
         private BoardRenderColorSet ActiveColorSet = new BoardRenderColorSet();
         bool hasgko = false;
+        
         List<ParsedGerber> PLSs = new List<ParsedGerber>();
         public int Count()
         {
@@ -1188,6 +1189,7 @@ namespace GerberLibrary
                 if (a.Layer == BoardLayer.Drill)
                 {
                     DrillFiles.Add(a);
+                    DrillFileScale[a.Name] = 1.0;
                 }
                 else
                 {
@@ -1224,6 +1226,8 @@ namespace GerberLibrary
                         R /= 10;
                         scale /= 10;
                     }
+
+                    DrillFileScale[a.Item2.Name] = scale;
                     AddFileToSet(a.Item2.Name, Logger, scale);
                 }
             }
@@ -1238,6 +1242,8 @@ namespace GerberLibrary
                 BoundingBox.AddBox(a.BoundingBox);
             }
         }
+
+        public Dictionary<string, double> DrillFileScale = new Dictionary<string, double>();
 
         private PolyLineSet.Bounds GetOutlineBoundingBox()
         {
@@ -1365,6 +1371,12 @@ namespace GerberLibrary
             }
             if (Shapes == 0) return null;
             return B2;
+        }
+
+        public double GetDrillScaler(string f)
+        {
+            if (DrillFileScale.ContainsKey(f)) return DrillFileScale[f];
+            return 1.0;
         }
     }
 

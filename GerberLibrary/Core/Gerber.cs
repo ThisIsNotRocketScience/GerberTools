@@ -296,6 +296,7 @@ namespace GerberLibrary
                             break;
 
                         default:
+                            if (gerberfile.ToLower().Contains("outline")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; }
                             if (gerberfile.ToLower().Contains("-edge_cuts")) { Side = BoardSide.Both;Layer = BoardLayer.Outline;}
 
                             if (gerberfile.ToLower().Contains("-b_cu")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; }
