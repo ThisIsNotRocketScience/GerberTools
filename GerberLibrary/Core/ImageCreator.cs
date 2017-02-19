@@ -21,9 +21,59 @@ namespace GerberLibrary
         public List<String> Errors = new List<string>();
         public double scale = 25.0f / 25.4f; // dpi
         private BoardRenderColorSet ActiveColorSet = new BoardRenderColorSet();
+        Dictionary<string, MemoryStream> Streams = new Dictionary<string, MemoryStream>();
+        public Dictionary<string, double> DrillFileScale = new Dictionary<string, double>();
+
+
         bool hasgko = false;
         
         List<ParsedGerber> PLSs = new List<ParsedGerber>();
+
+        public ParsedGerber GetGerberByName(string name)
+        {
+            foreach(var a in PLSs)
+            {
+                if (a.Name == name) return a;
+            }
+            return null;
+        }
+
+        public void ClipBoard(string infile, string outputfile, ProgressLog log)
+        {
+            var toclip = GetGerberByName(infile);
+            if (toclip== null)
+            {
+                log.AddString(String.Format("file {0} not loaded - not clipping!", infile));
+            }
+
+            var ols = (from a in PLSs where a.Side == BoardSide.Both && a.Layer == BoardLayer.Outline select a).ToList();
+
+            GerberArtWriter GAW = new GerberArtWriter();
+            
+            foreach (var a in toclip.DisplayShapes)
+            {
+                ClipperLib.Clipper CP = new ClipperLib.Clipper();
+                foreach(var ol in ols)
+                {
+                    var R = ol.FindLargestPolygon();
+                    CP.AddPolygon(R.Item2.toPolygon(), ClipperLib.PolyType.ptClip);
+                }
+                CP.AddPolygon(a.toPolygon(), ClipperLib.PolyType.ptSubject);
+                List<List<ClipperLib.IntPoint>> solution = new List<List<ClipperLib.IntPoint>>();
+                
+                CP.Execute(ClipperLib.ClipType.ctIntersection, solution);
+                foreach(var p in solution)
+                {
+                    PolyLine P = new PolyLine();
+                    P.fromPolygon(p);
+                    GAW.AddPolygon(P);
+                }
+
+            }
+
+            GAW.Write(outputfile);
+        }
+
         public int Count()
         {
             return PLSs.Count;
@@ -140,8 +190,7 @@ namespace GerberLibrary
 
             }
         }
-        Dictionary<string, MemoryStream> Streams = new Dictionary<string, MemoryStream>();
-
+        
         public ParsedGerber AddBoardToSet(string _originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
         {
             if (Streams.ContainsKey(_originalfilename))
@@ -152,7 +201,7 @@ namespace GerberLibrary
         }
 
 
-            public ParsedGerber AddBoardToSet(MemoryStream MS, string _originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
+          public ParsedGerber AddBoardToSet(MemoryStream MS, string _originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
         {
             Streams[_originalfilename] = MS;
             try
@@ -1243,7 +1292,6 @@ namespace GerberLibrary
             }
         }
 
-        public Dictionary<string, double> DrillFileScale = new Dictionary<string, double>();
 
         private PolyLineSet.Bounds GetOutlineBoundingBox()
         {

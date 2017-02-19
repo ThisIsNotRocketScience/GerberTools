@@ -60,6 +60,9 @@ namespace GerberCombinerBuilder
             ParentFrame = Host;
             Gerber.ArcQualityScaleFactor = 15;
             InitializeComponent();
+            RotateLeftHover.Visible = false;
+            RotateRightHover.Visible = false;
+
             UpdateAutoProcessButton();
             UpdateSnapBox(SnapMode.MM1);
             //   AddGerberFolder(@"C:\Projects\Circuits\50pcs 5x5cm green 1.6mm - goaoma");
@@ -99,46 +102,87 @@ namespace GerberCombinerBuilder
 
         //}
 
-        PointD MouseToMM(PointD Mouse)
+            PointD MMToMouse(PointD MM)
         {
-            PointF P = Mouse.ToF();
-            P.X -= glControl1.Width / 2;
-            P.Y -= glControl1.Height / 2;
+            PointD P = new PointD(MM.X, MM.Y);
+            P.X -= (float)CenterPoint.X;
+            P.Y -= (float)CenterPoint.Y;
+
+            P.X *= (float)Zoom;
+            P.Y *= (float)Zoom;
+
             P.Y *= -1;
 
-            // Console.Write("| {0},{1} ", (int)P.X, (int)P.Y);
-            P.X /= (float)Zoom;
-            P.Y /= (float)Zoom;
-            //  Console.Write("| {0},{1} ", (int)P.X, (int)P.Y);
-            P.X += (float)CenterPoint.X;
-            P.Y += (float)CenterPoint.Y;
-
-            //  Console.WriteLine("| {0},{1}", (int)P.X, (int)P.Y);
-            return new PointD(P);
-            P.X = ((P.X * 2) / glControl1.Width - 1.0f);
-            P.Y = ((P.Y * 2) / glControl1.Height - 1.0f);
-            P.Y *= -1;
+            P.X += glControl1.Width / 2;
+            P.Y += glControl1.Height / 2;
 
 
-
-
-            P.X /= DrawingScale / (0.5f * glControl1.Width);
-            P.Y /= DrawingScale / (0.5f * glControl1.Height);
-
-
-            P.X += 50;
-            P.Y += 50;
-
-            return new PointD(P);
+            
+            return P;
 
 
         }
 
+        PointD MouseToMM(PointD Mouse)
+        {
+            PointD P = new PointD(Mouse.X, Mouse.Y);
+            P.X -= glControl1.Width / 2;
+            P.Y -= glControl1.Height / 2;
+            P.Y *= -1;
+            P.X /= (float)Zoom;
+            P.Y /= (float)Zoom;
+            P.X += (float)CenterPoint.X;
+            P.Y += (float)CenterPoint.Y;
 
+            return P;
+
+        }
+
+        public void UpdateHoverControls()
+        {
+            return;
+
+            // todo -> redo these in pure GL.. windows controls interfere too much with the drawing resulting in glitches. 
+
+            if (SelectedInstance != null)
+            {
+                GerberInstance GI = SelectedInstance as GerberInstance;
+                if (GI == null)
+                {
+                    RotateLeftHover.Visible = false;
+                    RotateRightHover.Visible = false;
+
+                }
+                else
+                {
+                    RotateLeftHover.Visible = true;
+                    RotateRightHover.Visible = true;
+                    var TL = MMToMouse(GI.BoundingBox.TopLeft);
+                    var BR = MMToMouse(GI.BoundingBox.BottomRight);
+                    int W = RotateLeftHover.Width;
+                    int H = RotateLeftHover.Height;
+
+                    RotateLeftHover.Top = Math.Max(0, Math.Min(glControl1.Height - H, (int)(TL.Y - RotateLeftHover.Height)));
+                    RotateLeftHover.Left = Math.Max(0, Math.Min(glControl1.Width - W, (int)(TL.X - RotateLeftHover.Width)));
+                    RotateRightHover.Top = Math.Max(0, Math.Min(glControl1.Height - H, (int)(TL.Y - RotateLeftHover.Height)));
+                    RotateRightHover.Left = Math.Max(0, Math.Min(glControl1.Width - W, (int)(BR.X + 1)));
+                }
+            }
+            else
+            {
+                RotateLeftHover.Visible = false;
+                RotateRightHover.Visible = false;
+
+            }
+        }
 
         internal void SetSelectedInstance(AngledThing gerberInstance)
         {
+            
             SelectedInstance = gerberInstance;
+
+            UpdateHoverControls();
+
             ID.UpdateBoxes(this);
             Redraw(false);
         }
@@ -402,6 +446,7 @@ namespace GerberCombinerBuilder
                 Delta.X /= Zoom;
                 Delta.Y /= -Zoom;
                 SelectedInstance.Center = Snap(DragInstanceOriginalPosition + Delta).ToF();
+                UpdateHoverControls();
                 //       SelectedInstance.Center.Y = (float)(DragInstanceOriginalPosition.Y + Delta.Y);
                 Redraw(false);
             }
@@ -998,6 +1043,16 @@ namespace GerberCombinerBuilder
         private void AutoProcess_Click(object sender, EventArgs e)
         {
             UpdateAutoProcessButton();
+        }
+
+        private void RotateRightHover_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void RotateLeftHover_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

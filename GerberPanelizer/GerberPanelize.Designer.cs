@@ -62,16 +62,18 @@
             this.generateArtReactedBlobsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateArtPrototypeStripToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.glControl1 = new OpenTK.GLControl();
+            this.directoryEntry1 = new System.DirectoryServices.DirectoryEntry();
+            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
+            this.hScrollBar1 = new System.Windows.Forms.HScrollBar();
+            this.RotateRightHover = new System.Windows.Forms.Button();
+            this.RotateLeftHover = new System.Windows.Forms.Button();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.milToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.milToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mmToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.mmToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.offToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.glControl1 = new OpenTK.GLControl();
-            this.directoryEntry1 = new System.DirectoryServices.DirectoryEntry();
-            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
-            this.hScrollBar1 = new System.Windows.Forms.HScrollBar();
             this.menuStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
@@ -323,6 +325,63 @@
             this.statusStrip1.TabIndex = 4;
             this.statusStrip1.Text = "statusStrip1";
             // 
+            // glControl1
+            // 
+            this.glControl1.AllowDrop = true;
+            this.glControl1.BackColor = System.Drawing.Color.Black;
+            this.glControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.glControl1.Location = new System.Drawing.Point(0, 0);
+            this.glControl1.Margin = new System.Windows.Forms.Padding(5);
+            this.glControl1.Name = "glControl1";
+            this.glControl1.Size = new System.Drawing.Size(632, 295);
+            this.glControl1.TabIndex = 5;
+            this.glControl1.VSync = false;
+            this.glControl1.DragDrop += new System.Windows.Forms.DragEventHandler(this.glControl1_DragDrop);
+            this.glControl1.DragEnter += new System.Windows.Forms.DragEventHandler(this.glControl1_DragEnter);
+            this.glControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl1_Paint);
+            this.glControl1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.glControl1_KeyDown);
+            this.glControl1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseDown);
+            this.glControl1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseMove);
+            this.glControl1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseUp);
+            // 
+            // vScrollBar1
+            // 
+            this.vScrollBar1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.vScrollBar1.Location = new System.Drawing.Point(611, 0);
+            this.vScrollBar1.Name = "vScrollBar1";
+            this.vScrollBar1.Size = new System.Drawing.Size(21, 295);
+            this.vScrollBar1.TabIndex = 6;
+            this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
+            // 
+            // hScrollBar1
+            // 
+            this.hScrollBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.hScrollBar1.Location = new System.Drawing.Point(0, 274);
+            this.hScrollBar1.Name = "hScrollBar1";
+            this.hScrollBar1.Size = new System.Drawing.Size(611, 21);
+            this.hScrollBar1.TabIndex = 7;
+            this.hScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hScrollBar1_Scroll);
+            // 
+            // RotateRightHover
+            // 
+            this.RotateRightHover.Image = global::GerberCombinerBuilder.Properties.Resources.RotateRight;
+            this.RotateRightHover.Location = new System.Drawing.Point(319, 102);
+            this.RotateRightHover.Name = "RotateRightHover";
+            this.RotateRightHover.Size = new System.Drawing.Size(41, 41);
+            this.RotateRightHover.TabIndex = 9;
+            this.RotateRightHover.UseVisualStyleBackColor = true;
+            this.RotateRightHover.Click += new System.EventHandler(this.RotateRightHover_Click);
+            // 
+            // RotateLeftHover
+            // 
+            this.RotateLeftHover.Image = global::GerberCombinerBuilder.Properties.Resources.RotateLeft;
+            this.RotateLeftHover.Location = new System.Drawing.Point(214, 102);
+            this.RotateLeftHover.Name = "RotateLeftHover";
+            this.RotateLeftHover.Size = new System.Drawing.Size(41, 41);
+            this.RotateLeftHover.TabIndex = 8;
+            this.RotateLeftHover.UseVisualStyleBackColor = true;
+            this.RotateLeftHover.Click += new System.EventHandler(this.RotateLeftHover_Click);
+            // 
             // toolStripDropDownButton1
             // 
             this.toolStripDropDownButton1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
@@ -374,49 +433,14 @@
             this.offToolStripMenuItem.Text = "Off";
             this.offToolStripMenuItem.Click += new System.EventHandler(this.offToolStripMenuItem_Click);
             // 
-            // glControl1
-            // 
-            this.glControl1.AllowDrop = true;
-            this.glControl1.BackColor = System.Drawing.Color.Black;
-            this.glControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.glControl1.Location = new System.Drawing.Point(0, 28);
-            this.glControl1.Margin = new System.Windows.Forms.Padding(5);
-            this.glControl1.Name = "glControl1";
-            this.glControl1.Size = new System.Drawing.Size(632, 267);
-            this.glControl1.TabIndex = 5;
-            this.glControl1.VSync = false;
-            this.glControl1.DragDrop += new System.Windows.Forms.DragEventHandler(this.glControl1_DragDrop);
-            this.glControl1.DragEnter += new System.Windows.Forms.DragEventHandler(this.glControl1_DragEnter);
-            this.glControl1.Paint += new System.Windows.Forms.PaintEventHandler(this.glControl1_Paint);
-            this.glControl1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.glControl1_KeyDown);
-            this.glControl1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseDown);
-            this.glControl1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseMove);
-            this.glControl1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControl1_MouseUp);
-            // 
-            // vScrollBar1
-            // 
-            this.vScrollBar1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.vScrollBar1.Location = new System.Drawing.Point(611, 28);
-            this.vScrollBar1.Name = "vScrollBar1";
-            this.vScrollBar1.Size = new System.Drawing.Size(21, 267);
-            this.vScrollBar1.TabIndex = 6;
-            this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
-            // 
-            // hScrollBar1
-            // 
-            this.hScrollBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.hScrollBar1.Location = new System.Drawing.Point(0, 274);
-            this.hScrollBar1.Name = "hScrollBar1";
-            this.hScrollBar1.Size = new System.Drawing.Size(611, 21);
-            this.hScrollBar1.TabIndex = 7;
-            this.hScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hScrollBar1_Scroll);
-            // 
             // GerberPanelize
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(632, 321);
             this.ControlBox = false;
+            this.Controls.Add(this.RotateRightHover);
+            this.Controls.Add(this.RotateLeftHover);
             this.Controls.Add(this.hScrollBar1);
             this.Controls.Add(this.vScrollBar1);
             this.Controls.Add(this.glControl1);
@@ -488,6 +512,8 @@
         private System.Windows.Forms.ToolStripMenuItem generateArtPrototypeStripToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ProcessButton;
         private System.Windows.Forms.ToolStripMenuItem AutoProcess;
+        private System.Windows.Forms.Button RotateLeftHover;
+        private System.Windows.Forms.Button RotateRightHover;
     }
 }
 

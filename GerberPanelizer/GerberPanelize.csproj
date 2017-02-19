@@ -242,6 +242,8 @@
     <Content Include="Help\welcome.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\RotateRight.jpg" />
+    <None Include="Resources\RotateLeft.jpg" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GerberLibrary\GerberLibrary.csproj">

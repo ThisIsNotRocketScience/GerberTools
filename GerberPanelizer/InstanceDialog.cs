@@ -78,6 +78,14 @@ namespace GerberCombinerBuilder
                 BreakTab BT = TargetInstance.SelectedInstance as BreakTab;
                 BT.Radius = (float)radiusbox.Value;
             }
+            else if (TargetInstance.SelectedInstance.GetType() == typeof(GerberInstance))
+
+            {
+                GerberInstance GI = TargetInstance.SelectedInstance as GerberInstance;
+                GI.RebuildTransformed(TargetInstance.ThePanel.GerberOutlines[GI.GerberPath], TargetInstance.ThePanel.TheSet.ExtraTabDrillDistance);
+            }
+            
+            TargetInstance.UpdateHoverControls();
             TargetInstance.Redraw(true);
         }
 

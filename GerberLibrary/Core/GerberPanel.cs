@@ -1993,7 +1993,8 @@ namespace GerberLibrary
         [System.Xml.Serialization.XmlIgnore]
         public List<BreakTab> Tabs = new List<BreakTab>();
 
-
+        [System.Xml.Serialization.XmlIgnore]
+        public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
         internal void CreateOffsetLines(double extradrilldistance)
         {
             OffsetOutlines = new List<List<PolyLine>>(TransformedOutlines.Count);
@@ -2022,6 +2023,7 @@ namespace GerberLibrary
 
         public void RebuildTransformed(GerberOutline gerberOutline, double extra)
         {
+            BoundingBox.Reset();
             LastAngle = Angle;
             LastCenter = new PointD(Center.X, Center.Y);
             TransformedOutlines = new List<PolyLine>();
@@ -2031,8 +2033,11 @@ namespace GerberLibrary
                 PolyLine PL = new PolyLine();
                 PL.FillTransformed(b, new PointD(Center), Angle);
                 TransformedOutlines.Add(PL);
+                BoundingBox.AddPolyLine(PL);
             }
             CreateOffsetLines(extra);
+
+
 
         }
     }

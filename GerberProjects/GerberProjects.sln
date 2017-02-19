@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26020.0
+VisualStudioVersion = 15.0.26206.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberLibrary", "..\GerberLibrary\GerberLibrary.csproj", "{E1C3AA23-3A02-485F-976B-50A96052F00A}"
 EndProject
@@ -69,6 +69,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IconScanner", "..\Project_Utilities\IconScanner\IconScanner.csproj", "{2FA9476A-8780-44CF-A4E8-5EEB1E00D184}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TINRS-ArtWork", "..\Project_Utilities\TilingLibrary\TINRS-ArtWork.csproj", "{02FDA308-BE9D-424E-950E-D86E72F4C16C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberClipper", "..\GerberClipper\GerberClipper.csproj", "{4F1EC287-9873-4A1A-BB2E-6343B5237A91}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -286,6 +288,14 @@ Global
 		{02FDA308-BE9D-424E-950E-D86E72F4C16C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{02FDA308-BE9D-424E-950E-D86E72F4C16C}.Release|x86.ActiveCfg = Release|Any CPU
 		{02FDA308-BE9D-424E-950E-D86E72F4C16C}.Release|x86.Build.0 = Release|Any CPU
+		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Debug|x86.Build.0 = Debug|Any CPU
+		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Release|x86.ActiveCfg = Release|Any CPU
+		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -317,6 +327,7 @@ Global
 		{24BA245D-125E-4FE4-B1FF-325B71546E4C} = {49E3D49C-EC26-42F7-B67D-742F8692E11E}
 		{2FA9476A-8780-44CF-A4E8-5EEB1E00D184} = {49E3D49C-EC26-42F7-B67D-742F8692E11E}
 		{02FDA308-BE9D-424E-950E-D86E72F4C16C} = {AE8159BA-937D-4BDB-A5CA-FB8003121AC5}
+		{4F1EC287-9873-4A1A-BB2E-6343B5237A91} = {F705564A-6956-4675-A941-6ED916ADC0AD}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
