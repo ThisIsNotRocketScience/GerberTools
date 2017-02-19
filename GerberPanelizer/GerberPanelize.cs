@@ -270,6 +270,14 @@ namespace GerberCombinerBuilder
 
         public void exportAllGerbersToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            try
+            {
+                folderBrowserDialog2.SelectedPath = ThePanel.TheSet.LastExportFolder;
+            }
+            catch (Exception)
+            {
+
+            }
             if (folderBrowserDialog2.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 ExportFolder = folderBrowserDialog2.SelectedPath;

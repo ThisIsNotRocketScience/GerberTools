@@ -2068,9 +2068,13 @@ namespace GerberLibrary
         public double FillOffset = 3;
         public double Smoothing = 1;
         public double ExtraTabDrillDistance = 0;
+        public bool ClipToOutlines = true;
+        public string LastExportFolder = "";
 
         public List<string> SaveTo(string p, Dictionary<string, GerberOutline> GerberOutlines, ProgressLog Logger)
         {
+            LastExportFolder = p;
+
             List<string> GeneratedFiles = new List<string>();
             List<String> UnzippedList = new List<string>();
 
@@ -2105,6 +2109,7 @@ namespace GerberLibrary
                                     if (e.IsDirectory == false)
                                     {
                                         string Unzipped = Path.Combine(BaseUnzip, (instanceID++).ToString() + "_" + Path.GetFileName(e.FileName));
+                                        if (File.Exists(Unzipped)) File.Delete(Unzipped);
                                         FileStream FS = new FileStream(Unzipped, FileMode.CreateNew);
                                         FileList.Add(Unzipped);
                                         UnzippedList.Add(Unzipped);

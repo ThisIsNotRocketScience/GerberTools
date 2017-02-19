@@ -23,7 +23,7 @@ namespace GerberCombinerBuilder
             WidthBox.Value = (decimal)ParentPanel.TheSet.Width;
             HeightBox.Value = (decimal)ParentPanel.TheSet.Height;
             MarginBox.Value = (decimal)ParentPanel.TheSet.MarginBetweenBoards;
-
+            ClipToOutlines.Checked = ParentPanel.TheSet.ClipToOutlines;
             filloffsetbox.Value = (decimal)ParentPanel.TheSet.FillOffset;
             smoothoffsetbox.Value= (decimal)ParentPanel.TheSet.Smoothing;
             ExtraTabDrillDistance.Value = (decimal)ParentPanel.TheSet.ExtraTabDrillDistance;
@@ -41,7 +41,7 @@ namespace GerberCombinerBuilder
             ParentPanel.TheSet.FillOffset = (double)filloffsetbox.Value;
             ParentPanel.TheSet.Smoothing = (double)smoothoffsetbox.Value;
 
-
+            ParentPanel.TheSet.ClipToOutlines = ClipToOutlines.Checked;
             Close();
         }
 

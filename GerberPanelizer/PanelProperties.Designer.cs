@@ -50,6 +50,7 @@
             this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
+            this.ClipToOutlines = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.WidthBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MarginBox)).BeginInit();
@@ -343,11 +344,22 @@
             this.label12.Text = "mm";
             this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // ClipToOutlines
+            // 
+            this.ClipToOutlines.AutoSize = true;
+            this.ClipToOutlines.Location = new System.Drawing.Point(185, 261);
+            this.ClipToOutlines.Name = "ClipToOutlines";
+            this.ClipToOutlines.Size = new System.Drawing.Size(163, 21);
+            this.ClipToOutlines.TabIndex = 24;
+            this.ClipToOutlines.Text = "Clip to board outlines";
+            this.ClipToOutlines.UseVisualStyleBackColor = true;
+            // 
             // PanelProperties
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(419, 401);
+            this.Controls.Add(this.ClipToOutlines);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label10);
@@ -406,5 +418,6 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.CheckBox ClipToOutlines;
     }
 }
