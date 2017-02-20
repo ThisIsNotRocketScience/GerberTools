@@ -253,6 +253,7 @@ namespace GerberLibrary.Core
 
         bool shapecache = false;
         public List<Triangle> ShapeCacheTriangles = new List<Triangle>();
+        public bool Generated = false;
 
         public void BuildShapeCache()
         {

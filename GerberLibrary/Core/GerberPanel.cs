@@ -2185,9 +2185,25 @@ namespace GerberLibrary
                         {
                             string ext = Path.GetExtension(f).ToLower();
                             string Filename = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
-
-                            GerberTransposer.Transform(f, Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
+                            string sourcefile = f;
+                            string tempfile = "";
+                            if (ClipToOutlines)
+                            {
+                                BoardSide Side = BoardSide.Unknown;
+                                BoardLayer Layer = BoardLayer.Unknown;
+                                Gerber.DetermineBoardSideAndLayer(f, out Side, out Layer);
+                                if (Layer == BoardLayer.Silk)
+                                {
+                                    tempfile = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
+                                    GerberImageCreator GIC2 = new GerberImageCreator();
+                                    GIC2.AddBoardsToSet(FileList);
+                                    GIC2.ClipBoard(f, tempfile,Logger);
+                                    sourcefile = tempfile;
+                                }
+                            }
+                            GerberTransposer.Transform(sourcefile, Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
                             GeneratedFiles.Add(Filename);
+                            if (tempfile.Length > 0) File.Delete(tempfile);
                         }
                         catch (Exception E)
                         {

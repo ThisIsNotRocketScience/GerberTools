@@ -45,8 +45,17 @@ namespace GerberLibrary
             {
                 log.AddString(String.Format("file {0} not loaded - not clipping!", infile));
             }
+            
+           
 
-            var ols = (from a in PLSs where a.Side == BoardSide.Both && a.Layer == BoardLayer.Outline select a).ToList();
+            var ols = (from a in PLSs where (a.Side == BoardSide.Both && (a.Layer == BoardLayer.Outline || a.Layer == BoardLayer.Mill) && a.Generated == false) select a).ToList();
+
+            if (IsInPolygons(toclip, ols) == true)
+            {
+                File.Copy(infile, outputfile);
+                log.AddString("file not clipped - just copied");
+                return;
+            }
 
             GerberArtWriter GAW = new GerberArtWriter();
             
@@ -56,7 +65,20 @@ namespace GerberLibrary
                 foreach(var ol in ols)
                 {
                     var R = ol.FindLargestPolygon();
-                    CP.AddPolygon(R.Item2.toPolygon(), ClipperLib.PolyType.ptClip);
+
+                    var poly = R.Item2.toPolygon();
+
+                    if (ClipperLib.Clipper.Orientation(poly) == false)
+                    {
+                        Console.WriteLine("pos");
+                    }
+                    else
+                    {
+                        poly.Reverse();
+                        Console.WriteLine("neg");
+                    }
+
+                        CP.AddPolygon(poly, ClipperLib.PolyType.ptClip);
                 }
                 CP.AddPolygon(a.toPolygon(), ClipperLib.PolyType.ptSubject);
                 List<List<ClipperLib.IntPoint>> solution = new List<List<ClipperLib.IntPoint>>();
@@ -72,6 +94,29 @@ namespace GerberLibrary
             }
 
             GAW.Write(outputfile);
+        }
+
+        private bool IsInPolygons(ParsedGerber toclip, List<ParsedGerber> ols)
+        {
+            foreach (var o in ols)
+            {
+                foreach (var oo in o.DisplayShapes)
+                {
+                    foreach (var p in toclip.DisplayShapes)
+                    {
+                        foreach (var pt in p.Vertices)
+                        {
+                            if (Helpers.IsInPolygon(oo.Vertices, pt) == false)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true;
+
         }
 
         public int Count()
@@ -245,7 +290,10 @@ namespace GerberLibrary
                         precombinepolygons = true;
                     }
                     State.PreCombinePolygons = precombinepolygons;
-
+                    if (Layer == BoardLayer.Silk)
+                    {
+                        State.IgnoreZeroWidth = true;
+                    }
                     PLS = PolyLineSet.LoadGerberFileFromStream(new StreamReader(MS), _originalfilename, forcezerowidth, false, State);
                     MS.Seek(0, SeekOrigin.Begin);
 
@@ -307,6 +355,7 @@ namespace GerberLibrary
            // Box.Vertices.Reverse();
             ParsedGerber PLS = new ParsedGerber();
             PLS.Name = "Generated BoundingBox";
+            PLS.Generated = true;
             PLS.DisplayShapes.Add(Box);
             PLS.OutlineShapes.Add(Box);
             PLS.Shapes.Add(Box);
