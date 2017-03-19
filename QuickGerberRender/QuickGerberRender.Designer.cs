@@ -38,6 +38,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.splitter1 = new System.Windows.Forms.Splitter();
+            this.label1 = new System.Windows.Forms.Label();
+            this.TracesBox = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -50,6 +52,8 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.Controls.Add(this.TracesBox, 0, 3);
+            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.CopperColor, 2, 1);
             this.tableLayoutPanel1.Controls.Add(this.SilkScreenColor, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.SolderMaskColor, 0, 1);
@@ -57,12 +61,14 @@
             this.tableLayoutPanel1.Controls.Add(this.label3, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.label2, 0, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 190);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 203);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 2;
+            this.tableLayoutPanel1.RowCount = 4;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 43F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(607, 78);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 45F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 37F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 49F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(607, 166);
             this.tableLayoutPanel1.TabIndex = 5;
             // 
             // CopperColor
@@ -151,11 +157,35 @@
             // 
             this.splitter1.Cursor = System.Windows.Forms.Cursors.HSplit;
             this.splitter1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.splitter1.Location = new System.Drawing.Point(0, 178);
+            this.splitter1.Location = new System.Drawing.Point(0, 191);
             this.splitter1.Name = "splitter1";
             this.splitter1.Size = new System.Drawing.Size(607, 12);
             this.splitter1.TabIndex = 7;
             this.splitter1.TabStop = false;
+            // 
+            // label1
+            // 
+            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label1.Location = new System.Drawing.Point(8, 88);
+            this.label1.Margin = new System.Windows.Forms.Padding(8);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(186, 21);
+            this.label1.TabIndex = 11;
+            this.label1.Text = "Traces";
+            // 
+            // TracesBox
+            // 
+            this.TracesBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TracesBox.FormattingEnabled = true;
+            this.TracesBox.Items.AddRange(new object[] {
+            "Auto"});
+            this.TracesBox.Location = new System.Drawing.Point(8, 125);
+            this.TracesBox.Margin = new System.Windows.Forms.Padding(8);
+            this.TracesBox.Name = "TracesBox";
+            this.TracesBox.Size = new System.Drawing.Size(186, 24);
+            this.TracesBox.TabIndex = 12;
+            this.TracesBox.Text = "Auto";
+            this.TracesBox.SelectedIndexChanged += new System.EventHandler(this.TracesBox_SelectedIndexChanged);
             // 
             // QuickGerberRender
             // 
@@ -163,7 +193,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(607, 268);
+            this.ClientSize = new System.Drawing.Size(607, 369);
             this.Controls.Add(this.splitter1);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.pictureBox1);
@@ -188,6 +218,8 @@
         private System.Windows.Forms.ComboBox CopperColor;
         private System.Windows.Forms.ComboBox SilkScreenColor;
         private System.Windows.Forms.Splitter splitter1;
+        private System.Windows.Forms.ComboBox TracesBox;
+        private System.Windows.Forms.Label label1;
     }
 }
 

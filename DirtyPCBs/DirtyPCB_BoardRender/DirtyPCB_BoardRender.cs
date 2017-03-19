@@ -126,6 +126,8 @@ namespace DirtyPCB_BoardRender
 
                 BoardRenderColorSet Colors = new BoardRenderColorSet();
                 Colors.BoardRenderColor = TheSettings.SolderMaskColor;
+                Colors.BoardRenderTraceColor = TheSettings.SolderMaskColor;
+
                 Colors.BoardRenderSilkColor = TheSettings.SilkScreenColor;
                 Colors.BoardRenderPadColor = TheSettings.CopperColor;
                 GIC.AddBoardsToSet(InputFiles.ToList());

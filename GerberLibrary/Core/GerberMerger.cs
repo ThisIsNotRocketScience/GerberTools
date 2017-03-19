@@ -13,7 +13,7 @@ namespace GerberLibrary
     {
         public static void MergeAll(List<string> Files, string output, ProgressLog Log)
         {
-            if (Files.Count > 8)
+            if (Files.Count > 2)
             {
                 MultiMerge(Files[0], Files.Skip(1).ToList(), output, Log);
                 return;

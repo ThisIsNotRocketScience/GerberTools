@@ -386,6 +386,7 @@ namespace GerberLibrary.Core
                     }
                     else
                     {
+                        Res.Add(Paths[i]);
                         Console.WriteLine("{4}: {0} out of {1}/{2}/{3}", nearcount, max, Paths[i].Vertices.Count, (Paths[i].Vertices.Count * 90) / 100, i);
                         Console.WriteLine("{0}: skipped!", i);
                     }

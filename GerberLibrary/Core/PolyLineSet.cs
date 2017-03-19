@@ -26,7 +26,7 @@ namespace GerberLibrary
             string r = "";
             foreach (var a in Vertices)
                 r += a.ToString() + "  ";
-            return string.Format("closed: {0} verts: ({1} {2}) ({3} {4})", Closed, r[0], r[1], r[Vertices.Count()-2], r[Vertices.Count() - 1] );
+            return string.Format("closed: {0} verts: ({1} {2}) ({3} {4})", Closed, Vertices[0], Vertices[1], Vertices[Vertices.Count()-2], Vertices[Vertices.Count() - 1] );
         }
     }
     public class GerberParserState
@@ -204,7 +204,6 @@ namespace GerberLibrary
             return Res;
         }
 
-
         public static ParsedGerber LoadExcellonDrillFileFromStream(StreamReader s, string origfilename, bool Precombine = false, double drillscaler = 1.0)
         {
             ParsedGerber Gerb = new ParsedGerber();
@@ -274,7 +273,6 @@ namespace GerberLibrary
             return Gerb;
 
         }
-
 
         public static ParsedGerber LoadExcellonDrillFile(string drillfile, bool Precombine = false, double drillscaler = 1.0)
         {
@@ -828,7 +826,7 @@ namespace GerberLibrary
             return lines;
         }
 
-        public void Normalize(ParsedGerber gerb)
+        public static void Normalize(ParsedGerber gerb)
         {
             gerb.Normalize();
         }
@@ -1771,7 +1769,7 @@ namespace GerberLibrary
         {
             if (State.Repeater == true) DoRepeating(State);
 
-            State.Repeater = true;
+            State.Repeater = (Xcount * Ycount > 1) ?  true: false;
             State.RepeatXCount = Xcount;
             State.RepeatYCount = Ycount;
             State.RepeatXOff = Xoff;
@@ -1952,13 +1950,13 @@ namespace GerberLibrary
                 return B;
             }
         }
-        //      public GerberParserState State = new GerberParserState();
-
+        
         public class GerberBlock
         {
             public bool Header;
             public List<string> Lines = new List<string>();
         }
+
         public class SegmentWithNormalAndDistance
         {
             public PointD A = new PointD();

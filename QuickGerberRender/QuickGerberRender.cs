@@ -19,6 +19,7 @@ namespace WindowsFormsApplication1
 
             SilkScreenColor.Items.Add("White");
             SilkScreenColor.Items.Add("Black");
+
             SolderMaskColor.Items.Add("Red");
             SolderMaskColor.Items.Add("Green");
             SolderMaskColor.Items.Add("Blue");
@@ -26,6 +27,17 @@ namespace WindowsFormsApplication1
             SolderMaskColor.Items.Add("Black");
             SolderMaskColor.Items.Add("White");
             SolderMaskColor.Items.Add("Purple");
+
+            TracesBox.Items.Add("Auto");
+            TracesBox.Items.Add("Red");
+            TracesBox.Items.Add("Green");
+            TracesBox.Items.Add("Blue");
+            TracesBox.Items.Add("Yellow");
+            TracesBox.Items.Add("Black");
+            TracesBox.Items.Add("White");
+            TracesBox.Items.Add("Purple");
+
+            
             CopperColor.Items.Add("Silver");
             CopperColor.Items.Add("Gold");
             ReDoColor();
@@ -71,7 +83,7 @@ namespace WindowsFormsApplication1
 
         private void LoadGerberFolder(List<string> s)
         {
-            Progress P = new Progress(s, SolderMaskColor.Text, SilkScreenColor.Text, CopperColor.Text);
+            Progress P = new Progress(s, SolderMaskColor.Text, SilkScreenColor.Text, CopperColor.Text, TracesBox.Text);
             P.Show();
             P.StartThread();
         }
@@ -80,18 +92,22 @@ namespace WindowsFormsApplication1
         {
             e.Graphics.Clear(GerberLibrary.Gerber.ParseColor(SolderMaskColor.Text));
             var padcolor = GerberLibrary.Gerber.ParseColor(CopperColor.Text);
+            var tracecolor = GerberLibrary.Gerber.ParseColor(TracesBox.Text);
             int H = pictureBox1.Height;
             int W = pictureBox1.Width;
             StringFormat SF = new StringFormat();
             SF.Alignment = StringAlignment.Center;
             SF.LineAlignment = StringAlignment.Center;
             e.Graphics.DrawString("Drop your gerber folder here!", new Font("Arial", 20), new SolidBrush(GerberLibrary.Gerber.ParseColor(SilkScreenColor.Text)), W / 2.0f, H / 2.0f, SF);
+            int Y1 = H / 2 + 20;
+            int Y2 = H / 2 - 20;
+            e.Graphics.DrawLine(new Pen(tracecolor, 4), W / 4, Y1, (W * 3) / 4, Y1);
+            e.Graphics.DrawLine(new Pen(tracecolor, 4), W / 4,Y2, (W * 3) / 4, Y2);
 
             for (int i =0;i< 10;i++)
             {
                 int X = W / 2 + (i-5) * 30;
-                int Y1 = H / 2 + 20;
-                int Y2 = H / 2 - 20;
+               
                 Rectangle R = new Rectangle(X - 5, Y1 - 5, 10, 10);
                 Rectangle R2 = new Rectangle(X - 2, Y1 - 2, 4, 4);
                 e.Graphics.FillEllipse(new SolidBrush(padcolor), R);
@@ -152,6 +168,11 @@ namespace WindowsFormsApplication1
         private void label4_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void TracesBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ReDoColor();
         }
     }
 }

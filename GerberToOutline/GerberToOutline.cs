@@ -57,7 +57,7 @@ namespace GerberToOutline
                     precombinepolygons = true;
                 }
                 State.PreCombinePolygons = precombinepolygons;
-
+                
                 PLS = PolyLineSet.LoadGerberFile(infile, forcezerowidth, false, State);
                 PLS.Side = State.Side;
                 PLS.Layer = State.Layer;

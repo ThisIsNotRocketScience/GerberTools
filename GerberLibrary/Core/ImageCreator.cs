@@ -284,7 +284,7 @@ namespace GerberLibrary
                     BoardSide Side = BoardSide.Unknown;
                     BoardLayer Layer = BoardLayer.Unknown;
                     Gerber.DetermineBoardSideAndLayer(_originalfilename, out Side, out Layer);
-                    if (Layer == BoardLayer.Outline)
+                    if (Layer == BoardLayer.Outline || Layer == BoardLayer.Mill)
                     {
                         forcezerowidth = true;
                         precombinepolygons = true;
@@ -1067,7 +1067,10 @@ namespace GerberLibrary
 
                             Color S = Colors.BoardRenderColor;
 
-
+                            if (Cop.A > 0)
+                            {
+                                S = MathHelpers.Interpolate(S, Colors.BoardRenderTraceColor, Cop.A / 255);
+                            }
 
                             newC = Color.FromArgb(O.A,
                                 (byte)Math.Round(O.R * OA2 + S.R * IOA),

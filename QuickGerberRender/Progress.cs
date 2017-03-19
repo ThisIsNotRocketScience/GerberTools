@@ -20,11 +20,14 @@ namespace WindowsFormsApplication1
         string SolderMaskColor;
         string SilkScreenColor;
         string CopperColor;
-        public Progress(List<string> s, string _SolderMaskColor, string _SilkScreenColor, string _CopperColor)
+        string TracesColor;
+        public Progress(List<string> s, string _SolderMaskColor, string _SilkScreenColor, string _CopperColor, string  _tracescolor)
         {
             SolderMaskColor = _SolderMaskColor;
             SilkScreenColor = _SilkScreenColor;
             CopperColor = _CopperColor;
+            if (_tracescolor.ToLower() == "auto") _tracescolor = SolderMaskColor;
+            TracesColor = _tracescolor;
 
             InitializeComponent();
             progressBar1.Value = 0;
@@ -47,6 +50,7 @@ namespace WindowsFormsApplication1
             Colors.BoardRenderColor = GerberLibrary.Gerber.ParseColor(SolderMaskColor);
             Colors.BoardRenderSilkColor = GerberLibrary.Gerber.ParseColor(SilkScreenColor);
             Colors.BoardRenderPadColor = GerberLibrary.Gerber.ParseColor(CopperColor);
+            Colors.BoardRenderTraceColor = GerberLibrary.Gerber.ParseColor(TracesColor);
             SetProgress("Image generation started", -1);
             GIC.SetColors(Colors);
 

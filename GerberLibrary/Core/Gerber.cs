@@ -24,6 +24,8 @@ namespace GerberLibrary
         public Color BoardRenderSilkColor = Gerber.ParseColor("white");
 
         public Color BackgroundColor = Color.FromArgb(10,10,40);
+        public Color BoardRenderTraceColor = Gerber.ParseColor("green");
+
         public Color GetDefaultColor(BoardLayer layer, BoardSide side)
         {
             switch(layer)
