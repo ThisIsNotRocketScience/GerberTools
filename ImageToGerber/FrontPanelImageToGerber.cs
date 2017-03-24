@@ -42,6 +42,10 @@ namespace ImageToGerber
             string basename = a.Substring(0, a.Length - 4);
 
             string png = basename + "Silk.png";
+            if (back)
+            {
+                png = basename + "BottomSilk.png";
+            }
             string goldpng = basename + "Gold.png";
 
             Bitmap B = (Bitmap)Image.FromFile(png);
