@@ -216,11 +216,17 @@ namespace GerberLibrary
                 }
                 else
                 {
-                    MemoryStream MS2 = new MemoryStream();
-                    FileStream FS = File.OpenRead(a);
-                    FS.CopyTo(MS2);
-                    MS2.Seek(0, SeekOrigin.Begin);
-                    AddFileToSet(MS2, a, Logger);
+                    try
+                    {
+                        MemoryStream MS2 = new MemoryStream();
+                        FileStream FS = File.OpenRead(a);
+                        FS.CopyTo(MS2);
+                        MS2.Seek(0, SeekOrigin.Begin);
+                        AddFileToSet(MS2, a, Logger);
+                    }catch(Exception E)
+                    {
+                        Logger.AddString(String.Format("Failed to add file! {0}", a));
+                    }
                 }
             }
 
@@ -1282,6 +1288,7 @@ namespace GerberLibrary
 
         private void FixEagleDrillExportIssues(ProgressLog Logger)
         {
+            if (Gerber.SkipEagleDrillFix == true) { Logger.AddString("skipping eagle fix"); return; };
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<Tuple<double, ParsedGerber>> DrillFilesToReload = new List<Tuple<double, ParsedGerber>>();
             PolyLineSet.Bounds BB = new PolyLineSet.Bounds();

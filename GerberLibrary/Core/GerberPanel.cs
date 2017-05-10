@@ -2125,7 +2125,7 @@ namespace GerberLibrary
                         }
                     }
 
-                    AddFilesForInstance(p,a.Center.X, a.Center.Y, a.Angle, FileList, instanceID, GeneratedFiles, outline, Logger);
+                    instanceID = AddFilesForInstance(p,a.Center.X, a.Center.Y, a.Angle, FileList, instanceID, GeneratedFiles, outline, Logger);
 
 
                     instanceID++;
@@ -2145,7 +2145,7 @@ namespace GerberLibrary
             return GeneratedFiles;
         }
 
-        private void AddFilesForInstance(string p, double x, double y, double angle, List<string> FileList, int isntid, List<string> GeneratedFiles, GerberOutline outline, ProgressLog Logger)
+        private int AddFilesForInstance(string p, double x, double y, double angle, List<string> FileList, int isntid, List<string> GeneratedFiles, GerberOutline outline, ProgressLog Logger)
         {
 
             GerberImageCreator GIC = new GerberImageCreator();
@@ -2218,6 +2218,7 @@ namespace GerberLibrary
                 }
 
             }
+            return isntid;
         }
 
         internal void ClearTransformedOutlines()

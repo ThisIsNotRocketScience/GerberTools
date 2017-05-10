@@ -19,6 +19,7 @@ namespace DirtyPCB_BoardRender
             SolderMask,
             SilkScreen,
             Copper,
+            SkipFix,
             None,
             TimeOut
         }
@@ -50,6 +51,7 @@ namespace DirtyPCB_BoardRender
                 Console.WriteLine("\t[--silkscreen_color {white, black}]");
                 Console.WriteLine("\t[--copper_color {silver, gold}]");
                 Console.WriteLine("\t[--timeout {seconds}]");
+                Console.WriteLine("\t[--skipeaglefix]");
                 Console.WriteLine("\tinput_path");
                 Console.WriteLine("\toutput_directory");
 
@@ -73,6 +75,7 @@ namespace DirtyPCB_BoardRender
                             case "--copper_color": NextArg = Arguments.Copper; break;
                             case "--soldermask_color": NextArg = Arguments.SolderMask; break;
                             case "--timeout": NextArg = Arguments.TimeOut; break;
+                            case "--skipeaglefix": NextArg = Arguments.None; Gerber.SkipEagleDrillFix = true; break;
                         }
                         break;
                 }
