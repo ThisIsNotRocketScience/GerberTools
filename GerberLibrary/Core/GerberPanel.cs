@@ -1315,7 +1315,7 @@ namespace GerberLibrary
                         C = C.Rotate(-b.Angle);
                         var Box2 = a.TheGerber.BoundingBox.Grow(t.Radius * 2);
 
-                        if (Box2.Contains(C))
+                        if (Box2.Contains(C) || b.GerberPath.Contains("???_negative") == true)
                         {
                             //Console.WriteLine("{0},{1}", a.TheGerber.BoundingBox, C);
 
