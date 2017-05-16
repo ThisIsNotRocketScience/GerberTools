@@ -345,6 +345,7 @@ namespace GerberLibrary
                     break;
 
                 case "gml":
+                case "gm1":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Mill;
                     break;
