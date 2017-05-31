@@ -120,8 +120,6 @@ namespace GerberLibrary
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
             ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false });
 
-            int ApertureOffset = 0;
-            if (File1Parsed.State.Apertures.Count > 0) ApertureOffset = File1Parsed.State.Apertures.Keys.Max() + 1;
                         
                    
             
@@ -163,14 +161,22 @@ namespace GerberLibrary
                     OutputLines.Add(a.Value.BuildGerber(GNF, 0).Trim());
                 }
             }
-           
+
+            CheckAllApertures(File1Parsed, File1Lines, Log);
+
             foreach (var a in File1Parsed.State.Apertures)
             {
                 OutputLines.Add(a.Value.BuildGerber(GNF));
             }
+            
+            int ApertureOffset = 0;
+            if (File1Parsed.State.Apertures.Count > 0) ApertureOffset = File1Parsed.State.Apertures.Keys.Max() + 1;
+
+
             int LastID = ApertureOffset + 10;
             foreach (var fileparsed in OtherFiles)
             {
+                CheckAllApertures(fileparsed, fileparsed.OriginalLines, Log);
 
                 foreach (var a in fileparsed.State.Apertures)
                 {
@@ -231,6 +237,7 @@ namespace GerberLibrary
                                 {
                                     if (GS.Has("D") && GS.Get("D") > 3)
                                     {
+
                                         OutputLines.Add(CurrentLine);
                                     }
                                 }
@@ -612,6 +619,62 @@ namespace GerberLibrary
             Gerber.WriteAllLines(output, PolyLineSet.SanitizeInputLines(OutputLines));
         }
 
+        private static void CheckAllApertures(ParsedGerber file1Parsed, List<string> File1Lines, ProgressLog Log)
+        {
+            
+            for (int i = 0; i < File1Lines.Count; i++)
+            {
+                string CurrentLine = File1Lines[i];
+                if (CurrentLine.Length == 0) continue;
+
+                try
+                {
+                    GCodeCommand GCC = new GCodeCommand();
+                    GCC.Decode(CurrentLine, file1Parsed.State.CoordinateFormat);
+
+                    switch (CurrentLine[0])
+                    {
+                        case 'G': // machine status commands and interpolations?
+                            {
+                                GerberSplitter GS = new GerberSplitter();
+                                GS.Split(GCC.originalline, file1Parsed.State.CoordinateFormat);
+                                if ((int)GS.Get("G") == 54)
+                                {
+                                    if (GS.Has("D") && GS.Get("D") > 3)
+                                    {
+                                        int ApertureID = (int)GS.Get("D");
+                                        if (file1Parsed.State.Apertures.ContainsKey(ApertureID) == false)
+                                        {
+                                            Log.AddString(String.Format("ERROR: Undefined aperture D{1} found in line {0}", i, ApertureID));
+                                            var GAT = new GerberApertureType() { ID = ApertureID }; ;
+                                            GAT.SetCircle(0);
+                                            file1Parsed.State.Apertures[ApertureID] = GAT;
+                                        }
+
+                                    }
+
+                                }
+                            }break;
+                        case 'D':
+                            {
+                                GerberSplitter GS = new GerberSplitter();
+                                GS.Split(GCC.originalline, file1Parsed.State.CoordinateFormat);
+                                if (GS.Has("D") && GS.Get("D") > 3)
+                                {
+                                    int ApertureID = (int)GS.Get("D");
+                                    if (file1Parsed.State.Apertures.ContainsKey(ApertureID) == false)
+                                    {
+                                        var GAT = new GerberApertureType() { ID = ApertureID }; ;
+                                        GAT.SetCircle(0);
+                                        file1Parsed.State.Apertures[ApertureID] = GAT;
+                                    }
+                                }
+                            }break;
+                    }
+                }
+                catch (Exception) { }
+            }
+        }
 
         public static void Merge(string file1, string file2, string output, ProgressLog Log)
         {
@@ -637,7 +700,10 @@ namespace GerberLibrary
             List<string> File2Lines = File.ReadAllLines(file2).ToList();
             File2Lines = PolyLineSet.SanitizeInputLines(File2Lines);
             ParsedGerber File2Parsed = PolyLineSet.ParseGerber274x(File2Lines, true, false, new GerberParserState() { PreCombinePolygons = false });
-            
+
+            CheckAllApertures(File1Parsed, File1Lines, Log);
+            CheckAllApertures(File2Parsed, File2Lines, Log);
+
             int ApertureOffset = 0;
             if (File1Parsed.State.Apertures.Count > 0) ApertureOffset = File1Parsed.State.Apertures.Keys.Max() + 1;
 
