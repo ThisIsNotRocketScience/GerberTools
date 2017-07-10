@@ -51,6 +51,7 @@
             this.label11 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.ClipToOutlines = new System.Windows.Forms.CheckBox();
+            this.noMouseBites = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.WidthBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MarginBox)).BeginInit();
@@ -157,7 +158,7 @@
             this.button1.TabIndex = 6;
             this.button1.Text = "Ok";
             this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button1.Click += new System.EventHandler(this.OkButton);
             // 
             // button2
             // 
@@ -168,7 +169,7 @@
             this.button2.TabIndex = 7;
             this.button2.Text = "Cancel";
             this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.button2.Click += new System.EventHandler(this.CancelButtonPress);
             // 
             // FillEmpty
             // 
@@ -355,6 +356,17 @@
             this.ClipToOutlines.Text = "Clip to board outlines";
             this.ClipToOutlines.UseVisualStyleBackColor = true;
             // 
+            // noMouseBites
+            // 
+            this.noMouseBites.AutoSize = true;
+            this.noMouseBites.Location = new System.Drawing.Point(187, 288);
+            this.noMouseBites.Name = "noMouseBites";
+            this.noMouseBites.Size = new System.Drawing.Size(209, 21);
+            this.noMouseBites.TabIndex = 25;
+            this.noMouseBites.Text = "Do not generate mousebites";
+            this.noMouseBites.UseVisualStyleBackColor = true;
+            this.noMouseBites.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
             // PanelProperties
             // 
             this.AcceptButton = this.button1;
@@ -362,6 +374,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.button2;
             this.ClientSize = new System.Drawing.Size(419, 401);
+            this.Controls.Add(this.noMouseBites);
             this.Controls.Add(this.ClipToOutlines);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.label11);
@@ -422,5 +435,6 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.CheckBox ClipToOutlines;
+        private System.Windows.Forms.CheckBox noMouseBites;
     }
 }

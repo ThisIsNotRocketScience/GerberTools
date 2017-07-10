@@ -2071,6 +2071,8 @@ namespace GerberLibrary
         public bool ClipToOutlines = true;
         public string LastExportFolder = "";
 
+        public bool DoNotGenerateMouseBites { get; set; }
+
         public List<string> SaveTo(string p, Dictionary<string, GerberOutline> GerberOutlines, ProgressLog Logger)
         {
             LastExportFolder = p;

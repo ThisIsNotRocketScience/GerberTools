@@ -23,15 +23,16 @@ namespace ImageToGerber
                     var F = System.IO.Directory.GetFiles(args[0], "*.gko" );
                     foreach (var a in F)
                     {
-                       // try
-                        {
+                        string basename = a.Substring(0, a.Length - 4);
+                        string front = basename + "Silk.png";
+                        string back = basename + "BottomSilk.png";
+                        if (System.IO.File.Exists(front)) ConvertFile(a, false);
+                        if (System.IO.File.Exists(back)) ConvertFile(a, true);
 
-                            ConvertFile(a, backside);
-                        }
-                       // catch(Exception E)
-                        {
-                         //   Console.WriteLine("error! {0}", E.Message);
-                        }
+                        GerberImageCreator GIC = new GerberImageCreator();
+                        GIC.AddBoardsToSet(System.IO.Directory.GetFiles(basename).ToList());
+                        GIC.WriteImageFiles(basename + "/render");
+
                     }
                 }
             }
@@ -42,11 +43,12 @@ namespace ImageToGerber
             string basename = a.Substring(0, a.Length - 4);
 
             string png = basename + "Silk.png";
+            string goldpng = basename + "Gold.png";
             if (back)
             {
                 png = basename + "BottomSilk.png";
+                goldpng = basename + "BottomGold.png";
             }
-            string goldpng = basename + "Gold.png";
 
             Bitmap B = (Bitmap)Image.FromFile(png);
             Bitmap B2 = null;
@@ -146,9 +148,7 @@ namespace ImageToGerber
 
                 GerberLibrary.ArtWork.Functions.WriteBitmapToGerber(p, PLS, Res, B, -128);
 
-                GerberImageCreator GIC = new GerberImageCreator();
-                GIC.AddBoardsToSet(System.IO.Directory.GetFiles(basename).ToList());
-                GIC.WriteImageFiles(basename + "/render");
+               
             }
         }
     }

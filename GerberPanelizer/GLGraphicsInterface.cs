@@ -179,7 +179,18 @@ namespace GerberCombinerBuilder
             }
         }
 
-        public bool Dotted { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool Dotted
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         public static QuickFont.QFont Font;
         public void DrawString(PointD pos, string text, double scale, bool center, float r = 0.2f, float g = 0.2f, float b = 0.2f, float a = 1.0f)

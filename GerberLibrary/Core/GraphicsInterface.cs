@@ -30,7 +30,7 @@ namespace GerberLibrary.Core
         void DrawImage(Bitmap MMGrid, float p1, float p2, float p3, float p4);
 
         System.Drawing.Drawing2D.InterpolationMode InterpolationMode { get; set; }
-
+            
         void TranslateTransform(float p1, float p2);
 
         void DrawLines(Pen P, PointF[] Points);
