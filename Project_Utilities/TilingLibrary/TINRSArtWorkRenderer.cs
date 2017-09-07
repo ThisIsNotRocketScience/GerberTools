@@ -346,7 +346,7 @@ namespace Artwork
             {
                 if (Clear) G.Clear(BG);
                 PointF[] ThePoints = new PointF[3] { new PointF(), new PointF(), new PointF() };
-
+                Pen P = new Pen(FG, linewidth);
                 for (int j = 0; j < SubDivPoly.Count; j++)
                 {
                     var a = SubDivPoly[j];
@@ -355,7 +355,7 @@ namespace Artwork
                         ThePoints[i].X = (float)a.Vertices[i].x;
                         ThePoints[i].Y = (float)a.Vertices[i].y;
                     }
-                    G.DrawPolygon(new Pen(FG, linewidth), ThePoints.ToArray());
+                    G.DrawPolygon(P, ThePoints);
                 }
             }
         }
