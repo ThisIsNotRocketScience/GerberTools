@@ -1528,7 +1528,7 @@ namespace GerberLibrary
         {
             List<string> R = new List<string>();
             string DrillFile = Path.Combine(p, "tabdrills.TXT");
-            string OutlineFile = Path.Combine(p, combinedfilename + ".GKO");
+            string OutlineFile = Path.Combine(p, combinedfilename + ".gko");
             R.Add(DrillFile);
             //  R.Add(OutlineFile);
             ExcellonFile EF = new ExcellonFile();
