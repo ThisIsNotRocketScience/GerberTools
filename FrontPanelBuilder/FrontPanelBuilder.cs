@@ -1,41 +1,23 @@
-﻿using System;
+﻿using GerberLibrary;
+using GerberLibrary.Core;
+using GerberLibrary.Core.Primitives;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GerberLibrary;
-using GerberLibrary.Core.Primitives;
-using GerberLibrary.Core;
+using System.Windows.Forms;
 
-namespace ImageToGerber
+namespace FrontPanelBuilder
 {
-    class FrontPanelImageToGerber
+    public partial class FrontPanelBuilder : Form
     {
-        static void Main(string[] args)
+        public FrontPanelBuilder()
         {
-            if (args.Count() >= 1)
-            {
-                bool backside = false;
-                if (args.Count() > 1) backside = true;
-                if (System.IO.Directory.Exists(args[0]))
-                {
-                    var F = System.IO.Directory.GetFiles(args[0], "*.gko" );
-                    foreach (var a in F)
-                    {
-                        string basename = a.Substring(0, a.Length - 4);
-                        string front = basename + "Silk.png";
-                        string back = basename + "BottomSilk.png";
-                        if (System.IO.File.Exists(front)) ConvertFile(a, false);
-                        if (System.IO.File.Exists(back)) ConvertFile(a, true);
-
-                        GerberImageCreator GIC = new GerberImageCreator();
-                        GIC.AddBoardsToSet(System.IO.Directory.GetFiles(basename).ToList());
-                        GIC.WriteImageFiles(basename + "/render");
-
-                    }
-                }
-            }
+            InitializeComponent();
         }
 
         private static void ConvertFile(string a, bool back)
@@ -59,7 +41,7 @@ namespace ImageToGerber
             {
                 System.IO.Directory.CreateDirectory(basename);
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
@@ -73,14 +55,14 @@ namespace ImageToGerber
                 gko = pnl;
             }
 
-            string newgko = basename + "\\" + System.IO.Path.GetFileNameWithoutExtension(a) + ".gko" ; ;
+            string newgko = basename + "\\" + System.IO.Path.GetFileNameWithoutExtension(a) + ".gko"; ;
 
             if (System.IO.File.Exists(gko))
             {
                 System.IO.File.Copy(gko, newgko, true);
-            
+
             }
-                
+
             System.IO.File.Copy(a, newa, true);
             a = newa;
 
@@ -89,7 +71,7 @@ namespace ImageToGerber
             if (back) B.RotateFlip(RotateFlipType.RotateNoneFlipX);
             B.RotateFlip(RotateFlipType.RotateNoneFlipY);
             if (B2 != null) B2.RotateFlip(RotateFlipType.RotateNoneFlipY);
-            if (B != null) 
+            if (B != null)
             {
                 double Res = 200.0 / 25.4;
 
@@ -99,16 +81,16 @@ namespace ImageToGerber
                 {
                     PLS = PolyLineSet.LoadGerberFile(f);
 
-                
-                    string bottomcopper= basename + "/bottomcopper.gbl";
+
+                    string bottomcopper = basename + "/bottomcopper.gbl";
                     string topcopper = basename + "/topcopper.gtl";
-                    string bottomsoldermask= basename + "/bottomsoldermask.gbs";
-                    string topsoldermask= basename + "/topsoldermask.gts";
+                    string bottomsoldermask = basename + "/bottomsoldermask.gbs";
+                    string topsoldermask = basename + "/topsoldermask.gts";
                     string bottomsilk = basename + "/bottomsilk.gbo";
                     if (back) bottomsilk = basename + "/topsilk.gto";
                     GerberArtWriter GAW3 = new GerberLibrary.GerberArtWriter();
                     GAW3.Write(topsoldermask);
-                    
+
                     GerberArtWriter GAW = new GerberLibrary.GerberArtWriter();
                     PolyLine PL = new PolyLine();
                     PL.Add(PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.TopLeft.Y);
@@ -146,14 +128,14 @@ namespace ImageToGerber
                     {
                         GAW2.Write(topcopper);
                     }
-                    
+
 
 
                 }
 
                 GerberLibrary.ArtWork.Functions.WriteBitmapToGerber(p, PLS, Res, B, -128);
 
-               
+
             }
         }
     }
