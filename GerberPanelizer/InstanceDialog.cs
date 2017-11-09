@@ -24,6 +24,7 @@ namespace GerberCombinerBuilder
         public void UpdateBoxes(GerberPanelize newTarget)
         {
             TargetInstance = newTarget;
+			this.Visible = true;
 
             if (TargetInstance == null || TargetInstance.SelectedInstance == null) { panel1.Enabled = false; return; } else { panel1.Enabled = true; }
             newTarget.SuspendRedraw = true;
