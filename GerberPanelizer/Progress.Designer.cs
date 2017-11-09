@@ -85,7 +85,7 @@
             this.ClientSize = new System.Drawing.Size(460, 299);
             this.ControlBox = false;
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.Icon = new System.Drawing.Icon("GerberPanelizer.ico");
             this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "Progress";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;

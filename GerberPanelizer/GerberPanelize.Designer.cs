@@ -364,7 +364,7 @@
             // 
             // RotateRightHover
             // 
-            this.RotateRightHover.Image = global::GerberCombinerBuilder.Properties.Resources.RotateRight;
+			this.RotateRightHover.Image = new System.Drawing.Bitmap("Resources/RotateRight.jpg");
             this.RotateRightHover.Location = new System.Drawing.Point(319, 102);
             this.RotateRightHover.Name = "RotateRightHover";
             this.RotateRightHover.Size = new System.Drawing.Size(41, 41);
@@ -374,7 +374,7 @@
             // 
             // RotateLeftHover
             // 
-            this.RotateLeftHover.Image = global::GerberCombinerBuilder.Properties.Resources.RotateLeft;
+			this.RotateLeftHover.Image = new System.Drawing.Bitmap("Resources/RotateLeft.jpg");
             this.RotateLeftHover.Location = new System.Drawing.Point(214, 102);
             this.RotateLeftHover.Name = "RotateLeftHover";
             this.RotateLeftHover.Size = new System.Drawing.Size(41, 41);
