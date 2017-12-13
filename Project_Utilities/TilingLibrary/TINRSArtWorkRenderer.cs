@@ -221,9 +221,9 @@ namespace Artwork
             float BaseScale2 = 1.0f;
 
             // g.FillPath(new SolidBrush(Color.Teal), GP);
-             TheSettings = Rend.GetHashSettings(Label, huerange);
-          
-            RenderIconBackdrop(g, TheSettings.BackGroundColor,  TheSettings, x1, x2, y1, y2, 0, Rend);
+            TheSettings = Rend.GetHashSettings(Label, huerange);
+
+            RenderIconBackdrop(g, TheSettings.BackGroundColor, TheSettings, x1, x2, y1, y2, 0, Rend);
             Rend.DrawTiling(TheSettings, M, G3, Color.FromArgb(40, Color.Black), Color.Black, Math.Max(3, 4.5f * BaseScale2), false);
             Rend.DrawTiling(TheSettings, M, G3, TheSettings.BackgroundHighlight, Color.Black, Math.Max(1.4f, 3 * BaseScale2), false);
             Rend.DrawTiling(TheSettings, M, G3, Color.FromArgb(100, 255, 255, 0), Color.Black, Math.Max(1.0f, 1.4f * BaseScale2), false);
@@ -251,7 +251,7 @@ namespace Artwork
 
         }
 
-        private static void RenderIconBackdrop(Graphics g,Color C, Settings TheSettings, float x1, float x2, float y1, float y2, int offset, TINRSArtWorkRenderer R)
+        private static void RenderIconBackdrop(Graphics g, Color C, Settings TheSettings, float x1, float x2, float y1, float y2, int offset, TINRSArtWorkRenderer R)
         {
             R.TD.Create(TheSettings.TileType);
             var M = R.TD.NormalizeSize();
@@ -269,13 +269,13 @@ namespace Artwork
                 P.Add(new PointF((T.C.x - M.x) * w * s + w / 2, (T.C.y - M.y) * h * s + h / 2));
 
                 Matrix Mm = new Matrix();
-                Mm.RotateAt(360.0f *(float)TheSettings.Rand.NextDouble(), new PointF(w / 2, h / 2));
+                Mm.RotateAt(360.0f * (float)TheSettings.Rand.NextDouble(), new PointF(w / 2, h / 2));
                 var Pa = P.ToArray();
                 Mm.TransformPoints(Pa);
                 g.FillPolygon(new SolidBrush(C), Pa);
             }
 
-//            g.FillEllipse(new SolidBrush(C), new RectangleF(x1 + 7, y1 + 7 , x2 - x1, y2 - y1));
+            //            g.FillEllipse(new SolidBrush(C), new RectangleF(x1 + 7, y1 + 7 , x2 - x1, y2 - y1));
         }
 
         public static void SaveMultiIcon(string outputfile, string label, float huerange = -1)
@@ -362,7 +362,7 @@ namespace Artwork
 
         public static Color GetHashColor(string text)
         {
-             return MakeColor( HashHue(text));
+            return MakeColor(HashHue(text));
         }
 
         public static Color GetHashHighlight(string text)
@@ -391,7 +391,7 @@ namespace Artwork
             double H = 0;
             for (int i = 0; i < text.Length; i++)
             {
-                H += ((text[i] - 'A') % 26) * (360.0/26);
+                H += ((text[i] - 'A') % 26) * (360.0 / 26);
                 H = H % 360;
             }
 
@@ -541,6 +541,35 @@ namespace Artwork
                         P.AlterToFit(Mask.Width, Mask.Height);
                         DateTime rR = DateTime.Now;
                         SubDivPoly = TD.SubdivideAdaptive(P, TheSettings.MaxSubDiv, MaskTree);
+                        if (TheSettings.scalesmaller != 0)
+                        {
+                            float scaler = Math.Abs(TheSettings.scalesmaller);
+                            if (TheSettings.scalesmaller > 0)
+                            {
+                                scaler = scaler / 10.0f;
+                            }
+                            else
+                            {
+                                scaler = - scaler / 10.0f;
+                            }
+                            foreach (var A in SubDivPoly)
+                            {
+                                var M = A.Mid();
+                                var b0 = A.Vertices[0] - M;
+                                var b1 = A.Vertices[1] - M;
+                                var b2 = A.Vertices[2] - M;
+                                if (A.depth-TheSettings.scalesmallerlevel <= 1)
+                                {
+
+                                }
+                                else
+                                {
+                                    A.Vertices[0] = M + b0 * (1 + scaler * (1.0f / (A.depth-TheSettings.scalesmallerlevel)));
+                                    A.Vertices[1] = M + b1 * (1 + scaler * (1.0f / (A.depth- TheSettings.scalesmallerlevel)));
+                                    A.Vertices[2] = M + b2 * (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel)));
+                                }
+                            }
+                        }
                         var Elapsed = DateTime.Now - rR;
                         return (int)Elapsed.TotalMilliseconds;
                     }

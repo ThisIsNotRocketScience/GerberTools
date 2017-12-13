@@ -30,6 +30,8 @@ namespace Artwork
         public bool ReloadMask = false;
         public Color BackGroundColor = Color.Black;
         public Color BackgroundHighlight;
+        public int scalesmaller;
+        public int scalesmallerlevel;
     }
 
     public class Tiling
