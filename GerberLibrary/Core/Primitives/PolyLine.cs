@@ -129,6 +129,7 @@ namespace GerberLibrary.Core.Primitives
         public Color MyColor = Color.DarkGreen;
         public bool Thin = false;
         public bool ClearanceMode;
+        public int ID = -1;
         public double Width;
 
         public Color GetColor()
@@ -235,6 +236,25 @@ namespace GerberLibrary.Core.Primitives
 
             accumulatedArea *= 3f;
             return new PointD(centerX / accumulatedArea, centerY / accumulatedArea);
+        }
+
+        public PointD GetMidPoint()
+        {
+            double centerX = 0.0f;
+            double centerY = 0.0f;
+
+            for (int i = 0; i < Vertices.Count; i++)
+            {
+                centerX += (Vertices[i].X);
+                centerY += (Vertices[i].Y);
+            }
+
+            if(Vertices.Count== 0)
+            {
+                return new PointD(0, 0);
+            }
+            
+            return new PointD(centerX / (float)Vertices.Count, centerY / (float)Vertices.Count);
         }
 
         public List<PointD> GetIntersections(PointD diffA, PointD cA)
