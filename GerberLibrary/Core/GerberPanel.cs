@@ -1336,8 +1336,7 @@ namespace GerberLibrary
                                     // t.Errors.Add("inside a polygon!");
                                     //  t.Valid = false;
                                 }
-
-                                BuildDrillsForTabAndPolyLine(t, c, b.OffsetOutlines[i]);
+                                if (TheSet.DoNotGenerateMouseBites == false) BuildDrillsForTabAndPolyLine(t, c, b.OffsetOutlines[i]);
 
                                 //bool inside = false;
                                 //bool newinside = false;
@@ -2071,7 +2070,7 @@ namespace GerberLibrary
         public bool ClipToOutlines = true;
         public string LastExportFolder = "";
 
-        public bool DoNotGenerateMouseBites { get; set; }
+        public bool DoNotGenerateMouseBites = false;
 
         public List<string> SaveTo(string p, Dictionary<string, GerberOutline> GerberOutlines, ProgressLog Logger)
         {
