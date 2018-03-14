@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberLibrary", "..\GerberLibrary\GerberLibrary.csproj", "{E1C3AA23-3A02-485F-976B-50A96052F00A}"
 EndProject
@@ -361,8 +361,5 @@ Global
 		{822016C1-52B8-449C-BE7A-D3ABA943B8B6} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{843057E6-2FC0-4C78-AAB3-197C60AE72BF} = {F705564A-6956-4675-A941-6ED916ADC0AD}
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
