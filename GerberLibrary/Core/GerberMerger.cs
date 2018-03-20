@@ -245,7 +245,7 @@ namespace GerberLibrary
                                     if ((int)GCC.numbercommands[0] == 3 || (int)GCC.numbercommands[0] == 2 || (int)GCC.numbercommands[0] == 1)
                                 {
 
-                                    GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
+                                    //GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
                                     GS.ScaleToMM(File1Parsed.State.CoordinateFormat);
                                     GS.ScaleToFile(GNF);
 
@@ -459,7 +459,7 @@ namespace GerberLibrary
                                                 {
                                                  //   double X = 0;
                                                     //     double Y = 0;
-                                                    GS.Split(GCC.originalline, otherfile.State.CoordinateFormat);
+                                                    //GS.Split(GCC.originalline, otherfile.State.CoordinateFormat);
                                                     GS.ScaleToMM(otherfile.State.CoordinateFormat);
                                                     GS.ScaleToFile(GNF);
                                                     //         if (GS.Has("X")) GS.Set("X", File2Parsed.CoordinateFormat.ScaleFileToMM(GS.Get("X")));

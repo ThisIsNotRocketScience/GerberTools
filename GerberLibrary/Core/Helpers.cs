@@ -194,7 +194,7 @@ namespace GerberLibrary.Core
                         else
                         {
                             a.Vertices.Remove(a.Vertices.Last());
-                            Console.WriteLine("closed path with {0} points during stage 2: {1} reversematched", a.Vertices.Count(), matching);
+                            //Console.WriteLine("closed path with {0} points during stage 2: {1} reversematched", a.Vertices.Count(), matching);
                             P.Closed = true;
                         }
                     }

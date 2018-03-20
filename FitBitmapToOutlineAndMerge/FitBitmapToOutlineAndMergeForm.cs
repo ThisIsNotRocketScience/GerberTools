@@ -18,7 +18,9 @@ namespace FitBitmapToOutlineAndMerge
         public FitBitmapToOutlineAndMergeForm()
         {
             InitializeComponent();
-            ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\EuroForError\Gerbers\Organ_fix1");
+            
+            //ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\Development\Eurorack Set 9\Gerbers\DelayExperiments");
+            ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\Development\Eurorack Set 9\Gerbers\RectangularThing-SOICs-TWEAKS");
             //ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\EuroForError\Gerbers\BigBus_Error");
 
         }

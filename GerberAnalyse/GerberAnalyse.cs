@@ -1,9 +1,11 @@
 ﻿using GerberLibrary;
 using GerberLibrary.Core;
 using GerberLibrary.Core.Primitives;
+using Ionic.Zip;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,21 +23,22 @@ namespace GerberAnalyse
             GNF.DigitsBefore = 3;
             GNF.SetMetricMode();
 
-            GerberSplitter GS = new GerberSplitter();
-            GS.Split("X-1.15Y-1.9", GNF, true);
+      //      GerberSplitter GS = new GerberSplitter();
+       //     GS.Split("X-1.15Y-1.9", GNF, true);
 
-            foreach(var a in GS.Pairs)
-            {
-                Console.WriteLine("{0}:{1} {2}", a.Key, a.Value.Command, a.Value.Number);
-            }
-            Console.ReadKey();
+            //foreach(var a in GS.Pairs)//
+           // {
+             //   Console.WriteLine("{0}:{1} {2}", a.Key, a.Value.Command, a.Value.Number);
+           // }
+           // Console.ReadKey();
 
             if (args.Count() == 0)
             {
                 Console.WriteLine("Usage:");
-                Console.WriteLine("GerberAnalyse <inputfile> <-forcezerowidth> <-dim>");
+                Console.WriteLine("GerberAnalyse <inputfile>");// <-forcezerowidth> <-dim>");
                 return;
             }
+            /*
             ParsedGerber PLS;
             bool forcezerowidth = false;
             bool compact = false;
@@ -110,8 +113,137 @@ namespace GerberAnalyse
                 Console.WriteLine(PLS.BoundingBox.BottomRight);
                 Console.WriteLine("Size: {0}x{1} mm", PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
             }
-          //  Console.WriteLine("Press any key to continue");
-          //  Console.ReadKey();
+            */
+
+            Stats TheStats = new Stats();
+            if (Directory.Exists(args[0]))
+            {
+                GerberLibrary.GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
+
+                foreach (var L in Directory.GetFiles(args[0]).ToList())
+                {
+                    TheStats.AddFile(L);
+                }
+
+            }
+            else
+            if (File.Exists(args[0]))
+            {
+                if (Path.GetExtension(args[0]).ToLower() == ".zip")
+                {
+                    using (ZipFile zip1 = ZipFile.Read(args[0]))
+                    {
+                        foreach (ZipEntry e in zip1)
+                        {
+                            MemoryStream MS = new MemoryStream();
+                            if (e.IsDirectory == false)
+                            {
+                                e.Extract(MS);
+                                MS.Seek(0, SeekOrigin.Begin);
+                                TheStats.AddFile(MS, e.FileName);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    TheStats.AddFile(args[0]);
+                }
+
+            }
+            TheStats.Complete();
+
+            Console.WriteLine("Corners: ");
+            Console.WriteLine(TheStats.Box.TopLeft);
+            Console.WriteLine(TheStats.Box.BottomRight);
+            Console.WriteLine("Size: {0}x{1} mm", TheStats.Width, TheStats.Height);
+
+            //var json = new JavaScriptSerializer().Serialize(TheStats);
+            //Console.WriteLine(json);
+
+
+            //  Console.WriteLine("Press any key to continue");
+            //  Console.ReadKey();
         }
     }
+
+    public class Stats
+    {
+        public int DrillCount;
+        public double Width;
+        public double Height;
+        public GerberLibrary.PolyLineSet.Bounds Box = new GerberLibrary.PolyLineSet.Bounds();
+
+
+        public void AddFile(MemoryStream L, string filename)
+        {
+            L.Seek(0, SeekOrigin.Begin);
+
+            var T = GerberLibrary.Gerber.FindFileTypeFromStream(new StreamReader(L), filename);
+            switch (T)
+            {
+                case GerberLibrary.Core.BoardFileType.Drill:
+                    {
+                        GerberLibrary.ExcellonFile EF = new GerberLibrary.ExcellonFile();
+                        L.Seek(0, SeekOrigin.Begin);
+
+                        EF.Load(new StreamReader(L));
+                        DrillCount += EF.TotalDrillCount();
+                    }
+                    break;
+                case GerberLibrary.Core.BoardFileType.Gerber:
+                    {
+                        GerberLibrary.Core.BoardSide Side;
+                        GerberLibrary.Core.BoardLayer Layer;
+                        GerberLibrary.Gerber.DetermineBoardSideAndLayer(filename, out Side, out Layer);
+                        if (Layer == GerberLibrary.Core.BoardLayer.Outline || Layer == GerberLibrary.Core.BoardLayer.Mill)
+                        {
+                            L.Seek(0, SeekOrigin.Begin);
+                            var G = GerberLibrary.PolyLineSet.LoadGerberFileFromStream(new StreamReader(L), filename);
+                            Box.AddBox(G.BoundingBox);
+                        }
+                    }
+                    break;
+            }
+
+
+        }
+
+        public void AddFile(string L)
+        {
+            var T = GerberLibrary.Gerber.FindFileType(L);
+            switch (T)
+            {
+                case GerberLibrary.Core.BoardFileType.Drill:
+                    {
+                        GerberLibrary.ExcellonFile EF = new GerberLibrary.ExcellonFile();
+                        EF.Load(L);
+                        DrillCount += EF.TotalDrillCount();
+                    }
+                    break;
+                case GerberLibrary.Core.BoardFileType.Gerber:
+                    {
+                        GerberLibrary.Core.BoardSide Side;
+                        GerberLibrary.Core.BoardLayer Layer;
+                        GerberLibrary.Gerber.DetermineBoardSideAndLayer(L, out Side, out Layer);
+                        if (Layer == GerberLibrary.Core.BoardLayer.Outline || Layer == GerberLibrary.Core.BoardLayer.Mill)
+                        {
+                            var G = GerberLibrary.PolyLineSet.LoadGerberFile(L);
+                            Box.AddBox(G.BoundingBox);
+                        }
+                    }
+                    break;
+            }
+
+
+        }
+
+        public void Complete()
+        {
+            Width = Box.Width();
+            Height = Box.Height();
+        }
+    }
+
+
 }
