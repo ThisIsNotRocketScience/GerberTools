@@ -31,7 +31,10 @@ namespace Artwork
         public Color BackGroundColor = Color.Black;
         public Color BackgroundHighlight;
         public int scalesmaller;
+        public bool alwayssubdivide;
         public int scalesmallerlevel;
+        public bool Symmetry;
+        public bool SuperSymmetry;
     }
 
     public class Tiling
@@ -115,7 +118,7 @@ namespace Artwork
                 return (results > 0);
 
             }
-            public void Rotate(float degreesOff)
+            public void Rotate(float degreesOff, float xoff = 0, float yoff = 0)
             {
                 double h = (degreesOff * Math.PI * 2.0) / 360.0;
 
@@ -123,8 +126,8 @@ namespace Artwork
                 double s = Math.Sin(h);
                for(int i =0;i<Vertices.Count;i++)
                 {
-                    float x = (float)(c * Vertices[i].x + s * Vertices[i].y);
-                    float y = (float)(-s * Vertices[i].x + c * Vertices[i].y);
+                    float x = (float)(c * (Vertices[i].x-xoff) + s * (Vertices[i].y-yoff)) + xoff;
+                    float y = (float)(-s * (Vertices[i].x-xoff) + c * (Vertices[i].y-yoff) ) + yoff;
                     Vertices[i] = new vec2(x, y); 
                 }
             }
@@ -164,6 +167,53 @@ namespace Artwork
                         iterations++;
                     }
                 }
+            }
+
+           public void ShiftToEdge(float xoff = 0, float yoff = 0)
+            {
+                var centeredge = (Vertices[0] + Vertices[1])*0.5f;
+                for(int i =0;i<Vertices.Count;i++)
+                {
+                    Vertices[i]  = new vec2(Vertices[i].x - centeredge.x+xoff, Vertices[i].y-centeredge.y+yoff);
+                }
+            }
+
+            public void Flip(float xoff = 0, float yoff= 0)
+            {
+                for (int i = 0; i < Vertices.Count; i++)
+                {
+                    Vertices[i] = new vec2(-(Vertices[i].x-xoff)+xoff, -(Vertices[i].y-yoff)+yoff);
+                }
+            }
+
+            public void FlipY(float xoff = 0, float yoff = 0)
+            {
+                for (int i = 0; i < Vertices.Count; i++)
+                {
+                    Vertices[i] = new vec2(Vertices[i].x , -(Vertices[i].y - yoff) + yoff);
+                }
+            }
+            internal void MirrorAround(float xoff, float yoff)
+            {
+               // FlipY(xoff, yoff);
+           //     Rotate(180, xoff, yoff);
+                Reflect(Vertices[0], Vertices[1]);
+            }
+
+            private void Reflect(vec2 AA, vec2 BB)
+            {
+                vec2 N = (BB - AA);
+
+                
+                N = glm.normalize(N);
+
+                for(int i =0;i<Vertices.Count;i++)
+                {
+                    //Vect2 = Vect1 - 2 * WallN * (WallN DOT Vect1)
+                   Vertices[i] =  Vertices[i] - 2 * N * (glm.dot(Vertices[i], N));
+
+                }
+                
             }
         }
 
@@ -938,7 +988,7 @@ namespace Artwork
            
             }
 
-            public List<Polygon> SubdivideAdaptive(Polygon P, int level, QuadTreeNode Tree)
+            public List<Polygon> SubdivideAdaptive(Polygon P, int level, QuadTreeNode Tree, bool alwayssubdivide = false)
             {
 
                 
@@ -952,6 +1002,7 @@ namespace Artwork
                     foreach (var a in CurrentSet)
                     {
                         int divide = 0;
+                        if (alwayssubdivide) divide++;
                         if (a.divided == false)
                         {
                             if (a.ContainsPointsInTree(Tree)) divide++;

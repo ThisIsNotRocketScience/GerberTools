@@ -537,10 +537,30 @@ namespace Artwork
                     {
                         TD.Create(TheSettings.TileType);
                         var P = TD.CreateBaseTriangle(TheSettings.BaseTile, 1000);
+                        var P2 = TD.CreateBaseTriangle(TheSettings.BaseTile, 1000);
                         P.Rotate(TheSettings.DegreesOff);
                         P.AlterToFit(Mask.Width, Mask.Height);
+                        P2.Rotate(TheSettings.DegreesOff);
+                        P2.AlterToFit(Mask.Width, Mask.Height);
+
+                        if (TheSettings.Symmetry)
+                        {
+                            P.ShiftToEdge(Mask.Width / 2, Mask.Height / 2);
+                            P2.ShiftToEdge(Mask.Width / 2, Mask.Height / 2);
+                               P2.Flip(Mask.Width/2, Mask.Height/2);
+                            if (TheSettings.SuperSymmetry)
+                            {
+                                P2.MirrorAround(Mask.Width / 2, Mask.Height / 2);
+                            }
+                        }
+                    
                         DateTime rR = DateTime.Now;
-                        SubDivPoly = TD.SubdivideAdaptive(P, TheSettings.MaxSubDiv, MaskTree);
+                        SubDivPoly = TD.SubdivideAdaptive(P, TheSettings.MaxSubDiv, MaskTree,TheSettings.alwayssubdivide);
+
+                        if (TheSettings.Symmetry)
+                        {
+                            SubDivPoly.AddRange(TD.SubdivideAdaptive(P2, TheSettings.MaxSubDiv, MaskTree, TheSettings.alwayssubdivide));
+                        }
                         if (TheSettings.scalesmaller != 0)
                         {
                             float scaler = Math.Abs(TheSettings.scalesmaller);
