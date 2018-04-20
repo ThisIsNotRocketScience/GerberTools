@@ -35,6 +35,8 @@ namespace Artwork
         public int scalesmallerlevel;
         public bool Symmetry;
         public bool SuperSymmetry;
+        public int xscalesmallerlevel;
+        public int xscalecenter;
     }
 
     public class Tiling

@@ -524,9 +524,7 @@ namespace Artwork
                                 }
                             }
                         }
-
-
-
+                        
                         Delaunay.Build(ArtTree, TheSettings.DegreesOff);
 
                         var Elapsed = DateTime.Now - rR;
@@ -547,20 +545,43 @@ namespace Artwork
                         {
                             P.ShiftToEdge(Mask.Width / 2, Mask.Height / 2);
                             P2.ShiftToEdge(Mask.Width / 2, Mask.Height / 2);
-                               P2.Flip(Mask.Width/2, Mask.Height/2);
+                            P2.Flip(Mask.Width / 2, Mask.Height / 2);
                             if (TheSettings.SuperSymmetry)
                             {
                                 P2.MirrorAround(Mask.Width / 2, Mask.Height / 2);
                             }
                         }
-                    
+
                         DateTime rR = DateTime.Now;
-                        SubDivPoly = TD.SubdivideAdaptive(P, TheSettings.MaxSubDiv, MaskTree,TheSettings.alwayssubdivide);
+                        SubDivPoly = TD.SubdivideAdaptive(P, TheSettings.MaxSubDiv, MaskTree, TheSettings.alwayssubdivide);
 
                         if (TheSettings.Symmetry)
                         {
                             SubDivPoly.AddRange(TD.SubdivideAdaptive(P2, TheSettings.MaxSubDiv, MaskTree, TheSettings.alwayssubdivide));
                         }
+
+                        if (TheSettings.xscalesmallerlevel != 0)
+                        {
+                            float midx = Mask.Width / 2.0f;
+                            float width = Mask.Width;
+                            float offs = TheSettings.xscalecenter * 0.01f * width;
+                            foreach (var A in SubDivPoly)
+                            {
+
+                                var M = A.Mid();
+                                float scaler = 1.0f - ((float)(M.x-offs) / width) * TheSettings.xscalesmallerlevel * 0.01f;
+                                scaler = Math.Max(0, Math.Min(1.0f, scaler));
+
+                                var b0 = A.Vertices[0] - M;
+                                var b1 = A.Vertices[1] - M;
+                                var b2 = A.Vertices[2] - M;
+
+                                A.Vertices[0] = M + b0 * (scaler);
+                                A.Vertices[1] = M + b1 * (scaler);
+                                A.Vertices[2] = M + b2 * (scaler);
+                            }
+                        }
+
                         if (TheSettings.scalesmaller != 0)
                         {
                             float scaler = Math.Abs(TheSettings.scalesmaller);
@@ -570,7 +591,7 @@ namespace Artwork
                             }
                             else
                             {
-                                scaler = - scaler / 10.0f;
+                                scaler = -scaler / 10.0f;
                             }
                             foreach (var A in SubDivPoly)
                             {
@@ -578,14 +599,14 @@ namespace Artwork
                                 var b0 = A.Vertices[0] - M;
                                 var b1 = A.Vertices[1] - M;
                                 var b2 = A.Vertices[2] - M;
-                                if (A.depth-TheSettings.scalesmallerlevel <= 1)
+                                if (A.depth - TheSettings.scalesmallerlevel <= 1)
                                 {
 
                                 }
                                 else
                                 {
-                                    A.Vertices[0] = M + b0 * (1 + scaler * (1.0f / (A.depth-TheSettings.scalesmallerlevel)));
-                                    A.Vertices[1] = M + b1 * (1 + scaler * (1.0f / (A.depth- TheSettings.scalesmallerlevel)));
+                                    A.Vertices[0] = M + b0 * (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel)));
+                                    A.Vertices[1] = M + b1 * (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel)));
                                     A.Vertices[2] = M + b2 * (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel)));
                                 }
                             }
