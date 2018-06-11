@@ -86,8 +86,11 @@ namespace GerberMover
                 BoardSide Side;
                 BoardLayer Layer;
                 Gerber.DetermineBoardSideAndLayer(args[0], out Side, out Layer);
-
+                
                 GerberTransposer.Transform(filename, outfile, dx, dy, cx, cy, angle);
+
+               var  lines = PolyLineSet.SanitizeInputLines(System.IO.File.ReadAllLines(args[0]).ToList());
+                System.IO.File.WriteAllLines(args[0] + "sanit.txt", lines);
 
                 Gerber.SaveGerberFileToImage(outfile, outfile + "_render.png", 200, Color.Black, Color.White);
 

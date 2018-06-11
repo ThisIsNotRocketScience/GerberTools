@@ -39,7 +39,7 @@ namespace GerberLibrary
         GraphicsPath GP = new GraphicsPath();
         Bitmap MMGrid = null;
 
-        public List<string> AddGerberFolder(string path, bool add = true)
+        public List<string> AddGerberFolder(string path, bool add = true, bool skipoutlines = false)
         {
             if (File.Exists(path) && (Path.GetExtension(path).ToLower() == ".zip" || Path.GetExtension(path).ToLower() == "zip"))
             {
@@ -85,29 +85,32 @@ namespace GerberLibrary
                     }
                 }
             }
-            foreach (var a in outlinefiles)
+            if (skipoutlines == false)
             {
-                GerberOutlines[path] = new GerberOutline(a);
-                if (GerberOutlines[path].TheGerber.DisplayShapes.Count > 0) had = true;
-            }
-
-            if (had == false)
-            {
-                foreach (var a in millfiles)
+                foreach (var a in outlinefiles)
                 {
                     GerberOutlines[path] = new GerberOutline(a);
                     if (GerberOutlines[path].TheGerber.DisplayShapes.Count > 0) had = true;
                 }
 
-            }
-            if (had == false)
-            {
-                // TODO: extract an outline from other layers? THIS IS DANGEROUS!
-                Console.WriteLine("{0} has no outline available?", path);
-            }
-            else
-            {
-                res.Add(path);
+                if (had == false)
+                {
+                    foreach (var a in millfiles)
+                    {
+                        GerberOutlines[path] = new GerberOutline(a);
+                        if (GerberOutlines[path].TheGerber.DisplayShapes.Count > 0) had = true;
+                    }
+
+                }
+                if (had == false)
+                {
+                    // TODO: extract an outline from other layers? THIS IS DANGEROUS!
+                    Console.WriteLine("{0} has no outline available?", path);
+                }
+                else
+                {
+                    res.Add(path);
+                }
             }
             return res;
         }

@@ -70,12 +70,12 @@ namespace GerberLibrary
 
                     if (ClipperLib.Clipper.Orientation(poly) == false)
                     {
-                        Console.WriteLine("pos");
+                        //Console.WriteLine("pos");
                     }
                     else
                     {
                         poly.Reverse();
-                        Console.WriteLine("neg");
+                        //Console.WriteLine("neg");
                     }
 
                         CP.AddPolygon(poly, ClipperLib.PolyType.ptClip);
