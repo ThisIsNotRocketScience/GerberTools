@@ -81,7 +81,7 @@
             // logoPictureBox
             // 
             this.logoPictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.logoPictureBox.Image = global::GerberCombinerBuilder.Properties.Resources._600dpi_logo_met_text;
+			this.logoPictureBox.Image = new System.Drawing.Bitmap ("600dpi_logo_met_text.png");
             this.logoPictureBox.Location = new System.Drawing.Point(4, 4);
             this.logoPictureBox.Margin = new System.Windows.Forms.Padding(4);
             this.logoPictureBox.Name = "logoPictureBox";

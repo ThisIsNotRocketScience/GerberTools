@@ -9,7 +9,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GerberCombinerBuilder</RootNamespace>
     <AssemblyName>GerberPanelizer</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -26,9 +25,11 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -52,39 +53,33 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
-  <PropertyGroup>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>..\GerberProjects\packages\OpenTK.1.1.2349.61993\lib\NET40\OpenTK.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="OpenTK.GLControl, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>..\GerberProjects\packages\OpenTK.GLControl.1.1.2349.61993\lib\NET40\OpenTK.GLControl.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Triangle, Version=0.0.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\GerberProjects\packages\Triangle.0.0.6-Beta3\lib\net45\Triangle.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="OpenTK.GLControl">
+      <HintPath>..\OpenTK.GLControl.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetZip">
+      <HintPath>..\DotNetZip.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK">
+      <HintPath>packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="Triangle">
+      <HintPath>..\Triangle.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -111,14 +106,14 @@
     <Compile Include="GerberPanelize.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GerberPanelize.Designer.cs">
-      <DependentUpon>GerberPanelize.cs</DependentUpon>
-    </Compile>
     <Compile Include="GerberPanelizerParent.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GerberPanelizerParent.Designer.cs">
       <DependentUpon>GerberPanelizerParent.cs</DependentUpon>
+      <DeployService-Deploy>True</DeployService-Deploy>
+      <DeployService-UseProjectRelativePath>True</DeployService-UseProjectRelativePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
     <Compile Include="Helper.cs" />
     <Compile Include="InstanceDialog.cs">
@@ -162,43 +157,11 @@
     <Compile Include="WelcomeForm.Designer.cs">
       <DependentUpon>WelcomeForm.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="AboutBox1.resx">
-      <DependentUpon>AboutBox1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Explanation And Warning.resx">
-      <DependentUpon>Explanation And Warning.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GerberPanelize.resx">
-      <DependentUpon>GerberPanelize.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GerberPanelizerParent.resx">
-      <DependentUpon>GerberPanelizerParent.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="InstanceDialog.resx">
-      <DependentUpon>InstanceDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="PanelProperties.resx">
-      <DependentUpon>PanelProperties.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Progress.resx">
-      <DependentUpon>Progress.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="Treeview.resx">
-      <DependentUpon>Treeview.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WelcomeForm.resx">
-      <DependentUpon>WelcomeForm.cs</DependentUpon>
-    </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -209,6 +172,22 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <None Include="OpenTK.dll.config" />
+    <None Include="Explanation And Warning.resx">
+      <DependentUpon>Explanation And Warning.cs</DependentUpon>
+    </None>
+    <None Include="AboutBox1.resx">
+      <DependentUpon>AboutBox1.cs</DependentUpon>
+    </None>
+    <None Include="Properties\Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="GerberPanelize.Designer.cs">
+      <DependentUpon>GerberPanelize.cs</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -240,18 +219,21 @@
     </Content>
     <Content Include="QuickFont\ChangeLog.txt" />
     <Content Include="favicon.ico" />
-    <Content Include="600dpi-logo-met-text.png" />
+    <Content Include="600dpi-logo-met-text.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Help\welcome.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="Resources\RotateRight.jpg" />
-    <None Include="Resources\RotateLeft.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GerberLibrary\GerberLibrary.csproj">
-      <Project>{e1c3aa23-3a02-485f-976b-50a96052f00a}</Project>
-      <Name>GerberLibrary</Name>
-    </ProjectReference>
+    <Content Include="GerberPanelizer.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\RotateLeft.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\RotateRight.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -261,4 +243,33 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <ProjectReference Include="..\GerberLibrary\GerberLibrary.csproj">
+      <Project>{E1C3AA23-3A02-485F-976B-50A96052F00A}</Project>
+      <Name>GerberLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GerberPanelizerParent.resx">
+      <DependentUpon>GerberPanelizerParent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InstanceDialog.resx">
+      <DependentUpon>InstanceDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GerberPanelize.resx">
+      <DependentUpon>GerberPanelize.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PanelProperties.resx">
+      <DependentUpon>PanelProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Progress.resx">
+      <DependentUpon>Progress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WelcomeForm.resx">
+      <DependentUpon>WelcomeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Treeview.resx">
+      <DependentUpon>Treeview.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

@@ -72,6 +72,7 @@ namespace GerberCombinerBuilder
 
         public void BuildTree(GerberPanelize Parent,  GerberLayoutSet S)
         {
+            this.Visible = true;
             TargetHost = Parent;
             if (TargetHost == null) { treeView1.Enabled = false; return; } else { treeView1.Enabled = true; };
             while (Gerbers.Nodes.Count > 0)

@@ -299,7 +299,7 @@
             this.Controls.Add(this.splitter2);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.menuStrip);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.Icon = new System.Drawing.Icon("GerberPanelizer.ico");
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip;
             this.Margin = new System.Windows.Forms.Padding(4);
