@@ -338,7 +338,7 @@ namespace GerberLibrary
             }
         }
 
-        private static void GetTransformedCoord(double DX, double DY, double DXp, double DYp, double Angle, double CA, double SA, GerberNumberFormat CoordinateFormat, bool translate, ref double X, ref double Y)
+        public static void GetTransformedCoord(double DX, double DY, double DXp, double DYp, double Angle, double CA, double SA, GerberNumberFormat CoordinateFormat, bool translate, ref double X, ref double Y)
         {
             if (translate)
             {
