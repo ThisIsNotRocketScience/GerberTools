@@ -25,7 +25,13 @@ namespace GerberLibrary
 
         public Color BackgroundColor = Color.FromArgb(10,10,40);
         public Color BoardRenderTraceColor = Gerber.ParseColor("green");
-
+        public void SetupColors(string SolderMaskColor, string SilkScreenColor, string TracesColor = "auto", string CopperColor = "gold")
+        {
+            BoardRenderColor = GerberLibrary.Gerber.ParseColor(SolderMaskColor);
+            BoardRenderSilkColor = GerberLibrary.Gerber.ParseColor(SilkScreenColor);
+            BoardRenderPadColor = GerberLibrary.Gerber.ParseColor(CopperColor);
+            BoardRenderTraceColor = GerberLibrary.Gerber.ParseColor(TracesColor);
+        }
         public Color GetDefaultColor(BoardLayer layer, BoardSide side)
         {
             switch(layer)
