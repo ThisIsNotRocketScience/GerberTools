@@ -146,7 +146,7 @@ namespace GerberLibrary
 
         }
 
-        public void DrawPolyline(Pen p, List<PointF> TheList, bool closed = false)
+        public void DrawPolyline(Pen p, List<PointF> TheList, bool closed = false, bool clipagainstboundary = false)
         {
             string commands = "";
 
@@ -157,10 +157,26 @@ namespace GerberLibrary
             scaletrns[0].X -= CurrentTransform.Elements[4];
             scaletrns[0].Y -= CurrentTransform.Elements[5];
 
+
             double stroke = Math.Sqrt(scaletrns[0].X * scaletrns[0].X + scaletrns[0].Y* scaletrns[0].Y);
             var list = TheList.ToArray();
             CurrentTransform.TransformPoints(list);
-                
+            if (clipagainstboundary)
+            {
+                int clipped = 0;
+                foreach (var a in list)
+                {
+                    if (a.X<0|| a.Y<0 || a.X> Width || a.Y>Height)
+                    {
+                        clipped++;
+                    }
+                }
+                if (clipped == list.Count())
+                {
+                    return;
+                }
+            }
+
             commands += "M" + list[0].X.ToString().Replace(',', '.') + "," + list[0].Y.ToString().Replace(',', '.');
             for (int i = 1; i < list.Count(); i++)
             {
