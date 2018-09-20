@@ -20,7 +20,7 @@ namespace FitBitmapToOutlineAndMerge
             InitializeComponent();
             
             //ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\Development\Eurorack Set 9\Gerbers\DelayExperiments");
-            ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\Development\Eurorack Set 9\Gerbers\RectangularThing-SOICs-TWEAKS");
+            ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\Development\Eurorack Set 9\Gerbers\RectangularThing-SOICs-TWEAKS-3");
             //ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\EuroForError\Gerbers\BigBus_Error");
 
         }
