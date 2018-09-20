@@ -447,14 +447,11 @@ namespace Artwork
                     }
                     if (doit)
                     {
-
                         MaskTree.Insert(x, y, new SolidQuadTreeItem() { x = (int)x, y = (int)y }, 8);
                     }
                 }
             }
-
         }
-
 
         public int BuildStuff(Bitmap Mask, Settings TheSettings)
         {
@@ -567,18 +564,10 @@ namespace Artwork
                             float offs = TheSettings.xscalecenter * 0.01f * width;
                             foreach (var A in SubDivPoly)
                             {
-
                                 var M = A.Mid();
                                 float scaler = 1.0f - ((float)(M.x-offs) / width) * TheSettings.xscalesmallerlevel * 0.01f;
                                 scaler = Math.Max(0, Math.Min(1.0f, scaler));
-
-                                var b0 = A.Vertices[0] - M;
-                                var b1 = A.Vertices[1] - M;
-                                var b2 = A.Vertices[2] - M;
-
-                                A.Vertices[0] = M + b0 * (scaler);
-                                A.Vertices[1] = M + b1 * (scaler);
-                                A.Vertices[2] = M + b2 * (scaler);
+                                A.ScaleDown(TheSettings.scalingMode, scaler);
                             }
                         }
 
@@ -595,19 +584,15 @@ namespace Artwork
                             }
                             foreach (var A in SubDivPoly)
                             {
-                                var M = A.Mid();
-                                var b0 = A.Vertices[0] - M;
-                                var b1 = A.Vertices[1] - M;
-                                var b2 = A.Vertices[2] - M;
+                              
                                 if (A.depth - TheSettings.scalesmallerlevel <= 1)
                                 {
 
                                 }
                                 else
                                 {
-                                    A.Vertices[0] = M + b0 * (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel)));
-                                    A.Vertices[1] = M + b1 * (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel)));
-                                    A.Vertices[2] = M + b2 * (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel)));
+                                    A.ScaleDown(TheSettings.scalingMode, (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel))));
+                                   
                                 }
                             }
                         }

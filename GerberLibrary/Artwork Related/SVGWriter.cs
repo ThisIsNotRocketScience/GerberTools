@@ -310,7 +310,8 @@ namespace GerberLibrary
 
         public void FillPolygon(SolidBrush solidBrush, PointF[] pointF)
         {
-            throw new NotImplementedException();
+            FillPolyline(solidBrush.Color, pointF.ToList(), true);
+            
         }
 
         public void WriteOutline()
