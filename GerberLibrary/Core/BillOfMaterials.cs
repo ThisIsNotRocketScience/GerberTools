@@ -26,19 +26,21 @@ namespace GerberLibrary.Core
             public double x;
             public double y;
             public double angle;
+
+            public BoardSide Side = BoardSide.Top;
         }
         public List<RefDesc> RefDes = new List<RefDesc>();
         public bool Soldered = false;
 
-        internal string AddRef(string refdes, string source, BOMNumberSet set, double x, double y, double angle)
+        internal string AddRef(string refdes, string source, BOMNumberSet set, double x, double y, double angle, BoardSide side)
         {
             if (set == null)
             {
-                RefDes.Add(new RefDesc() { NameOnBoard = refdes, angle = angle, OriginalName = refdes, SourceBoard = source, x = x, y = y });
+                RefDes.Add(new RefDesc() { NameOnBoard = refdes, angle = angle, OriginalName = refdes, SourceBoard = source, x = x, y = y , Side = side});
                 return refdes;
             }
             string newref = set.GetNew(refdes);
-            RefDes.Add(new RefDesc() { NameOnBoard = newref, angle = angle, OriginalName = refdes, SourceBoard = source, x = x, y = y });
+            RefDes.Add(new RefDesc() { NameOnBoard = newref, angle = angle, OriginalName = refdes, SourceBoard = source, x = x, y = y , Side = side});
             return newref;
         }
 
@@ -221,7 +223,7 @@ namespace GerberLibrary.Core
 
 
         public Dictionary<string, Dictionary<string, BOMEntry>> DeviceTree = new Dictionary<string, Dictionary<string, BOMEntry>>();
-        public string AddBOMItem(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle)
+        public string AddBOMItem(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle, BoardSide side = BoardSide.Top)
         {
 
 
@@ -232,7 +234,7 @@ namespace GerberLibrary.Core
             if (DeviceTree.ContainsKey(ID) == false) DeviceTree[ID] = new Dictionary<string, BOMEntry>();
             if (DeviceTree[ID].ContainsKey(value) == false) DeviceTree[ID][value] = new BOMEntry() { Name = device, Value = value, PackageName = package };
             BOMEntry BE = DeviceTree[ID][value];
-            return BE.AddRef(refdes, SourceBoard, set, x, y, angle);
+            return BE.AddRef(refdes, SourceBoard, set, x, y, angle, side);
 
 
 
@@ -257,9 +259,20 @@ namespace GerberLibrary.Core
             }
         }
 
-        public List<string> PrintBOM(List<String> IgnoreList)
+        public List<string> PrintBOM(List<String> IgnoreList, bool AddDefaultIgnoreList = true)
         {
-            List<string> ToIgnore = new List<string>() { "FENIXINTERNALCONNECTIONPAD" };
+            List<string> ToIgnore;
+
+            if (AddDefaultIgnoreList)
+            {
+                ToIgnore = new List<string>() { "FENIXINTERNALCONNECTIONPAD" };
+
+            }
+            else
+            {
+                ToIgnore = new List<string>();
+
+            }
             ToIgnore.AddRange(IgnoreList);
             List<Tuple<string, string, string>> Lines = new List<Tuple<string, string, string>>();
             int partcount = 0;
@@ -576,7 +589,7 @@ namespace GerberLibrary.Core
 
         }
 
-        public  void SetPartno(string pattern, string partno)
+        public void SetPartno(string pattern, string partno)
         {
             var r = new Regex(pattern);
             foreach (var a in DeviceTree)
@@ -673,6 +686,213 @@ namespace GerberLibrary.Core
             }
 
             return null;
+        }
+
+        public void SaveBom(string bomFile)
+        {
+            var L = PrintBOM(new List<string>(), false);
+            File.WriteAllLines(bomFile, L.ToArray());
+        }
+
+        public void SaveCentroids(string centroidFile)
+        {
+            List<String> Output = new List<string>();
+
+            Output.Add("\"REFDES\",\"X\",\"Y\",\"ANGLE\",\"SIDE\"");
+            foreach (var a in DeviceTree)
+            {
+                foreach (var b in a.Value)
+                {
+                    foreach (var c in b.Value.RefDes)
+                    {
+                        Output.Add(String.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\"", c.NameOnBoard, c.x.ToString().Replace(',', '.'), c.y.ToString().Replace(',', '.'), c.angle.ToString().Replace(',','.'), c.Side.ToString()));
+                    }
+                }
+            }
+            File.WriteAllLines(centroidFile, Output.ToArray());
+        }
+
+        internal int GetPartCount()
+        {
+            int partcount = 0;
+            foreach (var a in DeviceTree)
+            {
+                foreach (var b in a.Value)
+                {
+                    partcount += b.Value.RefDes.Count;
+                }
+            }
+            return partcount;
+        }
+
+        internal static BOM ScanFolderForBoms(string gerberPath)
+        {
+            string ultiboardfolder = Path.Combine(gerberPath, "ultiboard");
+
+            if (Directory.Exists(ultiboardfolder))
+            {
+                BOM R = new BOM();
+                var F = Directory.GetFiles(ultiboardfolder);
+                string Centroids = "";
+                string BOMFile = "";
+
+                foreach(var a in F)
+                {
+                    if (a.ToLower().Contains("bill of materials"))
+                    {
+                        BOMFile = a;
+                    }
+                    if (a.ToLower().Contains("parts centroids"))
+                    {
+                        Centroids = a;
+                    }
+
+                }
+
+                if (File.Exists(Centroids) && File.Exists(BOMFile)) R.LoadUltiboard(BOMFile, Centroids);
+                return R;
+            }
+
+            return null;
+
+
+        }
+
+        class CSVLine
+        {
+            public List<string> columns = new List<string>();
+            public void Parse(string inp)
+            {
+                const char splitter = ',';
+                const char escaper = '"';
+                bool escaped = false;
+                string current = "";
+                for(int i =0;i<inp.Length;i++)
+                {
+                    switch(inp[i])
+                    {
+                        case escaper:
+                    
+                            if (escaped)
+                            {
+                                escaped = false;
+                            }
+                            else
+                            {
+                                escaped = true;
+                            }
+                            break;
+                        case splitter:
+                            if (escaped)
+                            {
+                                current += splitter;
+                            }
+                            else
+                            {
+                                columns.Add(current);
+                                current = "";
+                            }
+                            break;
+                        default:
+                            current += inp[i];
+                            break;
+                    }
+                }
+                if (current.Length > 0) columns.Add(current);
+            }
+        }
+
+        class CSVLoader
+        {
+            public List<CSVLine> Lines = new List<CSVLine>();
+            public void LoadFile(string file)
+            {
+                var L = File.ReadAllLines(file);
+                foreach(var l in L)
+                {
+                    string S = l.Trim();
+                    if (S.Length > 0)
+                    {
+                        var CSVL = new CSVLine();
+                        CSVL.Parse(S);
+                        Lines.Add(CSVL);
+                    }
+                }
+            }
+        }
+
+        private void LoadUltiboard(string bOMFile, string centroids)
+        {
+            Dictionary<string, BOMEntry.RefDesc> positions = new Dictionary<string, BOMEntry.RefDesc>();
+
+
+
+            CSVLoader centroidloader = new CSVLoader();
+            centroidloader.LoadFile(centroids);
+
+
+            int FirstRow = -1;
+            for (int i = 0; i < centroidloader.Lines.Count; i++)
+            {
+                if (centroidloader.Lines[i].columns[0] == "REFDES")
+                {
+                    FirstRow = i + 1;
+
+                }
+            }
+
+            if (FirstRow > -1)
+            {
+                for (int i = FirstRow; i < centroidloader.Lines.Count; i++)
+                {
+                    var Line = centroidloader.Lines[i];
+                    string rd = Line.columns[0];
+                    double X = 0, Y = 0, Angle = 0;
+
+                    X = Double.Parse(Line.columns[3]) / 1000000.0;
+                   Y = Double.Parse(Line.columns[4]) / 1000000.0;
+                    Angle = Double.Parse(Line.columns[5]);
+
+                    BoardSide Side = BoardSide.Top;
+                    if (Line.columns[6] != "TOP") Side = BoardSide.Bottom;
+
+                    positions[rd] = new BOMEntry.RefDesc() { angle = Angle, x = X, y = Y, OriginalName = rd, NameOnBoard = rd, SourceBoard = bOMFile, Side = Side };
+                }
+            }
+
+
+            BOMNumberSet Set = new BOMNumberSet();
+            CSVLoader bomloader = new CSVLoader();
+            bomloader.LoadFile(bOMFile);
+
+            FirstRow = -1;
+            for(int i = 0;i<bomloader.Lines.Count;i++)
+            {
+                if (bomloader.Lines[i].columns[0] == "VALUE")
+                {
+                    FirstRow = i + 1;
+                    
+                }
+            }
+
+            if (FirstRow > -1)
+            {
+                for (int i =FirstRow;i<bomloader.Lines.Count;i++)
+                {
+                    string value = bomloader.Lines[i].columns[0];
+                    string package = bomloader.Lines[i].columns[1];
+                    var refdes = bomloader.Lines[i].columns[3].Split(',') ;
+                    foreach (var rd in refdes)
+                    {
+                        var S = positions[rd];
+
+                        AddBOMItem(package, "", value, rd, Set, bOMFile, S.x, S.y, S.angle, S.Side);
+                    }
+                }
+            }
+
+
+
         }
     }
 }

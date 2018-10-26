@@ -305,18 +305,34 @@ namespace GerberLibrary
                             break;
 
                         default:
-                            if (gerberfile.ToLower().Contains("outline")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; }
-                            if (gerberfile.ToLower().Contains("-edge_cuts")) { Side = BoardSide.Both;Layer = BoardLayer.Outline;}
 
-                            if (gerberfile.ToLower().Contains("-b_cu")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; }
-                            if (gerberfile.ToLower().Contains("-f_cu")) { Side = BoardSide.Top; Layer = BoardLayer.Copper; }
-                            if (gerberfile.ToLower().Contains("-b_silks")) { Side = BoardSide.Bottom; Layer = BoardLayer.Silk; }
-                            if (gerberfile.ToLower().Contains("-f_silks")) { Side = BoardSide.Top; Layer = BoardLayer.Silk; }
-                            if (gerberfile.ToLower().Contains("-b_mask")) { Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; }
-                            if (gerberfile.ToLower().Contains("-f_mask")) { Side = BoardSide.Top; Layer = BoardLayer.SolderMask; }
-                            if (gerberfile.ToLower().Contains("-b_paste")) { Side = BoardSide.Bottom; Layer = BoardLayer.Paste; }
-                            if (gerberfile.ToLower().Contains("-f_paste")) { Side = BoardSide.Top; Layer = BoardLayer.Paste; }
+                            {
+                                string lcase = gerberfile.ToLower();
+                                if (lcase.Contains("board outline")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; };
+
+                                if (lcase.Contains("copper bottom")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; };
+                                if (lcase.Contains("silkscreen bottom")) { Side = BoardSide.Bottom; Layer = BoardLayer.Silk; };
+                                if (lcase.Contains("copper top")) { Side = BoardSide.Top; Layer = BoardLayer.Copper; };
+                                if (lcase.Contains("silkscreen top")) { Side = BoardSide.Top; Layer = BoardLayer.Silk; };
+
+                                if (lcase.Contains("solder mask bottom")) { Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; };
+                                if (lcase.Contains("solder mask top")) { Side = BoardSide.Top; Layer = BoardLayer.SolderMask; };
+
+                                if (lcase.Contains("drill-copper top-copper bottom")) { Side = BoardSide.Both; Layer = BoardLayer.Drill; };
+
+                                if (lcase.Contains("outline")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; }
+                                if (lcase.Contains("-edge_cuts")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; }
+                                if (lcase.Contains("-b_cu")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; }
+                                if (lcase.Contains("-f_cu")) { Side = BoardSide.Top; Layer = BoardLayer.Copper; }
+                                if (lcase.Contains("-b_silks")) { Side = BoardSide.Bottom; Layer = BoardLayer.Silk; }
+                                if (lcase.Contains("-f_silks")) { Side = BoardSide.Top; Layer = BoardLayer.Silk; }
+                                if (lcase.Contains("-b_mask")) { Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; }
+                                if (lcase.Contains("-f_mask")) { Side = BoardSide.Top; Layer = BoardLayer.SolderMask; }
+                                if (lcase.Contains("-b_paste")) { Side = BoardSide.Bottom; Layer = BoardLayer.Paste; }
+                                if (lcase.Contains("-f_paste")) { Side = BoardSide.Top; Layer = BoardLayer.Paste; }
+                            }
                             break;
+
 
                     }
                     break;

@@ -220,5 +220,46 @@ namespace FitBitmapToOutlineAndMerge
 
            
         }
+
+        private void FitBitmapToOutlineAndMergeForm_DragDrop(object sender, DragEventArgs e)
+        {
+            
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+
+                string[] D = e.Data.GetData(DataFormats.FileDrop) as string[];
+                List<String> files = new List<string>();
+                foreach (string S in D)
+                {
+                    if (Directory.Exists(S))
+                    {
+                        ScanFolder(S);
+                        
+                    }
+
+                    else
+                    {
+                        if (File.Exists(S)) files.Add(S);
+                    }
+                }
+                if (files.Count > 0)
+                {
+                    //LoadGerberFolder(files);
+                }
+            }
+        }
+
+        private void FitBitmapToOutlineAndMergeForm_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+
+        }
     }
 }
