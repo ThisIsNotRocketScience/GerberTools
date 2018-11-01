@@ -260,7 +260,7 @@ namespace GerberLibrary
                 for (int i = 0; i < p.Length; i++)
                 {
                     char current = p[i];
-                    if (char.IsNumber(current) || current == '+' || current == '-')
+                    if (char.IsNumber(current) || current == '+' || current == '-' || (hasdecimalpoint && current == '.'))
                     {
                         isnumber = true;
                     }
