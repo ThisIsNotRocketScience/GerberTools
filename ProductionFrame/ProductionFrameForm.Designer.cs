@@ -33,7 +33,7 @@
             this.flowLayoutPanel9 = new System.Windows.Forms.FlowLayoutPanel();
             this.label8 = new System.Windows.Forms.Label();
             this.FrameTitleBox = new System.Windows.Forms.TextBox();
-            this.cb_fiductialsTopLayer = new System.Windows.Forms.CheckBox();
+            this.cb_fiducialsTopLayer = new System.Windows.Forms.CheckBox();
             this.addHolesCheck = new System.Windows.Forms.CheckBox();
             this.flowLayoutPanel4 = new System.Windows.Forms.FlowLayoutPanel();
             this.label3 = new System.Windows.Forms.Label();
@@ -65,7 +65,7 @@
             this.label15 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.cb_fiductialsBottomLayer = new System.Windows.Forms.CheckBox();
+            this.cb_fiducialsBottomLayer = new System.Windows.Forms.CheckBox();
             this.cb_fiducials_orientationSafe = new System.Windows.Forms.CheckBox();
             this.flowLayoutPanel1.SuspendLayout();
             this.flowLayoutPanel9.SuspendLayout();
@@ -89,8 +89,8 @@
             // 
             this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel1.Controls.Add(this.flowLayoutPanel9);
-            this.flowLayoutPanel1.Controls.Add(this.cb_fiductialsTopLayer);
-            this.flowLayoutPanel1.Controls.Add(this.cb_fiductialsBottomLayer);
+            this.flowLayoutPanel1.Controls.Add(this.cb_fiducialsTopLayer);
+            this.flowLayoutPanel1.Controls.Add(this.cb_fiducialsBottomLayer);
             this.flowLayoutPanel1.Controls.Add(this.cb_fiducials_orientationSafe);
             this.flowLayoutPanel1.Controls.Add(this.addHolesCheck);
             this.flowLayoutPanel1.Controls.Add(this.flowLayoutPanel4);
@@ -139,18 +139,18 @@
             this.FrameTitleBox.TabIndex = 4;
             this.FrameTitleBox.Text = "FrameTitle";
             // 
-            // cb_fiductialsTopLayer
+            // cb_fiducialsTopLayer
             // 
-            this.cb_fiductialsTopLayer.AutoSize = true;
-            this.cb_fiductialsTopLayer.Checked = true;
-            this.cb_fiductialsTopLayer.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_fiductialsTopLayer.Location = new System.Drawing.Point(2, 30);
-            this.cb_fiductialsTopLayer.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.cb_fiductialsTopLayer.Name = "cb_fiductialsTopLayer";
-            this.cb_fiductialsTopLayer.Size = new System.Drawing.Size(89, 17);
-            this.cb_fiductialsTopLayer.TabIndex = 0;
-            this.cb_fiductialsTopLayer.Text = "Add Fiducials";
-            this.cb_fiductialsTopLayer.UseVisualStyleBackColor = true;
+            this.cb_fiducialsTopLayer.AutoSize = true;
+            this.cb_fiducialsTopLayer.Checked = true;
+            this.cb_fiducialsTopLayer.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cb_fiducialsTopLayer.Location = new System.Drawing.Point(2, 30);
+            this.cb_fiducialsTopLayer.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.cb_fiducialsTopLayer.Name = "cb_fiducialsTopLayer";
+            this.cb_fiducialsTopLayer.Size = new System.Drawing.Size(89, 17);
+            this.cb_fiducialsTopLayer.TabIndex = 0;
+            this.cb_fiducialsTopLayer.Text = "Add Fiducials";
+            this.cb_fiducialsTopLayer.UseVisualStyleBackColor = true;
             // 
             // addHolesCheck
             // 
@@ -498,17 +498,17 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // cb_fiductialsBottomLayer
+            // cb_fiducialsBottomLayer
             // 
-            this.cb_fiductialsBottomLayer.AutoSize = true;
-            this.cb_fiductialsBottomLayer.Checked = true;
-            this.cb_fiductialsBottomLayer.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cb_fiductialsBottomLayer.Location = new System.Drawing.Point(3, 52);
-            this.cb_fiductialsBottomLayer.Name = "cb_fiductialsBottomLayer";
-            this.cb_fiductialsBottomLayer.Size = new System.Drawing.Size(161, 17);
-            this.cb_fiductialsBottomLayer.TabIndex = 12;
-            this.cb_fiductialsBottomLayer.Text = "Add fiducials on bottom layer";
-            this.cb_fiductialsBottomLayer.UseVisualStyleBackColor = true;
+            this.cb_fiducialsBottomLayer.AutoSize = true;
+            this.cb_fiducialsBottomLayer.Checked = true;
+            this.cb_fiducialsBottomLayer.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cb_fiducialsBottomLayer.Location = new System.Drawing.Point(3, 52);
+            this.cb_fiducialsBottomLayer.Name = "cb_fiducialsBottomLayer";
+            this.cb_fiducialsBottomLayer.Size = new System.Drawing.Size(161, 17);
+            this.cb_fiducialsBottomLayer.TabIndex = 12;
+            this.cb_fiducialsBottomLayer.Text = "Add fiducials on bottom layer";
+            this.cb_fiducialsBottomLayer.UseVisualStyleBackColor = true;
             // 
             // cb_fiducials_orientationSafe
             // 
@@ -564,7 +564,7 @@
         #endregion
 
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.CheckBox cb_fiductialsTopLayer;
+        private System.Windows.Forms.CheckBox cb_fiducialsTopLayer;
         private System.Windows.Forms.CheckBox addHolesCheck;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
         private System.Windows.Forms.Label label1;
@@ -599,7 +599,7 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.CheckBox cb_fiductialsBottomLayer;
+        private System.Windows.Forms.CheckBox cb_fiducialsBottomLayer;
         private System.Windows.Forms.CheckBox cb_fiducials_orientationSafe;
     }
 }
