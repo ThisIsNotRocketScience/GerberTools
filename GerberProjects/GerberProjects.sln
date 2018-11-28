@@ -78,10 +78,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontPanelBuilder", "..\Fro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberToDxf", "..\GerberToDxf\GerberToDxf\GerberToDxf.csproj", "{843057E6-2FC0-4C78-AAB3-197C60AE72BF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dependencies", "dependencies", "{AAAFD0A7-47D1-4530-86CA-B68C5790E7C1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Triangle", "..\dependencies\Triangle.NET\Triangle.NET\Triangle\Triangle.csproj", "{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -330,14 +326,6 @@ Global
 		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|x86.ActiveCfg = Release|Any CPU
 		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|x86.Build.0 = Release|Any CPU
-		{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}.Debug|x86.Build.0 = Debug|Any CPU
-		{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}.Release|x86.ActiveCfg = Release|Any CPU
-		{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -373,10 +361,6 @@ Global
 		{822016C1-52B8-449C-BE7A-D3ABA943B8B6} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{843057E6-2FC0-4C78-AAB3-197C60AE72BF} = {F705564A-6956-4675-A941-6ED916ADC0AD}
-		{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B} = {AAAFD0A7-47D1-4530-86CA-B68C5790E7C1}
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {D3E1B175-5E33-4A46-8DBC-A8B9B4A50987}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
