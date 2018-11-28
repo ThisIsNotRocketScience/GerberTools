@@ -41,6 +41,8 @@ namespace Artwork
         public bool SuperSymmetry;
         public int xscalesmallerlevel;
         public int xscalecenter;
+
+        public float scalesmallerfactor = 1.0f;
         public TriangleScaleMode scalingMode = TriangleScaleMode.Balanced;
     }
 

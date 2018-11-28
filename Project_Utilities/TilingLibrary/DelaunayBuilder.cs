@@ -22,7 +22,16 @@ namespace Artwork
             Lines.Clear();
             Mask.NodeWalker(GetAllCorners, true, true);
             var GM = new TriangleNet.Meshing.GenericMesher();
-            M = GM.Triangulate(IG);
+            if (IG.Count < 3)
+            {
+                M = null;
+                return;
+                
+            }
+            else
+            {
+                M = GM.Triangulate(IG);
+            }
             //M.Triangulate(IG);
             //M.Smooth();
             //M.Refine();

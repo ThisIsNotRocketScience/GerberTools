@@ -566,8 +566,15 @@ namespace Artwork
                             {
                                 var M = A.Mid();
                                 float scaler = 1.0f - ((float)(M.x-offs) / width) * TheSettings.xscalesmallerlevel * 0.01f;
-                                scaler = Math.Max(0, Math.Min(1.0f, scaler));
+                                //scaler = Math.Max(0, Math.Min(1.0f, scaler));
                                 A.ScaleDown(TheSettings.scalingMode, scaler);
+                            }
+                        }
+                        if (TheSettings.scalesmallerfactor != 1.0f)
+                        {
+                            foreach (var A in SubDivPoly)
+                            {
+                                A.ScaleDown(Settings.TriangleScaleMode.Balanced, TheSettings.scalesmallerfactor);
                             }
                         }
 
