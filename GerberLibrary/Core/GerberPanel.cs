@@ -1583,6 +1583,7 @@ namespace GerberLibrary
             {
                 string ext = Path.GetExtension(s).ToLower(); ;
                 if (ext == "xln") ext = "txt";
+                if (ext == "drl") ext = "txt";
                 if (FilesPerExt.ContainsKey(ext) == false)
                 {
                     FilesPerExt[ext] = new List<string>();
