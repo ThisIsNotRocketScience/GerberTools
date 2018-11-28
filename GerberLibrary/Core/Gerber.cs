@@ -373,6 +373,7 @@ namespace GerberLibrary
                 case "fabrd":
                 case "oln":
                 case "gko":
+                case "gm1":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Outline;
                     break;
