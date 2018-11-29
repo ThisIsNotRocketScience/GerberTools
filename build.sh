@@ -22,7 +22,7 @@ nuget () {
 export TERM=xterm
 
 nuget Triangle 0.0.6-Beta3
-nuget DotNetZip 1.11.0
+nuget DotNetZip 1.12.0
 nuget OpenTK 3.0.1
 nuget OpenTK.GLControl 3.0.1
 nuget netDXF 2.0.2
