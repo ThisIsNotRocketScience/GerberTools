@@ -174,7 +174,7 @@ void main()
             GL.UniformMatrix4(MainShader.Uniforms["trans"].address, false, ref M);
             GL.UniformMatrix4(MainShader.Uniforms["view"].address, false, ref View);
              GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
             VBOCache.RenderVBO(MainShader);
             MainShader.UnBind();
             //DrawGerbersToGraphicsInterface(Bounds, GI);
