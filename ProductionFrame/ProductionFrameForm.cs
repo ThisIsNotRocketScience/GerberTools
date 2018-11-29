@@ -117,13 +117,13 @@ namespace ProductionFrame
                                  
                 foreach (var A in Fiducials)
                 {
-                    if (cb_fiductialsTopLayer.Checked)
+                    if (cb_fiducialsTopLayer.Checked)
                     {
                         TopCopper.AddFlash(A, 1.0);
                         TopSolderMask.AddFlash(A, 3.0);
                     }
 
-                    if (cb_fiductialsBottomLayer.Checked)
+                    if (cb_fiducialsBottomLayer.Checked)
                     {
                         BottomCopper.AddFlash(A, 1.0);
                         BottomSolderMask.AddFlash(A, 3.0);
