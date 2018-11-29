@@ -56,10 +56,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\dependencies\Triangle.NET\Triangle.NET\Triangle\Triangle.csproj">
-      <Project>{f7907a0a-b75f-400b-9e78-bfad00db4d6b}</Project>
-      <Name>Triangle</Name>
-    </ProjectReference>
+    <Reference Include="Triangle, Version=0.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\GerberProjects\packages\Triangle.0.0.6-Beta3\lib\net45\Triangle.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <ProjectReference Include="..\GerberLibrary\GerberLibrary.csproj">
       <Project>{e1c3aa23-3a02-485f-976b-50a96052f00a}</Project>
       <Name>GerberLibrary</Name>
