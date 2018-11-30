@@ -44,12 +44,12 @@
     <Reference Include="DotNetZip, Version=1.12.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
       <HintPath>..\GerberProjects\packages\DotNetZip.1.12.0\lib\net20\DotNetZip.dll</HintPath>
     </Reference>
-    <Reference Include="OpenTK, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>..\GerberProjects\packages\OpenTK.Next.1.2.2336.6514-pre\lib\net20\OpenTK.dll</HintPath>
+    <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+       <HintPath>..\GerberProjects\packages\OpenTK.3.0.1\lib\net20\OpenTK.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OpenTK.GLControl, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>..\GerberProjects\packages\OpenTK.Next.GLControl.1.2.2336.6514-pre\lib\net20\OpenTK.GLControl.dll</HintPath>
+    <Reference Include="OpenTK.GLControl, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\GerberProjects\packages\OpenTK.GLControl.3.0.1\lib\net20\OpenTK.GLControl.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
