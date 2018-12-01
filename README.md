@@ -11,8 +11,10 @@ Follow us on twitter: @rocket_not
 
 ## Building
 ### Visual Studio 2015 upwards
-Open the `GerberProjects/GerberProjects.sln` solution, convert it to your version of Visual Studio
-(if necessary), then build it. Dependencies should be fetched automatically via Nuget.
+- Open the `GerberProjects/GerberProjects.sln` solution and convert it to your version of Visual Studio
+(if necessary)
+- Ensure your dependencies are up to date via Nuget: https://docs.microsoft.com/en-us/nuget/consume-packages/reinstalling-and-updating-packages
+- Build the solution
 
 ### Linux
 Run `./build.sh`. Dependencies should be automatically fetched.

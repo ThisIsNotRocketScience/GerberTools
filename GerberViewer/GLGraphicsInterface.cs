@@ -542,12 +542,13 @@ namespace GerberViewer
                 AttributeInfo info = new AttributeInfo();
                 int length = 0;
 
-                StringBuilder namebuild = new StringBuilder();
-                GL.GetActiveAttrib(ProgramID, i, 256, out length, out info.size, out info.type, namebuild);
-                
-                info.name = namebuild.ToString();
+                String name;
+
+                GL.GetActiveAttrib(ProgramID, i, 256, out length, out info.size, out info.type, out name);
+
+                info.name = name.ToString();
                 info.address = GL.GetAttribLocation(ProgramID, info.name);
-                Attributes.Add(namebuild.ToString(), info);
+                Attributes.Add(name.ToString(), info);
             }
 
             for (int i = 0; i < UniformCount; i++)
@@ -555,13 +556,12 @@ namespace GerberViewer
                 UniformInfo info = new UniformInfo();
                 int length = 0;
 
-//                String name;
-                StringBuilder namebuild = new StringBuilder();
+                String name;
 
-                GL.GetActiveUniform(ProgramID, i, 256, out length, out info.size, out info.type, namebuild);
+                GL.GetActiveUniform(ProgramID, i, 256, out length, out info.size, out info.type, out name);
 
-                info.name = namebuild.ToString();
-                Uniforms.Add(namebuild.ToString(), info);
+                info.name = name.ToString();
+                Uniforms.Add(name.ToString(), info);
                 info.address = GL.GetUniformLocation(ProgramID, info.name);
             }
         }

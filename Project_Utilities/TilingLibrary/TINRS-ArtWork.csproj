@@ -40,7 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GlmNet, Version=0.5.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\GerberProjects\packages\GlmNet.0.5.1\lib\net40\GlmNet.dll</HintPath>
+      <HintPath>..\..\GerberProjects\packages\GlmNet.0.5.1.0\lib\net40\GlmNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
