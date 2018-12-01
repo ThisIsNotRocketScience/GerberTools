@@ -218,7 +218,7 @@ namespace GerberLibrary
 
             foreach (var a in TheSet.Instances)
             {
-                if (a.GerberPath.Contains("???") == false)
+                if (a.GerberPath.Contains("???_negative") == false)
                 {
                     var outline = GerberOutlines[a.GerberPath];
                     var P = outline.GetActualCenter();
@@ -1144,7 +1144,7 @@ namespace GerberLibrary
             RemoveAllTabs();
             foreach (var a in TheSet.Instances)
             {
-                if (GerberOutlines.ContainsKey(a.GerberPath) && a.GerberPath.Contains("???") == false)
+                if (GerberOutlines.ContainsKey(a.GerberPath) && a.GerberPath.Contains("???_negative") == false)
                 {
                     var g = GerberOutlines[a.GerberPath];
                     var TabsLocs = PolyLineSet.FindOptimalBreaktTabLocations(g.TheGerber);
@@ -1326,7 +1326,7 @@ namespace GerberLibrary
                         C = C.Rotate(-b.Angle);
                         var Box2 = a.TheGerber.BoundingBox.Grow(t.Radius * 2);
 
-                        if (Box2.Contains(C))
+                        if (Box2.Contains(C) || b.GerberPath.Contains("???_negative") == true)
                         {
                             //Console.WriteLine("{0},{1}", a.TheGerber.BoundingBox, C);
 
@@ -2107,7 +2107,7 @@ namespace GerberLibrary
 
 
                 Logger.AddString("writing " + a.GerberPath, ((float)current / (float)Instances.Count) * 0.3f);
-                if (a.GerberPath.Contains("???") == false)
+                if (a.GerberPath.Contains("???_negative") == false)
                 {
                     var outline = GerberOutlines[a.GerberPath];
                     List<String> FileList = new List<string>();
