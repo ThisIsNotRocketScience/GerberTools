@@ -16,6 +16,11 @@ namespace GerberLibrary.Core
         public float y1;
         public float x2;
         public float y2;
+
+        public void Draw(Graphics g,Color C, float W  = 1.0f)
+        {
+            g.DrawLine(new Pen(C, W), x1, y1, x2, y2);
+        }
     }
 
 
