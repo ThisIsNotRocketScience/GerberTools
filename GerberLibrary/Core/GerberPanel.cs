@@ -1347,7 +1347,7 @@ namespace GerberLibrary
                                     // t.Errors.Add("inside a polygon!");
                                     //  t.Valid = false;
                                 }
-                                if (TheSet.DoNotGenerateMouseBites == false) BuildDrillsForTabAndPolyLine(t, c, b.OffsetOutlines[i]);
+                                if (!TheSet.DoNotGenerateMouseBites && !b.RemoveMouseBites) BuildDrillsForTabAndPolyLine(t, c, b.OffsetOutlines[i]);
 
                                 //bool inside = false;
                                 //bool newinside = false;
@@ -1680,16 +1680,84 @@ namespace GerberLibrary
 
                 // Create a new file stream to write the serialized object to a file
                 TextWriter WriteFileStream = new StreamWriter(FileName);
-                SerializerObj.Serialize(WriteFileStream, TheSet);
+
+                if (TheSet.UseRelativePath)
+                {
+                    GerberLayoutSet tempSet;
+
+                    using (MemoryStream Mems = new MemoryStream())
+                    {
+                        XmlSerializer Serializer = new XmlSerializer(typeof(GerberLayoutSet));
+                        Serializer.Serialize(Mems, TheSet);
+                        Mems.Seek(0, SeekOrigin.Begin);
+                        tempSet = (GerberLayoutSet)Serializer.Deserialize(Mems);
+                    }
+
+                    string pathBase = Path.GetDirectoryName(FileName);
+
+                    for (int i = 0; i < tempSet.Instances.Count; i++)
+                    {
+                        string a = tempSet.Instances[i].GerberPath;
+
+                        a = GetRelativePath(pathBase, a);
+
+                        tempSet.Instances[i].GerberPath = a;
+                    }
+
+                    for (int i = 0; i < tempSet.LoadedOutlines.Count; i++)
+                    {
+                        string a = tempSet.LoadedOutlines[i];
+
+                        a = GetRelativePath(pathBase, a);
+
+                        tempSet.LoadedOutlines[i] = a;
+                    }
+
+                    SerializerObj.Serialize(WriteFileStream, tempSet);
+                }
+                else
+                    SerializerObj.Serialize(WriteFileStream, TheSet);
 
                 // Cleanup
                 WriteFileStream.Close();
 
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
             }
+        }
+
+        public static string GetRelativePath(string p_startPath, string p_fullDestinationPath)
+        {
+            string[] l_startPathParts = Path.GetFullPath(p_startPath).Trim(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar);
+            string[] l_destinationPathParts = p_fullDestinationPath.Split(Path.DirectorySeparatorChar);
+
+            int l_sameCounter = 0;
+            while ((l_sameCounter < l_startPathParts.Length) && (l_sameCounter < l_destinationPathParts.Length) && l_startPathParts[l_sameCounter].Equals(l_destinationPathParts[l_sameCounter], StringComparison.InvariantCultureIgnoreCase))
+            {
+                l_sameCounter++;
+            }
+
+            if (l_sameCounter == 0)
+            {
+                return p_fullDestinationPath; // There is no relative link.
+            }
+
+            System.Text.StringBuilder l_builder = new System.Text.StringBuilder();
+            for (int i = l_sameCounter; i < l_startPathParts.Length; i++)
+            {
+                l_builder.Append(".." + Path.DirectorySeparatorChar);
+            }
+
+            for (int i = l_sameCounter; i < l_destinationPathParts.Length; i++)
+            {
+                l_builder.Append(l_destinationPathParts[i] + Path.DirectorySeparatorChar);
+            }
+
+            l_builder.Length--;
+
+            return l_builder.ToString();
         }
 
         public void RemoveInstance(AngledThing angledThing)
@@ -1744,8 +1812,27 @@ namespace GerberLibrary
                 GerberLayoutSet newset = (GerberLayoutSet)SerializerObj.Deserialize(ReadFileStream);
                 if (newset != null)
                 {
-                    foreach (var a in newset.LoadedOutlines)
+                    string path = Path.GetDirectoryName(filename);
+                    for (int i = 0; i < newset.Instances.Count; i++)
                     {
+                        string a = newset.Instances[i].GerberPath;
+                        if (!Path.IsPathRooted(a))
+                        {
+                            a = Path.GetFullPath(path + Path.DirectorySeparatorChar + a);
+                            a = a.TrimEnd(Path.DirectorySeparatorChar);
+                            newset.Instances[i].GerberPath = a;
+                        }
+                    }
+
+                    for (int i = 0; i < newset.LoadedOutlines.Count; i++)
+                    {
+                        string a = newset.LoadedOutlines[i];
+                        if (!Path.IsPathRooted(a))
+                        {
+                            a = Path.GetFullPath(path + Path.DirectorySeparatorChar + a);
+                            a = a.TrimEnd(Path.DirectorySeparatorChar);
+                            newset.LoadedOutlines[i] = a;
+                        }
                         AddGerberFolder(a, false);
                     }
                     TheSet = newset;
@@ -1989,6 +2076,7 @@ namespace GerberLibrary
     {
         public string GerberPath;
         public bool Generated = false;
+        public bool RemoveMouseBites = false;
 
         [System.Xml.Serialization.XmlIgnore]
         public List<PolyLine> TransformedOutlines = new List<PolyLine>();
@@ -2080,6 +2168,7 @@ namespace GerberLibrary
         public double Smoothing = 1;
         public double ExtraTabDrillDistance = 0;
         public bool ClipToOutlines = true;
+        public bool UseRelativePath = false;
         public string LastExportFolder = "";
 
         public bool DoNotGenerateMouseBites = false;
@@ -2102,7 +2191,7 @@ namespace GerberLibrary
                 BOM InstanceBom = BOM.ScanFolderForBoms(a.GerberPath);
                 if (InstanceBom != null && InstanceBom.GetPartCount() > 0)
                 {
-                    MasterBom.MergeBOM(InstanceBom, set, a.Center.X, a.Center.Y,0,0, a.Angle);
+                    MasterBom.MergeBOM(InstanceBom, set, a.Center.X, a.Center.Y, 0, 0, a.Angle);
                 }
 
 
@@ -2148,7 +2237,7 @@ namespace GerberLibrary
                         }
                     }
 
-                    instanceID = AddFilesForInstance(OutputFolder,a.Center.X, a.Center.Y, a.Angle, FileList, instanceID, GeneratedFiles, outline, Logger);
+                    instanceID = AddFilesForInstance(OutputFolder, a.Center.X, a.Center.Y, a.Angle, FileList, instanceID, GeneratedFiles, outline, Logger);
 
 
                     instanceID++;
@@ -2174,8 +2263,8 @@ namespace GerberLibrary
                 MasterBom.SaveBom(BomFile);
                 MasterBom.SaveCentroids(CentroidFile);
 
-//                GeneratedFiles.Add(CentroidFile);
-  //              GeneratedFiles.Add(BomFile);
+                //                GeneratedFiles.Add(CentroidFile);
+                //              GeneratedFiles.Add(BomFile);
             }
             return GeneratedFiles;
         }
@@ -2202,7 +2291,7 @@ namespace GerberLibrary
                             ExcellonFile EF = new ExcellonFile();
                             EF.Load(f, scaler);
                             string Filename = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
-                            EF.Write(Filename, x,y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
+                            EF.Write(Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
                             GeneratedFiles.Add(Filename);
                         }
                         catch (Exception E)
@@ -2232,7 +2321,7 @@ namespace GerberLibrary
                                     tempfile = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
                                     GerberImageCreator GIC2 = new GerberImageCreator();
                                     GIC2.AddBoardsToSet(FileList);
-                                    GIC2.ClipBoard(f, tempfile,Logger);
+                                    GIC2.ClipBoard(f, tempfile, Logger);
                                     sourcefile = tempfile;
                                 }
                             }

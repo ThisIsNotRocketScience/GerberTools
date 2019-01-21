@@ -52,6 +52,7 @@
             this.label12 = new System.Windows.Forms.Label();
             this.ClipToOutlines = new System.Windows.Forms.CheckBox();
             this.noMouseBites = new System.Windows.Forms.CheckBox();
+            this.RelativePath = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.WidthBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MarginBox)).BeginInit();
@@ -63,14 +64,15 @@
             // WidthBox
             // 
             this.WidthBox.DecimalPlaces = 2;
-            this.WidthBox.Location = new System.Drawing.Point(187, 19);
+            this.WidthBox.Location = new System.Drawing.Point(140, 15);
+            this.WidthBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.WidthBox.Maximum = new decimal(new int[] {
             100000,
             0,
             0,
             0});
             this.WidthBox.Name = "WidthBox";
-            this.WidthBox.Size = new System.Drawing.Size(120, 22);
+            this.WidthBox.Size = new System.Drawing.Size(90, 20);
             this.WidthBox.TabIndex = 0;
             this.WidthBox.Value = new decimal(new int[] {
             100,
@@ -81,14 +83,15 @@
             // HeightBox
             // 
             this.HeightBox.DecimalPlaces = 2;
-            this.HeightBox.Location = new System.Drawing.Point(187, 47);
+            this.HeightBox.Location = new System.Drawing.Point(140, 38);
+            this.HeightBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.HeightBox.Maximum = new decimal(new int[] {
             100000,
             0,
             0,
             0});
             this.HeightBox.Name = "HeightBox";
-            this.HeightBox.Size = new System.Drawing.Size(120, 22);
+            this.HeightBox.Size = new System.Drawing.Size(90, 20);
             this.HeightBox.TabIndex = 1;
             this.HeightBox.Value = new decimal(new int[] {
             100,
@@ -104,14 +107,15 @@
             0,
             0,
             65536});
-            this.MarginBox.Location = new System.Drawing.Point(187, 75);
+            this.MarginBox.Location = new System.Drawing.Point(140, 61);
+            this.MarginBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.MarginBox.Maximum = new decimal(new int[] {
             100000,
             0,
             0,
             0});
             this.MarginBox.Name = "MarginBox";
-            this.MarginBox.Size = new System.Drawing.Size(120, 22);
+            this.MarginBox.Size = new System.Drawing.Size(90, 20);
             this.MarginBox.TabIndex = 2;
             this.MarginBox.Value = new decimal(new int[] {
             2,
@@ -122,9 +126,10 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(135, 19);
+            this.label1.Location = new System.Drawing.Point(101, 15);
+            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(44, 17);
+            this.label1.Size = new System.Drawing.Size(35, 13);
             this.label1.TabIndex = 3;
             this.label1.Text = "Width";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -132,9 +137,10 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(137, 47);
+            this.label2.Location = new System.Drawing.Point(103, 38);
+            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(49, 17);
+            this.label2.Size = new System.Drawing.Size(38, 13);
             this.label2.TabIndex = 4;
             this.label2.Text = "Height";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -142,9 +148,10 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(25, 77);
+            this.label3.Location = new System.Drawing.Point(19, 63);
+            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(156, 17);
+            this.label3.Size = new System.Drawing.Size(118, 13);
             this.label3.TabIndex = 5;
             this.label3.Text = "Margin between boards";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -152,9 +159,10 @@
             // button1
             // 
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.button1.Location = new System.Drawing.Point(216, 332);
+            this.button1.Location = new System.Drawing.Point(162, 307);
+            this.button1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(91, 28);
+            this.button1.Size = new System.Drawing.Size(68, 23);
             this.button1.TabIndex = 6;
             this.button1.Text = "Ok";
             this.button1.UseVisualStyleBackColor = true;
@@ -163,9 +171,10 @@
             // button2
             // 
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button2.Location = new System.Drawing.Point(41, 332);
+            this.button2.Location = new System.Drawing.Point(31, 307);
+            this.button2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(91, 28);
+            this.button2.Size = new System.Drawing.Size(68, 23);
             this.button2.TabIndex = 7;
             this.button2.Text = "Cancel";
             this.button2.UseVisualStyleBackColor = true;
@@ -174,9 +183,10 @@
             // FillEmpty
             // 
             this.FillEmpty.AutoSize = true;
-            this.FillEmpty.Location = new System.Drawing.Point(187, 111);
+            this.FillEmpty.Location = new System.Drawing.Point(140, 90);
+            this.FillEmpty.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.FillEmpty.Name = "FillEmpty";
-            this.FillEmpty.Size = new System.Drawing.Size(122, 21);
+            this.FillEmpty.Size = new System.Drawing.Size(93, 17);
             this.FillEmpty.TabIndex = 9;
             this.FillEmpty.Text = "Fill empty area";
             this.FillEmpty.UseVisualStyleBackColor = true;
@@ -189,14 +199,15 @@
             0,
             0,
             65536});
-            this.filloffsetbox.Location = new System.Drawing.Point(187, 142);
+            this.filloffsetbox.Location = new System.Drawing.Point(140, 115);
+            this.filloffsetbox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.filloffsetbox.Maximum = new decimal(new int[] {
             100000,
             0,
             0,
             0});
             this.filloffsetbox.Name = "filloffsetbox";
-            this.filloffsetbox.Size = new System.Drawing.Size(120, 22);
+            this.filloffsetbox.Size = new System.Drawing.Size(90, 20);
             this.filloffsetbox.TabIndex = 10;
             this.filloffsetbox.Value = new decimal(new int[] {
             2,
@@ -207,9 +218,10 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(21, 144);
+            this.label4.Location = new System.Drawing.Point(16, 117);
+            this.label4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(160, 17);
+            this.label4.Size = new System.Drawing.Size(118, 13);
             this.label4.TabIndex = 11;
             this.label4.Text = "Fill offset for empty area";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -217,9 +229,10 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(21, 172);
+            this.label5.Location = new System.Drawing.Point(16, 140);
+            this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(149, 17);
+            this.label5.Size = new System.Drawing.Size(111, 13);
             this.label5.TabIndex = 13;
             this.label5.Text = "Empty area smoothing";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -232,14 +245,15 @@
             0,
             0,
             65536});
-            this.smoothoffsetbox.Location = new System.Drawing.Point(187, 170);
+            this.smoothoffsetbox.Location = new System.Drawing.Point(140, 138);
+            this.smoothoffsetbox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.smoothoffsetbox.Maximum = new decimal(new int[] {
             100000,
             0,
             0,
             0});
             this.smoothoffsetbox.Name = "smoothoffsetbox";
-            this.smoothoffsetbox.Size = new System.Drawing.Size(120, 22);
+            this.smoothoffsetbox.Size = new System.Drawing.Size(90, 20);
             this.smoothoffsetbox.TabIndex = 12;
             this.smoothoffsetbox.Value = new decimal(new int[] {
             2,
@@ -250,9 +264,10 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(10, 220);
+            this.label6.Location = new System.Drawing.Point(8, 179);
+            this.label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(171, 17);
+            this.label6.Size = new System.Drawing.Size(127, 13);
             this.label6.TabIndex = 15;
             this.label6.Text = "Extra distance for tabdrills";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -265,14 +280,15 @@
             0,
             0,
             65536});
-            this.ExtraTabDrillDistance.Location = new System.Drawing.Point(187, 218);
+            this.ExtraTabDrillDistance.Location = new System.Drawing.Point(140, 177);
+            this.ExtraTabDrillDistance.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.ExtraTabDrillDistance.Maximum = new decimal(new int[] {
             100000,
             0,
             0,
             0});
             this.ExtraTabDrillDistance.Name = "ExtraTabDrillDistance";
-            this.ExtraTabDrillDistance.Size = new System.Drawing.Size(120, 22);
+            this.ExtraTabDrillDistance.Size = new System.Drawing.Size(90, 20);
             this.ExtraTabDrillDistance.TabIndex = 14;
             this.ExtraTabDrillDistance.Value = new decimal(new int[] {
             2,
@@ -283,10 +299,9 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(314, 24);
-            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label7.Location = new System.Drawing.Point(236, 20);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(30, 17);
+            this.label7.Size = new System.Drawing.Size(23, 13);
             this.label7.TabIndex = 18;
             this.label7.Text = "mm";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -294,10 +309,9 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(314, 52);
-            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label8.Location = new System.Drawing.Point(236, 42);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(30, 17);
+            this.label8.Size = new System.Drawing.Size(23, 13);
             this.label8.TabIndex = 19;
             this.label8.Text = "mm";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -305,10 +319,9 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(314, 80);
-            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label9.Location = new System.Drawing.Point(236, 65);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(30, 17);
+            this.label9.Size = new System.Drawing.Size(23, 13);
             this.label9.TabIndex = 20;
             this.label9.Text = "mm";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -316,10 +329,9 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(314, 175);
-            this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label10.Location = new System.Drawing.Point(236, 142);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(30, 17);
+            this.label10.Size = new System.Drawing.Size(23, 13);
             this.label10.TabIndex = 21;
             this.label10.Text = "mm";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -327,10 +339,9 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(314, 147);
-            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label11.Location = new System.Drawing.Point(236, 119);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(30, 17);
+            this.label11.Size = new System.Drawing.Size(23, 13);
             this.label11.TabIndex = 22;
             this.label11.Text = "mm";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -338,10 +349,9 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(314, 223);
-            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label12.Location = new System.Drawing.Point(236, 181);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(30, 17);
+            this.label12.Size = new System.Drawing.Size(23, 13);
             this.label12.TabIndex = 23;
             this.label12.Text = "mm";
             this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -349,9 +359,10 @@
             // ClipToOutlines
             // 
             this.ClipToOutlines.AutoSize = true;
-            this.ClipToOutlines.Location = new System.Drawing.Point(185, 261);
+            this.ClipToOutlines.Location = new System.Drawing.Point(139, 212);
+            this.ClipToOutlines.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.ClipToOutlines.Name = "ClipToOutlines";
-            this.ClipToOutlines.Size = new System.Drawing.Size(163, 21);
+            this.ClipToOutlines.Size = new System.Drawing.Size(124, 17);
             this.ClipToOutlines.TabIndex = 24;
             this.ClipToOutlines.Text = "Clip to board outlines";
             this.ClipToOutlines.UseVisualStyleBackColor = true;
@@ -359,21 +370,34 @@
             // noMouseBites
             // 
             this.noMouseBites.AutoSize = true;
-            this.noMouseBites.Location = new System.Drawing.Point(187, 288);
+            this.noMouseBites.Location = new System.Drawing.Point(139, 234);
+            this.noMouseBites.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.noMouseBites.Name = "noMouseBites";
-            this.noMouseBites.Size = new System.Drawing.Size(209, 21);
+            this.noMouseBites.Size = new System.Drawing.Size(159, 17);
             this.noMouseBites.TabIndex = 25;
             this.noMouseBites.Text = "Do not generate mousebites";
             this.noMouseBites.UseVisualStyleBackColor = true;
             this.noMouseBites.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
+            // RelativePath
+            // 
+            this.RelativePath.AutoSize = true;
+            this.RelativePath.Location = new System.Drawing.Point(139, 255);
+            this.RelativePath.Margin = new System.Windows.Forms.Padding(2);
+            this.RelativePath.Name = "RelativePath";
+            this.RelativePath.Size = new System.Drawing.Size(106, 17);
+            this.RelativePath.TabIndex = 26;
+            this.RelativePath.Text = "Use relative path";
+            this.RelativePath.UseVisualStyleBackColor = true;
+            // 
             // PanelProperties
             // 
             this.AcceptButton = this.button1;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.button2;
-            this.ClientSize = new System.Drawing.Size(419, 401);
+            this.ClientSize = new System.Drawing.Size(314, 354);
+            this.Controls.Add(this.RelativePath);
             this.Controls.Add(this.noMouseBites);
             this.Controls.Add(this.ClipToOutlines);
             this.Controls.Add(this.label12);
@@ -398,6 +422,7 @@
             this.Controls.Add(this.HeightBox);
             this.Controls.Add(this.WidthBox);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "PanelProperties";
             this.Text = "Panel Properties";
             ((System.ComponentModel.ISupportInitialize)(this.WidthBox)).EndInit();
@@ -436,5 +461,6 @@
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.CheckBox ClipToOutlines;
         private System.Windows.Forms.CheckBox noMouseBites;
+        private System.Windows.Forms.CheckBox RelativePath;
     }
 }

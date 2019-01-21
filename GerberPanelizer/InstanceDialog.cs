@@ -33,6 +33,9 @@ namespace GerberCombinerBuilder
             double rad = 0;
 
             radiusbox.Enabled = false;
+            noMouseBites.Checked = false;
+            noMouseBites.Enabled = false;
+
             Bigger.Enabled = false;
             Smaller.Enabled = false;
 
@@ -48,8 +51,10 @@ namespace GerberCombinerBuilder
            
            if (TargetInstance.SelectedInstance.GetType() == typeof(GerberInstance))
             {
-                  GerberInstance GI = TargetInstance.SelectedInstance as GerberInstance;
-                  NameLabel.Text = Path.GetFileName(Path.GetDirectoryName( GI.GerberPath));
+                GerberInstance GI = TargetInstance.SelectedInstance as GerberInstance;
+                NameLabel.Text = Path.GetFileName(Path.GetDirectoryName( GI.GerberPath));
+                noMouseBites.Enabled = true;
+                noMouseBites.Checked = GI.RemoveMouseBites;
             }
             
             xbox.Value = (decimal)x;
@@ -82,6 +87,7 @@ namespace GerberCombinerBuilder
 
             {
                 GerberInstance GI = TargetInstance.SelectedInstance as GerberInstance;
+                GI.RemoveMouseBites = noMouseBites.Checked;
                 GI.RebuildTransformed(TargetInstance.ThePanel.GerberOutlines[GI.GerberPath], TargetInstance.ThePanel.TheSet.ExtraTabDrillDistance);
             }
             
@@ -215,6 +221,11 @@ namespace GerberCombinerBuilder
         private void Smaller_Click_1(object sender, EventArgs e)
         {
             Smaller_Click(sender, e);
+        }
+
+        private void noMouseBites_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateInstance();
         }
     }
 }

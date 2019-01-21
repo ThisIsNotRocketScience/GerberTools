@@ -273,6 +273,11 @@ namespace GerberCombinerBuilder
             try
             {
                 folderBrowserDialog2.SelectedPath = ThePanel.TheSet.LastExportFolder;
+
+                if (folderBrowserDialog2.SelectedPath.Length == 0) {
+                    folderBrowserDialog2.SelectedPath = Path.GetDirectoryName(LoadedFile);
+                }
+
             }
             catch (Exception)
             {
