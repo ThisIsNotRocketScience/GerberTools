@@ -199,7 +199,50 @@ namespace GerberLibrary.Core
     public class BOM
     {
 
+        public List<BOM> SplitOverPolygons(List<Primitives.PolyLine> polygons)
+        {
+            List<BOM> Res = new List<BOM>();
+            List<BOMNumberSet> Ns = new List<BOMNumberSet>();
 
+            foreach (var p in polygons)
+            {
+                BOM SubBom = new BOM();
+                Res.Add(SubBom);
+                Ns.Add(new BOMNumberSet());
+            }
+            foreach (var packagepair in DeviceTree)
+            {
+                foreach (var devicevalue in packagepair.Value)
+                {
+                    foreach (var n in devicevalue.Value.RefDes)
+                    {
+                        int i = 0;
+                        int added = 0;
+                        foreach (var p in polygons)
+                        {
+                            if (p.PointInPoly(new Primitives.PointD(n.x, n.y)))
+                            {
+                                Res[i].AddBOMItem(devicevalue.Value.PackageName, devicevalue.Value.Name, devicevalue.Value.Value, n.NameOnBoard, Ns[i], n.SourceBoard, n.x, n.y, n.angle, n.Side);
+                                added++;
+                            }
+                            i++;
+                        }
+                        if (added ==0 )
+                        {
+                            Console.WriteLine("part skipped for some reason: {0}", n.NameOnBoard);
+                        }
+                        if (added > 1)
+                        {
+                            Console.WriteLine("part doublebooked for some reason: {0}", n.NameOnBoard);
+
+                        }
+                    }
+                }
+            }
+
+
+            return Res;
+        }
 
         public void RemoveIgnored(List<string> toIgnore)
         {
@@ -258,7 +301,23 @@ namespace GerberLibrary.Core
                 }
             }
         }
+        public int GetPartCount(List<String> ToIgnore)
+        {
+            int partcount = 0;
+            foreach (var a in DeviceTree)
+            {
+                //Console.WriteLine(a.Key);
+                foreach (var b in a.Value)
+                {
+                    if (ToIgnore.Contains(b.Value.PackageName) == false)
+                    {
+                        partcount += b.Value.RefDes.Count;
+                    }
+                }
+            }
 
+            return partcount;
+        }
         public List<string> PrintBOM(List<String> IgnoreList, bool AddDefaultIgnoreList = true)
         {
             List<string> ToIgnore;
@@ -368,6 +427,7 @@ namespace GerberLibrary.Core
 
             return re;
         }
+
 
         public void FillPartno(string basefolder)
         {
