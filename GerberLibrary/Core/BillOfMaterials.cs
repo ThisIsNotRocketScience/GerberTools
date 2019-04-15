@@ -120,9 +120,15 @@ namespace GerberLibrary.Core
                     string unit = Helpers.MakeNiceUnitString(V * R, Units.None).Replace(" ", "").Replace(',', '.');
                     string F = "R*_R0603_" + unit.ToUpper();
                     string F2 = "R*_R0603_" + unit.ToLower();
+                    string F3 = "RES_0603_1%_0603_" + unit.ToUpper();
+                    string F4 = "RES_0603_1%_0603_" + unit.ToLower();
+                
+                    
                     string T = "RES_0603_1%_RES_0603_" + unit;
                     Res[F] = T;
                     Res[F2] = T;
+                    Res[F3] = T;
+                    Res[F4] = T;
                 }
 
                 foreach (var V in Helpers.E24)
@@ -130,9 +136,15 @@ namespace GerberLibrary.Core
                     string unit = Helpers.MakeNiceUnitString(V * R, Units.None).Replace(" ", "").Replace(',', '.');
                     string F = "R*_R0603_" + unit.ToUpper();
                     string F2 = "R*_R0603_" + unit.ToLower();
+                    string F3 = "RES_0603_1%_0603_" + unit.ToUpper();
+                    string F4 = "RES_0603_1%_0603_" + unit.ToLower();
+
+
                     string T = "RES_0603_1%_RES_0603_" + unit;
                     Res[F] = T;
                     Res[F2] = T;
+                    Res[F3] = T;
+                    Res[F4] = T;
                 }
 
                 foreach (var V in Helpers.E48)
@@ -140,9 +152,15 @@ namespace GerberLibrary.Core
                     string unit = Helpers.MakeNiceUnitString(V * R, Units.None).Replace(" ", "").Replace(',', '.');
                     string F = "R*_R0603_" + unit.ToUpper();
                     string F2 = "R*_R0603_" + unit.ToLower();
+                    string F3 = "RES_0603_1%_0603_" + unit.ToUpper();
+                    string F4 = "RES_0603_1%_0603_" + unit.ToLower();
+
+
                     string T = "RES_0603_1%_RES_0603_" + unit;
                     Res[F] = T;
                     Res[F2] = T;
+                    Res[F3] = T;
+                    Res[F4] = T;
                 }
             }
             foreach (var R in Helpers.CapacitorRanges)
@@ -152,6 +170,8 @@ namespace GerberLibrary.Core
                     string unit = Helpers.MakeNiceUnitString(V * R, Units.None).Replace(" ", "").Replace(',', '.');
                     string F = "C*_C0603_" + unit.ToUpper();
                     string F2 = "C*_C0603_" + unit.ToLower();
+                    string F3 = "CAP_C0G_0603_50V_5%_0603_" + unit.ToUpper();
+                    string F4 = "CAP_C0G_0603_50V_5%_0603_" + unit.ToLower();
 
                     string T;
                     if (V * R < 48e-9)
@@ -164,6 +184,8 @@ namespace GerberLibrary.Core
                     }
                     Res[F] = T;
                     Res[F2] = T;
+                    Res[F3] = T;
+                    Res[F4] = T;
                 }
             }
             return Res;
