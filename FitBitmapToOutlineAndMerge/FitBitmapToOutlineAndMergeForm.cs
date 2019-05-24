@@ -18,7 +18,9 @@ namespace FitBitmapToOutlineAndMerge
         public FitBitmapToOutlineAndMergeForm()
         {
             InitializeComponent();
-            ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\EuroForError\Gerbers\Organ_fix1");
+            
+            //ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\Development\Eurorack Set 9\Gerbers\DelayExperiments");
+            ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\Development\Eurorack Set 9\Gerbers\RectangularThing-SOICs-TWEAKS-3");
             //ScanFolder(@"C:\Projects\Circuits\eagle\Eurorack-Modular\Eurorack-Modules\EuroForError\Gerbers\BigBus_Error");
 
         }
@@ -217,6 +219,47 @@ namespace FitBitmapToOutlineAndMerge
             }
 
            
+        }
+
+        private void FitBitmapToOutlineAndMergeForm_DragDrop(object sender, DragEventArgs e)
+        {
+            
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+
+                string[] D = e.Data.GetData(DataFormats.FileDrop) as string[];
+                List<String> files = new List<string>();
+                foreach (string S in D)
+                {
+                    if (Directory.Exists(S))
+                    {
+                        ScanFolder(S);
+                        
+                    }
+
+                    else
+                    {
+                        if (File.Exists(S)) files.Add(S);
+                    }
+                }
+                if (files.Count > 0)
+                {
+                    //LoadGerberFolder(files);
+                }
+            }
+        }
+
+        private void FitBitmapToOutlineAndMergeForm_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+
         }
     }
 }

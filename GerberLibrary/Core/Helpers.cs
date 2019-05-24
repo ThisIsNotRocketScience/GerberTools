@@ -10,6 +10,20 @@ using static GerberLibrary.PolyLineSet;
 
 namespace GerberLibrary.Core
 {
+    public class Line
+    {
+        public float x1;
+        public float y1;
+        public float x2;
+        public float y2;
+
+        public void Draw(Graphics g,Color C, float W  = 1.0f)
+        {
+            g.DrawLine(new Pen(C, W), x1, y1, x2, y2);
+        }
+    }
+
+
     public static class Helpers
     {
         public static PathDefWithClosed Sanitize(PathDefWithClosed inp)
@@ -31,7 +45,75 @@ namespace GerberLibrary.Core
             return R;
         }
 
+        public static List<double> E12 = new List<double>() { 1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2 };
+        public static List<double> E24 = new List<double>() { 1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1 };
+        public static List<double> E48 = new List<double>() { 1.00, 1.05, 1.10, 1.15, 1.21, 1.27, 1.33, 1.40, 1.47, 1.54, 1.62, 1.69, 1.78, 1.87, 1.96, 2.05, 2.15, 2.26, 2.37, 2.49, 2.61, 2.74, 2.87, 3.01, 3.16, 3.32, 3.48, 3.65, 3.83, 4.02, 4.22, 4.42, 4.64, 4.87, 5.11, 5.36, 5.62, 5.90, 6.19, 6.49, 6.81, 7.15, 7.50, 7.87, 8.25, 8.66, 9.09, 9.53 };
+        public static List<double> E96 = new List<double>() { 1.00, 1.02, 1.05, 1.07, 1.10, 1.13, 1.15, 1.18, 1.21, 1.24, 1.27, 1.30, 1.33, 1.37, 1.40, 1.43, 1.47, 1.50, 1.54, 1.58, 1.62, 1.65, 1.69, 1.74, 1.78, 1.82, 1.87, 1.91, 1.96, 2.00, 2.05, 2.10, 2.15, 2.21, 2.26, 2.32, 2.37, 2.43, 2.49, 2.55, 2.61, 2.67, 2.74, 2.80, 2.87, 2.94, 3.01, 3.09, 3.16, 3.24, 3.32, 3.40, 3.48, 3.57, 3.65, 3.74, 3.83, 3.92, 4.02, 4.12, 4.22, 4.32, 4.42, 4.53, 4.64, 4.75, 4.87, 4.99, 5.11, 5.23, 5.36, 5.49, 5.62, 5.76, 5.90, 6.04, 6.19, 6.34, 6.49, 6.65, 6.81, 6.98, 7.15, 7.32, 7.50, 7.68, 7.87, 8.06, 8.25, 8.45, 8.66, 8.87, 9.09, 9.31, 9.53, 9.76 };
+        public static List<double> ResistorRanges = new List<double>() { 1, 10, 100, 1000, 10000, 100000, 1000000 };
+        public static List<double> CapacitorRanges = new List<double>() { 0.000000000001, 0.00000000001, 0.0000000001, 0.000000001, 0.00000001, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01, 0.1 };
 
+        public static string MakeNiceUnitString(double V, Units U)
+        {
+            string UnitName = Enum.GetName(typeof(Units), U);
+            if (U == GerberLibrary.Core.Units.None) UnitName = "";
+            if (V == 0) return "0" + UnitName;
+            int M = 0;
+            int M2 = 0;
+            double V2 = Math.Abs(V);
+            double V3 = V2;
+            while (V2 >= 10)
+            {
+                V2 /= 10;
+                M++;
+                if (M % 3 == 0) { M2++; V3 /= 1000.0f; };
+            }
+
+            if (V2 < 1)
+            {
+                while (V3 < 1)
+                {
+                    V2 *= 10;
+                    M--;
+                    if (M % 3 == 0) { M2--; V3 *= 1000.0f; };
+                }
+            }
+            M = M2;
+            List<string> Units = new List<string>() { "p", "n", "u", "m", "", "k", "M", "G", "T" };
+            M += 4;
+            if (M >= 0 && M < Units.Count)
+            {
+                UnitName = Units[M] + UnitName;
+            }
+            return V3.ToString().Replace(',', '.') + " " + UnitName;
+
+        }
+        public static void Transform(double dx, double dy, double cx, double cy, double angle, ref double X, ref double Y)
+        {
+
+            GerberNumberFormat GNF = new GerberNumberFormat();
+
+            double na = angle * (Math.PI * 2.0) / 360.0; ;
+            double SA = Math.Sin(na);
+            double CA = Math.Cos(na);
+            GNF.Multiplier = 1;
+            GerberTransposer.GetTransformedCoord(dx, dy, cx, cy, angle, CA, SA, GNF, true, ref X, ref Y);
+            double adx = dx;
+            double ady = dy;
+        }
+
+
+        public static Line TransFormLine(Line v, double dx, double dy, float cx, float cy, double angle)
+        {
+            double x1 = v.x1;
+            double x2 = v.x2;
+            double y1 = v.y1;
+            double y2 = v.y2;
+            Transform(dx, dy, cx, cy, angle, ref x1, ref y1);
+            Transform(dx, dy, cx, cy, angle, ref x2, ref y2);
+
+            return new Line() { x1 = (float)x1, y1 = (float)y1, x2 = (float)x2, y2 = (float)y2 };
+
+        }
 
         public static List<PathDefWithClosed> LineSegmentsToPolygons(List<PathDefWithClosed> input, bool joinclosest = true)
         {
@@ -194,7 +276,7 @@ namespace GerberLibrary.Core
                         else
                         {
                             a.Vertices.Remove(a.Vertices.Last());
-                            Console.WriteLine("closed path with {0} points during stage 2: {1} reversematched", a.Vertices.Count(), matching);
+                            //Console.WriteLine("closed path with {0} points during stage 2: {1} reversematched", a.Vertices.Count(), matching);
                             P.Closed = true;
                         }
                     }

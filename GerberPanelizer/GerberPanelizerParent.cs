@@ -20,9 +20,40 @@ namespace GerberCombinerBuilder
         public Treeview TV;
         public InstanceDialog ID;
         public GerberPanelize ActivePanelizeInstance = null;
-        
+
+
+        public class ControlWriter : TextWriter
+        {
+            public string T = "";
+            public int idx;
+            public ControlWriter()
+            {
+
+            }
+
+            public override void Write(char value)
+            {
+                idx++;
+                T += value;
+            }
+
+            public override void Write(string value)
+            {
+                idx++;
+                T += value;
+            }
+
+            public override Encoding Encoding
+            {
+                get { return Encoding.ASCII; }
+            }
+        }
+        ControlWriter CW = new ControlWriter();
+
         public GerberPanelizerParent()
         {
+            Console.SetOut(CW);
+
             InitializeComponent();
             TV = new Treeview();
             //TV.MdiParent = this;

@@ -402,6 +402,21 @@ namespace GerberLibrary.Core.Primitives
             }
             return L;
         }
+
+
+        public bool PointInPoly(PointD pnt)
+        {
+            int i, j;
+            int nvert = Vertices.Count;
+            bool c = false;
+            for (i = 0, j = nvert - 1; i < nvert; j = i++)
+            {
+                if (((Vertices[i].Y > pnt.Y) != (Vertices[j].Y > pnt.Y)) &&
+                 (pnt.X < (Vertices[j].X - Vertices[i].X) * (pnt.Y - Vertices[i].Y) / (Vertices[j].Y - Vertices[i].Y) + Vertices[i].X))
+                    c = !c;
+            }
+            return c;
+        }
     }
 
 }

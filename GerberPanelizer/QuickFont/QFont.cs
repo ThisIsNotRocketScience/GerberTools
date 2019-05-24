@@ -588,7 +588,7 @@ namespace QuickFont
 
                 if (Options.UseDefaultBlendFunction)
                 {
-                    GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+                    GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
                 }
 
             }
@@ -1137,7 +1137,7 @@ namespace QuickFont
                 if (Options.UseDefaultBlendFunction)
                 {
 
-                    GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+                    GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
                 }
             }

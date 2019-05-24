@@ -267,23 +267,27 @@ namespace GerberLibrary
                             LastX = X;
                             LastY = Y;
                            GetTransformedCoord(DX, DY, DXp, DYp, Angle, CA, SA, CoordinateFormat, translate, ref X, ref Y);
-                            if (GS.Has("G") && Angle != 0)
+                            if ((GS.Has("I") || GS.Has("J"))  && Angle != 0)
                             {
-                                int g = (int)GS.Get("G");
-                                if (g == 2 || g == 3)
+                             //   int g = (int)GS.Get("G");
+                              //  if (g == 2 || g == 3)
                                 {
                                     double I = 0;
                                     double J = 0;
-                                    if (GS.Has("I")) I = GS.Get("I");
-                                    if (GS.Has("J")) J = GS.Get("J");
-                                    double nJ = J * CA + I * SA;
-                                    double nI = -J * SA + I * CA;
-                                    I = nI;
-                                    J = nJ;
-                                  //  GS.Set("I", Math.Abs(I));
-                                  //  GS.Set("J", Math.Abs(J));
-                                    GS.Set("I", I);
-                                    GS.Set("J", J);
+                                    bool arc = false;
+                                    if (GS.Has("I")) { I = GS.Get("I"); arc = true; };
+                                    if (GS.Has("J")) {J = GS.Get("J"); arc = true; };
+                                    if (arc)
+                                    {
+                                        double nJ = J * CA + I * SA;
+                                        double nI = -J * SA + I * CA;
+                                        I = nI;
+                                        J = nJ;
+                                        //  GS.Set("I", Math.Abs(I));
+                                        //  GS.Set("J", Math.Abs(J));
+                                        GS.Set("I", I);
+                                        GS.Set("J", J);
+                                    }
                                 }
                             }
                             GS.Set("X", X);
@@ -334,7 +338,7 @@ namespace GerberLibrary
             }
         }
 
-        private static void GetTransformedCoord(double DX, double DY, double DXp, double DYp, double Angle, double CA, double SA, GerberNumberFormat CoordinateFormat, bool translate, ref double X, ref double Y)
+        public static void GetTransformedCoord(double DX, double DY, double DXp, double DYp, double Angle, double CA, double SA, GerberNumberFormat CoordinateFormat, bool translate, ref double X, ref double Y)
         {
             if (translate)
             {

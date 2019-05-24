@@ -447,14 +447,11 @@ namespace Artwork
                     }
                     if (doit)
                     {
-
                         MaskTree.Insert(x, y, new SolidQuadTreeItem() { x = (int)x, y = (int)y }, 8);
                     }
                 }
             }
-
         }
-
 
         public int BuildStuff(Bitmap Mask, Settings TheSettings)
         {
@@ -524,9 +521,7 @@ namespace Artwork
                                 }
                             }
                         }
-
-
-
+                        
                         Delaunay.Build(ArtTree, TheSettings.DegreesOff);
 
                         var Elapsed = DateTime.Now - rR;
@@ -537,10 +532,52 @@ namespace Artwork
                     {
                         TD.Create(TheSettings.TileType);
                         var P = TD.CreateBaseTriangle(TheSettings.BaseTile, 1000);
+                        var P2 = TD.CreateBaseTriangle(TheSettings.BaseTile, 1000);
                         P.Rotate(TheSettings.DegreesOff);
                         P.AlterToFit(Mask.Width, Mask.Height);
+                        P2.Rotate(TheSettings.DegreesOff);
+                        P2.AlterToFit(Mask.Width, Mask.Height);
+
+                        if (TheSettings.Symmetry)
+                        {
+                            P.ShiftToEdge(Mask.Width / 2, Mask.Height / 2);
+                            P2.ShiftToEdge(Mask.Width / 2, Mask.Height / 2);
+                            P2.Flip(Mask.Width / 2, Mask.Height / 2);
+                            if (TheSettings.SuperSymmetry)
+                            {
+                                P2.MirrorAround(Mask.Width / 2, Mask.Height / 2);
+                            }
+                        }
+
                         DateTime rR = DateTime.Now;
-                        SubDivPoly = TD.SubdivideAdaptive(P, TheSettings.MaxSubDiv, MaskTree);
+                        SubDivPoly = TD.SubdivideAdaptive(P, TheSettings.MaxSubDiv, MaskTree, TheSettings.alwayssubdivide);
+
+                        if (TheSettings.Symmetry)
+                        {
+                            SubDivPoly.AddRange(TD.SubdivideAdaptive(P2, TheSettings.MaxSubDiv, MaskTree, TheSettings.alwayssubdivide));
+                        }
+
+                        if (TheSettings.xscalesmallerlevel != 0)
+                        {
+                            float midx = Mask.Width / 2.0f;
+                            float width = Mask.Width;
+                            float offs = TheSettings.xscalecenter * 0.01f * width;
+                            foreach (var A in SubDivPoly)
+                            {
+                                var M = A.Mid();
+                                float scaler = 1.0f - ((float)(M.x-offs) / width) * TheSettings.xscalesmallerlevel * 0.01f;
+                                //scaler = Math.Max(0, Math.Min(1.0f, scaler));
+                                A.ScaleDown(TheSettings.scalingMode, scaler);
+                            }
+                        }
+                        if (TheSettings.scalesmallerfactor != 1.0f)
+                        {
+                            foreach (var A in SubDivPoly)
+                            {
+                                A.ScaleDown(Settings.TriangleScaleMode.Balanced, TheSettings.scalesmallerfactor);
+                            }
+                        }
+
                         if (TheSettings.scalesmaller != 0)
                         {
                             float scaler = Math.Abs(TheSettings.scalesmaller);
@@ -550,23 +587,19 @@ namespace Artwork
                             }
                             else
                             {
-                                scaler = - scaler / 10.0f;
+                                scaler = -scaler / 10.0f;
                             }
                             foreach (var A in SubDivPoly)
                             {
-                                var M = A.Mid();
-                                var b0 = A.Vertices[0] - M;
-                                var b1 = A.Vertices[1] - M;
-                                var b2 = A.Vertices[2] - M;
-                                if (A.depth-TheSettings.scalesmallerlevel <= 1)
+                              
+                                if (A.depth - TheSettings.scalesmallerlevel <= 1)
                                 {
 
                                 }
                                 else
                                 {
-                                    A.Vertices[0] = M + b0 * (1 + scaler * (1.0f / (A.depth-TheSettings.scalesmallerlevel)));
-                                    A.Vertices[1] = M + b1 * (1 + scaler * (1.0f / (A.depth- TheSettings.scalesmallerlevel)));
-                                    A.Vertices[2] = M + b2 * (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel)));
+                                    A.ScaleDown(TheSettings.scalingMode, (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel))));
+                                   
                                 }
                             }
                         }
