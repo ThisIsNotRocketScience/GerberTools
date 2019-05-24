@@ -59,14 +59,14 @@ namespace GerberLibrary
 
             public void arc(double nX, double nY, double p1, double p2, double start, double end)
             {
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(PolyLine.PolyIDs.Gallifrey);
                 PL.AddArc(nX, nY, p1, p2, start, end);
                 GAW.AddPolyLine(PL, strokewidth);
             }
 
             public void line(double x1, double y1, double x2, double y2)
             {
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(PolyLine.PolyIDs.Gallifrey);
                 PL.Add(x1, y1);
                 PL.Add(x2, y2);
                 GAW.AddPolyLine(PL, strokewidth);
@@ -80,7 +80,7 @@ namespace GerberLibrary
 
             public void ellipse(double x, double y, double w, double h)
             {
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(PolyLine.PolyIDs.Gallifrey);
                 PL.AddEllipse(x,y,w,h); 
 
 

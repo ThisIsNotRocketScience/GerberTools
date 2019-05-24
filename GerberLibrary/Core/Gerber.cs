@@ -603,9 +603,9 @@ namespace GerberLibrary
 
         }
 
-        public static PolyLineSet.Bounds GetBoundingBox(List<string> generatedFiles)
+        public static Bounds GetBoundingBox(List<string> generatedFiles)
         {
-            PolyLineSet.Bounds A = new PolyLineSet.Bounds();
+            Bounds A = new Bounds();
 
             foreach (var a in generatedFiles)
             {

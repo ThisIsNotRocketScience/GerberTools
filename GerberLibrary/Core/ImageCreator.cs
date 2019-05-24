@@ -17,7 +17,7 @@ namespace GerberLibrary
     public class GerberImageCreator
     {
         public static bool AA = true;
-        public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
+        public Bounds BoundingBox = new Bounds();
         public List<String> Errors = new List<string>();
         public double scale = 25.0f / 25.4f; // dpi
         private BoardRenderColorSet ActiveColorSet = new BoardRenderColorSet();
@@ -58,7 +58,7 @@ namespace GerberLibrary
             }
 
             GerberArtWriter GAW = new GerberArtWriter();
-            
+            int lineID = 0; 
             foreach (var a in toclip.DisplayShapes)
             {
                 ClipperLib.Clipper CP = new ClipperLib.Clipper();
@@ -86,7 +86,7 @@ namespace GerberLibrary
                 CP.Execute(ClipperLib.ClipType.ctIntersection, solution);
                 foreach(var p in solution)
                 {
-                    PolyLine P = new PolyLine();
+                    PolyLine P = new PolyLine(lineID++);
                     P.fromPolygon(p);
                     GAW.AddPolygon(P);
                 }
@@ -353,7 +353,7 @@ namespace GerberLibrary
 
         public void CreateBoxOutline()
         {
-            PolyLine Box = new PolyLine();
+            PolyLine Box = new PolyLine(PolyLine.PolyIDs.Outline);
             Box.MakeRectangle(BoundingBox.Width(), BoundingBox.Height());
             Box.Translate(BoundingBox.TopLeft.X + BoundingBox.Width() / 2.0, BoundingBox.TopLeft.Y + BoundingBox.Height() / 2.0);
             Box.Hole = false;
@@ -792,7 +792,7 @@ namespace GerberLibrary
 
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<ParsedGerber> DrillFilesToReload = new List<ParsedGerber>();
-            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
+            Bounds BB = new Bounds();
             foreach (var a in PLSs)
             {
                 if (a.Layer == BoardLayer.Drill)
@@ -818,7 +818,7 @@ namespace GerberLibrary
 
 
 
-            BoundingBox = new PolyLineSet.Bounds();
+            BoundingBox = new Bounds();
             foreach (var a in PLSs)
             {
                 //   Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName(a.Name));
@@ -1305,7 +1305,7 @@ namespace GerberLibrary
             if (Gerber.SkipEagleDrillFix == true) { Logger.AddString("skipping eagle fix"); return; };
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<Tuple<double, ParsedGerber>> DrillFilesToReload = new List<Tuple<double, ParsedGerber>>();
-            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
+            Bounds BB = new Bounds();
             foreach (var a in PLSs)
             {
                 if (a.Layer == BoardLayer.Drill)
@@ -1354,7 +1354,7 @@ namespace GerberLibrary
                 }
             }
 
-            BoundingBox = new PolyLineSet.Bounds();
+            BoundingBox = new Bounds();
             foreach (var a in PLSs)
             {
                 //Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName( a.Name));
@@ -1366,9 +1366,9 @@ namespace GerberLibrary
         }
 
 
-        private PolyLineSet.Bounds GetOutlineBoundingBox()
+        private Bounds GetOutlineBoundingBox()
         {
-            PolyLineSet.Bounds B = new PolyLineSet.Bounds();
+            Bounds B = new Bounds();
             int i = 0;
             foreach(var a in PLSs)
             {

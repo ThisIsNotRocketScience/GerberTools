@@ -111,7 +111,7 @@ namespace GerberLibrary.Deprecated
                 double lastdy = 0;
                 // add a final point to make the bezier curve neatly downward at the last PolyLine. This gets added AFTER optimize to ensure it is actually the last shape.
 
-                PolyLine EndPoint = new PolyLine();
+                PolyLine EndPoint = new PolyLine(-3);
                 EndPoint.Add(0, 0);
                 EndPoint.Draw = false;
                 Shapes.Add(EndPoint);

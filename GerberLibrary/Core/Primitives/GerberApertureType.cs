@@ -74,7 +74,7 @@ namespace GerberLibrary.Core.Primitives
                         {
                             string macroname = "REC" + (MacroPostFix++).ToString();
 
-                            PolyLine Rect = new PolyLine();
+                            PolyLine Rect = new PolyLine(PolyLine.PolyIDs.Temp);
                             Rect.MakeRectangle(RectWidth, RectHeight);
                             Rect.RotateDegrees(RotationAngle);
                             res = Gerber.BuildOutlineApertureMacro(macroname, Rect.Vertices, format) + res;
@@ -118,7 +118,7 @@ namespace GerberLibrary.Core.Primitives
                             string macroname = "OBR" + (MacroPostFix++).ToString();
 
 
-                            PolyLine Obround = new PolyLine();
+                            PolyLine Obround = new PolyLine(PolyLine.PolyIDs.Temp);
 
                             Obround.SetObround(RectWidth, RectHeight);
                             Obround.RotateDegrees(RotationAngle);
@@ -138,7 +138,7 @@ namespace GerberLibrary.Core.Primitives
                         string macrores = Gerber.WriteMacroStart(macroname);
                         foreach (var P in Parts)
                         {
-                            PolyLine Comp = new PolyLine();
+                            PolyLine Comp = new PolyLine(PolyLine.PolyIDs.Temp);
 
                             foreach (var a in P.Shape.Vertices)
 
@@ -189,7 +189,7 @@ namespace GerberLibrary.Core.Primitives
 
         public GerberApertureType()
         {
-            Shape = new PolyLine();
+            Shape = new PolyLine(PolyLine.PolyIDs.ApertureConstr);
             SetRectangle(1, 1);
             ID = 0;
         }
@@ -330,7 +330,7 @@ namespace GerberLibrary.Core.Primitives
 
         }
 
-        public List<PolyLine> CreatePolyLineSet(double X, double Y)
+        public List<PolyLine> CreatePolyLineSet(double X, double Y, int ShapeID)
         {
             List<PolyLine> Res = new List<PolyLine>();
             if (Parts.Count > 0)
@@ -339,7 +339,7 @@ namespace GerberLibrary.Core.Primitives
 
                 foreach (var a in Parts)
                 {
-                    ResPre.AddRange(a.CreatePolyLineSet(X, Y));
+                    ResPre.AddRange(a.CreatePolyLineSet(X, Y, ShapeID));
                 }
                 Polygons Combined = new Polygons();
 
@@ -363,7 +363,7 @@ namespace GerberLibrary.Core.Primitives
 
                 foreach (var p in Combined)
                 {
-                    PolyLine PL = new PolyLine();
+                    PolyLine PL = new PolyLine(ShapeID);
                     PL.fromPolygon(p);
                     Res.Add(PL);
                 }
@@ -372,7 +372,7 @@ namespace GerberLibrary.Core.Primitives
             {
                 if (Shape.Count() > 0)
                 {
-                    var PL = new PolyLine();
+                    var PL = new PolyLine(ShapeID);
                     for (int i = 0; i < Shape.Count(); i++)
                     {
                         PL.Add(X + Shape.Vertices[i].X, Y + Shape.Vertices[i].Y);

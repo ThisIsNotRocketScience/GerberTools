@@ -240,7 +240,7 @@ namespace GerberLibrary
             {
                 var A = R.Vertices.ElementAt(a.P0);
                 var B = R.Vertices.ElementAt(a.P1);
-                PolyLine P = new PolyLine();
+                PolyLine P = new PolyLine(PolyLine.PolyIDs.AutoTabs);
                 P.Add(A.X, A.Y);
                 P.Add(B.X, B.Y);
                 GerberLibrary.GerberInstance iA = null;
@@ -288,7 +288,7 @@ namespace GerberLibrary
                             {
                                 double newD = PointD.Distance(acA, intersect[i]);
 
-                                PolyLine PL = new PolyLine();
+                                PolyLine PL = new PolyLine(PolyLine.PolyIDs.AutoTabs);
                                 var CP = intersect[i].Rotate(iA.Angle);
                                 CP.X += iA.Center.X;
                                 CP.Y += iA.Center.Y;
@@ -315,7 +315,7 @@ namespace GerberLibrary
                             for (int i = 0; i < intersect.Count; i++)
                             {
                                 double newD = PointD.Distance(acB, intersect[i]);
-                                PolyLine PL = new PolyLine();
+                                PolyLine PL = new PolyLine(PolyLine.PolyIDs.AutoTabs);
                                 var CP = intersect[i].Rotate(iB.Angle);
                                 CP.X += iB.Center.X;
                                 CP.Y += iB.Center.Y;
@@ -349,7 +349,7 @@ namespace GerberLibrary
                             var T = AddTab(CP);
                             T.Radius = (float)Math.Max(Distance / 1.5, 3.2f);
 
-                            PolyLine PL = new PolyLine();
+                            PolyLine PL = new PolyLine(PolyLine.PolyIDs.AutoTabs);
                             PL.MakeCircle(T.Radius);
                             PL.Translate(CP.X, CP.Y);
                             if (GAW2 != null) GAW2.AddPolygon(PL);
@@ -402,7 +402,7 @@ namespace GerberLibrary
             }
 
             Polygons BoardMinusCombinedInstanceOutline = new Polygons();
-            PolyLine Board = new PolyLine();
+            PolyLine Board = new PolyLine(PolyLine.PolyIDs.Outline);
             Board.Vertices.Add(new PointD(0, 0));
             Board.Vertices.Add(new PointD(TheSet.Width, 0));
             Board.Vertices.Add(new PointD(TheSet.Width, TheSet.Height));
@@ -462,7 +462,7 @@ namespace GerberLibrary
 
             foreach (var s in expanded)
             {
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(PolyLine.PolyIDs.Negative);
                 PL.fromPolygon(s);
                 Res.Add(PL);
             }
@@ -577,7 +577,7 @@ namespace GerberLibrary
                 BreakTab BT = b as BreakTab;
                 if (BT.Errors.Count > 0) errors = true;
                 DrawMarker(errors, G, new PointD(0, 0), 1, PW, errors ? ErrorP : P);
-                PolyLine Circle = new PolyLine();
+                PolyLine Circle = new PolyLine(PolyLine.PolyIDs.GFXTemp);
                 Circle.MakeCircle((b as BreakTab).Radius);
                 if (errors)
                 {
@@ -787,7 +787,7 @@ namespace GerberLibrary
 
             foreach (var FinalPoly in FinalPolygonsWithTabs)
             {
-                PolyLine PL2 = new PolyLine();
+                PolyLine PL2 = new PolyLine(PolyLine.PolyIDs.Temp);
                 PL2.Vertices = FinalPoly.Vertices;
                 DrawShape(G, OO3, PL2);
                 //  DrawMarker(G, PL2.Vertices.First(), 1, PW);
@@ -796,7 +796,7 @@ namespace GerberLibrary
 
 
             //
-            PolyLine PL = new PolyLine();
+            PolyLine PL = new PolyLine(PolyLine.PolyIDs.Temp);
             PL.MakeSquare(0.15);
 
             foreach (var s in DrillHoles)
@@ -1084,11 +1084,11 @@ namespace GerberLibrary
                 //      Arc1.Add(A1.ToF());
                 //      Arc2.Add(A2.ToF());
 
-                PolyLine Middle = new PolyLine();
+                PolyLine Middle = new PolyLine(PolyLine.PolyIDs.AutoTabs);
                 Middle.Vertices.Add(A1);
                 Middle.Vertices.Add(A2);
 
-                PolyLine Combined = new PolyLine();
+                PolyLine Combined = new PolyLine(PolyLine.PolyIDs.AutoTabs);
                 //               GeneratedArcs.Add(PL);
                 //                GeneratedArcs.Add(PL2);
                 //             GeneratedArcs.Add(Middle);
@@ -1225,7 +1225,7 @@ namespace GerberLibrary
             }
             foreach (var a in FinalSegs)
             {
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(PolyLine.PolyIDs.Outline);
 
                 PL.Vertices.Add(a.PStart);
                 PL.Vertices.Add(a.PEnd);
@@ -1550,9 +1550,10 @@ namespace GerberLibrary
             EF.Write(Path.Combine(p, DrillFile), 0, 0, 0, 0);
 
             GerberOutlineWriter GOW = new GerberOutlineWriter();
+            int id = 0;
             foreach (var a in FinalPolygonsWithTabs)
             {
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(id++);
                 PL.Vertices = a.Vertices;
                 // todo: check if closed/opened things need special treatment here. 
                 // width is defaulted to 0
@@ -1721,7 +1722,7 @@ namespace GerberLibrary
                     var GO = GerberOutlines[path];
                     foreach (var b in GO.TheGerber.OutlineShapes)
                     {
-                        PolyLine PL = new PolyLine();
+                        PolyLine PL = new PolyLine(PolyLine.PolyIDs.Outline);
                         PL.FillTransformed(b, new PointD(GI.Center), GI.Angle);
                         GI.TransformedOutlines.Add(PL);
 
@@ -2005,7 +2006,7 @@ namespace GerberLibrary
         public List<BreakTab> Tabs = new List<BreakTab>();
 
         [System.Xml.Serialization.XmlIgnore]
-        public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
+        public Bounds BoundingBox = new Bounds();
         internal void CreateOffsetLines(double extradrilldistance)
         {
             OffsetOutlines = new List<List<PolyLine>>(TransformedOutlines.Count);
@@ -2022,7 +2023,7 @@ namespace GerberLibrary
                 Polygons clips2 = Clipper.OffsetPolygons(clips, offset, JoinType.jtRound);
                 foreach (var a in clips2)
                 {
-                    PolyLine P = new PolyLine();
+                    PolyLine P = new PolyLine(PolyLine.PolyIDs.OffsetLine);
                     P.fromPolygon(a);
                     L.Add(P);
                 }
@@ -2039,9 +2040,11 @@ namespace GerberLibrary
             LastCenter = new PointD(Center.X, Center.Y);
             TransformedOutlines = new List<PolyLine>();
             var GO = gerberOutline;
+
+            
             foreach (var b in GO.TheGerber.OutlineShapes)
             {
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(-2);
                 PL.FillTransformed(b, new PointD(Center), Angle);
                 TransformedOutlines.Add(PL);
                 BoundingBox.AddPolyLine(PL);
