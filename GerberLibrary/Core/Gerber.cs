@@ -48,7 +48,7 @@ namespace GerberLibrary
     public static class Gerber
     {
         #region GERBERPROCESSINGDEFAULTS
-        public static double ArcQualityScaleFactor = 15;
+        public static double ArcQualityScaleFactor = 20;
         
         public static bool DirectlyShowGeneratedBoardImages = true;
         public static bool DumpSanitizedOutput = false;
