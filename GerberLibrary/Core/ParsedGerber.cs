@@ -210,6 +210,21 @@ namespace GerberLibrary.Core
             return Boundary;
         }
 
+        public void Translate(PointD T)
+        {
+            TranslationSinceLoad.X += T.X;
+            TranslationSinceLoad.Y += T.Y;
+
+            foreach (var a in DisplayShapes)
+            {
+                a.Translate(T.X, T.Y);
+            }
+
+            foreach (var a in OutlineShapes)
+            {
+                a.Translate(T.X, T.Y);
+            }
+        }
         public PointD Normalize()
         {
 
