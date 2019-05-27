@@ -133,7 +133,7 @@ void main()
         private void Glcontrol1_Paint(object sender, PaintEventArgs e)
         {
             if (!glLoaded) return;
-            PolyLineSet.Bounds Bounds = new PolyLineSet.Bounds();
+            Bounds Bounds = new Bounds();
             foreach (var a in Document.Gerbers.OrderBy(x => x.sortindex))
             {
                 Bounds.AddBox(a.File.BoundingBox);
@@ -320,7 +320,7 @@ void main()
         private void apictureBox1_Paint(object sender, PaintEventArgs e)
         {
             var G2 = e.Graphics;
-            PolyLineSet.Bounds Bounds = new PolyLineSet.Bounds();
+            Bounds Bounds = new Bounds();
             foreach (var a in Document.Gerbers.OrderBy(x => x.sortindex))
             {
                 Bounds.AddBox(a.File.BoundingBox);
@@ -368,7 +368,7 @@ void main()
             }
         }
 
-        private void DrawGerbersToGraphicsInterface(PolyLineSet.Bounds Bounds, GerberVBO GGI)
+        private void DrawGerbersToGraphicsInterface(Bounds Bounds, GerberVBO GGI)
         {
             if (Document.Gerbers.Count > 0)
             {
@@ -424,7 +424,7 @@ void main()
                 }
             }
         }
-        private float GetScaleAndBuildTransform(GraphicsInterface G2, PolyLineSet.Bounds Bounds)
+        private float GetScaleAndBuildTransform(GraphicsInterface G2, Bounds Bounds)
         {
             Bitmap B = new Bitmap(1, 1);
             Graphics G = Graphics.FromImage(B);
@@ -436,7 +436,7 @@ void main()
         }
 
 
-        private float GetScaleAndBuildTransform(Graphics G2, PolyLineSet.Bounds Bounds)
+        private float GetScaleAndBuildTransform(Graphics G2, Bounds Bounds)
         {
             float S = 1;
             if (DisplaySide == BoardSide.Bottom)
@@ -482,7 +482,7 @@ void main()
             if (Document.Gerbers.Count == 0) return;
            // if (Cache == null) return;
 
-            PolyLineSet.Bounds Bounds = new PolyLineSet.Bounds();
+            Bounds Bounds = new Bounds();
 
 
             foreach (var a in Document.Gerbers.OrderBy(xx => xx.sortindex))

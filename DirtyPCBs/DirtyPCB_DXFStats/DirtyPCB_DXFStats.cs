@@ -18,7 +18,7 @@ namespace DirtyPCB_DXFStats
         {
             public double Width;
             public double Height;
-            private Bounds Box = new Bounds();
+            private GerberLibrary.Bounds Box = new GerberLibrary.Bounds();
             public double Tracelength;
 #if DEBUG
             Bitmap B;
