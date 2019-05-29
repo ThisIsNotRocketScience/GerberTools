@@ -2203,6 +2203,13 @@ namespace GerberLibrary
                 }
             }
 
+            if (Apts.Count == 0) { // Add dummy aperture
+                GerberApertureType Apt = new GerberApertureType();
+                Apt.ID = 10;
+                Apt.SetCircle(0.00100076);
+                lines.Add(Apt.BuildGerber(GNF));
+            }
+
             foreach (var a in Polygons)
             {
                 if (a.Vertices.Count > 2)

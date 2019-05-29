@@ -29,6 +29,7 @@ namespace GerberCombinerBuilder
             ExtraTabDrillDistance.Value = (decimal)ParentPanel.TheSet.ExtraTabDrillDistance;
             FillEmpty.Checked = ParentPanel.TheSet.ConstructNegativePolygon;
             noMouseBites.Checked = ParentPanel.TheSet.DoNotGenerateMouseBites;
+            RelativePath.Checked = ParentPanel.TheSet.UseRelativePath;
         }
 
         private void OkButton(object sender, EventArgs e)
@@ -42,6 +43,7 @@ namespace GerberCombinerBuilder
             ParentPanel.TheSet.Smoothing = (double)smoothoffsetbox.Value;
             ParentPanel.TheSet.DoNotGenerateMouseBites = noMouseBites.Checked;
             ParentPanel.TheSet.ClipToOutlines = ClipToOutlines.Checked;
+            ParentPanel.TheSet.UseRelativePath = RelativePath.Checked;
             Close();
         }
 
