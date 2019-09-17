@@ -69,6 +69,8 @@ namespace WindowsFormsApplication1
                     Errors.Add(String.Format("Error: {0}", a));
                 }
             }
+
+
             try
             {
                 if (GIC.Count() > 1)

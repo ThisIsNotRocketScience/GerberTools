@@ -246,6 +246,21 @@ namespace GerberLibrary
             string ext = filesplit[filesplit.Count() - 1].ToLower();
             switch (ext)
             {
+                case "png":
+                {
+                        Side = BoardSide.Both;
+                        Layer = BoardLayer.Silk;
+                    }
+                    break;
+               
+                case "assemblytop":
+                    Layer = BoardLayer.Assembly;
+                    Side = BoardSide.Top;
+                    break;
+                case "assemblybottom":
+                    Layer = BoardLayer.Assembly;
+                    Side = BoardSide.Bottom;
+                    break;
                 case "gbr":
 
                     switch (Path.GetFileNameWithoutExtension(gerberfile).ToLower())
