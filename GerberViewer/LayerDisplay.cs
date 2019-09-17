@@ -357,7 +357,7 @@ void main()
                         G2.DrawLine(P, (float)Bounds.TopLeft.X - 1000, Document.MouseY, (float)Bounds.BottomRight.X + 1000, Document.MouseY);
                         G2.DrawLine(P, (float)Document.MouseX, (float)Bounds.TopLeft.Y - 1000, (float)Document.MouseX, (float)Bounds.BottomRight.Y + 1000);
 
-
+                        DrawLabel(G2, Bounds.ToString(), S, 12, Color.Beige, 0, 0, (float)Bounds.TopLeft.X,(float) Bounds.TopLeft.Y, false);
                         DrawLabel(G2, String.Format("{0:N2}", Document.MouseX - Bounds.TopLeft.X), S, 12, DimensionColor, 5, 0, (float)Document.MouseX, (float)Bounds.TopLeft.Y, DisplaySide == BoardSide.Bottom);
                         DrawLabel(G2, String.Format("{0:N2}", Document.MouseY - Bounds.TopLeft.Y), S, 12, DimensionColor, 0, -14, (float)Bounds.TopLeft.X, (float)Document.MouseY, DisplaySide == BoardSide.Bottom);
                         //DrawUpsideDown(G2, String.Format("{0:N2}", Document.MouseX), S, 12, Color.Yellow, 5 / S + (float)Document.MouseX, (float)Bounds.TopLeft.Y);
