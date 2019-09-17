@@ -55,6 +55,7 @@ namespace AntennaBuilder
 
         public void WriteAntennaBoard(double width, double height, double mountholediameter, double cornerrounding, double mountholeclearance, double edgeclearance = 1.26, bool WriteCombinedImage = true, bool WriteImages = false)
         {
+            int polyid = 0;
             FontSet FS = FontSet.Load("Font.xml");
 
             List<String> FilesGenerated = new List<string>();
@@ -122,7 +123,7 @@ namespace AntennaBuilder
             MaskTop.AddFlash(pC2, 1);
             MaskTop.AddFlash(pC3, 1);
 
-            PolyLine PL = new PolyLine();
+            PolyLine PL = new PolyLine(polyid++);
 
             PL.Add(cornerrounding, 0);
             PL.Add(width - cornerrounding, 0);
@@ -166,7 +167,7 @@ namespace AntennaBuilder
                 double AX3 = AX + (i+1) * spacing;
                 double AY3 = AY + (i+1) * spacing;
                 
-                PolyLine PL2 = new PolyLine();
+                PolyLine PL2 = new PolyLine(polyid++);
 
                 PL2.Add(AX2, AY2 + H2/2);
                 PL2.Add(AX2, AY2);
@@ -175,7 +176,7 @@ namespace AntennaBuilder
                 AddAntennaTop(PL2);
 
                 
-                PolyLine PL3 = new PolyLine();
+                PolyLine PL3 = new PolyLine(polyid++);
 
                 PL3.Add(AX2,AY2 + gap + H2 - ( H2 / 2) );
                 PL3.Add(AX2, AY2 + gap + H2);
@@ -188,14 +189,14 @@ namespace AntennaBuilder
                 {
                     if (i < rounds - 1)
                     {
-                        PolyLine PL4 = new PolyLine();
+                        PolyLine PL4 = new PolyLine(polyid++);
                         PL4.Add(AX2, AY2 + gap + H2 - (H2 / 2));
                         PL4.Add(AX2, AY2 + gap - gs + H2 - (H2 / 2));
                         PL4.Add(AX3, AY3 + gs + (H3 / 2));
                         PL4.Add(AX3, AY3 + (H3 / 2));
                         AddAntennaTop(PL4);
                         
-                        PolyLine PL5 = new PolyLine();
+                        PolyLine PL5 = new PolyLine(polyid++);
                         PL5.Add(AX3, AY3 + gap + H3 - (H3 / 2));
                         PL5.Add(AX2, AY2 + (H2 / 2));
                         AddAntennaBottom(PL5);
@@ -208,14 +209,14 @@ namespace AntennaBuilder
                     }
                     else
                     {
-                        PolyLine PL4 = new PolyLine();
+                        PolyLine PL4 = new PolyLine(polyid++);
                         PL4.Add(AX2, AY2 + gap + H2  - (H2 / 2));
                         PL4.Add(AX2, AY2 + (H2 / 2));
                         AddAntennaTop(PL4);
                         
                         AddAntennaVia(AX2, AY2 + H2/2 +  gap / 2);
 
-                        PolyLine PL5 = new PolyLine();
+                        PolyLine PL5 = new PolyLine(polyid++);
                         PL5.Add(AX2, AY2 + H2 / 2 + gap / 2);
                         PL5.Add(AX2, AY2 + H2 / 2 - gs);
                         PL5.Add(AX - spacing , AY2 + H2 / 2 - gs);
@@ -228,30 +229,30 @@ namespace AntennaBuilder
                 }
                 else
                 {
-                    PolyLine PL4 = new PolyLine();
+                    PolyLine PL4 = new PolyLine(polyid++);
                     PL4.Add(AX2 + W2 , AY2 + gap + H2 - (H2 / 2));
                     PL4.Add(AX2 + W2 , AY2 + gap - gs + H2 - (H2 / 2));
                     PL4.Add(AX3 + W3, AY3 + gs + (H3 / 2));
                     PL4.Add(AX3 + W3, AY3 + (H3 / 2));
                     AddAntennaTop(PL4);
 
-                    PolyLine PL5 = new PolyLine();
+                    PolyLine PL5 = new PolyLine(polyid++);
                     PL5.Add(AX3 + W3, AY3 + gap + H3 - (H3 / 2));
                     PL5.Add(AX2 + W2, AY2 + (H2 / 2));
 
                     AddAntennaBottom(PL5);
 
-                    PolyLine PL6 = new PolyLine();
+                    PolyLine PL6 = new PolyLine(polyid++);
                     PL6.Add(AX, AY + H / 2);
                     PL6.Add(pC1.X, pC1.Y);
                     AddAntennaTop(PL6);
 
-                    PolyLine PL7 = new PolyLine();
+                    PolyLine PL7 = new PolyLine(polyid++);
                     PL7.Add(AX, AY + H / 2 + gap);
                     PL7.Add(pC3.X, pC3.Y);
                     AddAntennaTop(PL7);
                     
-                    PolyLine PL8 = new PolyLine();
+                    PolyLine PL8 = new PolyLine(polyid++);
                     PL8.Add(AX - spacing, AY2 + H2 / 2 + gap / 2);
                     PL8.Add(pC2.X, pC2.Y);
                     AddAntennaTop(PL8);

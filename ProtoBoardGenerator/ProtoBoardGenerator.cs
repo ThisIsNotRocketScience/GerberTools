@@ -35,7 +35,7 @@ namespace ProtoBoardGenerator
         public static List<String> WriteProtoBoardFlowerStyle(double width, double height, double mountholediameter, double cornerrounding, double mountholeclearance, double edgeclearance = 1.26, bool WriteCombinedImage = true, bool WriteImages = false)
         {
             FontSet FS = FontSet.Load("Font.xml");
-
+            int polyid = 0;
             List<String> FilesGenerated = new List<string>();
             double LabelHeight = 1.2;
             double PadWidth = 1.8;
@@ -112,7 +112,7 @@ namespace ProtoBoardGenerator
 
 
 
-            PolyLine PL = new PolyLine();
+            PolyLine PL = new PolyLine(polyid++);
 
             PL.Add(cornerrounding, 0);
             PL.Add(width - cornerrounding, 0);
@@ -204,7 +204,7 @@ namespace ProtoBoardGenerator
                 }
             }
 
-            PolyLine PL2 = new PolyLine();
+            PolyLine PL2 = new PolyLine(polyid++);
             double rad = 0.6;
             for (int i = 0; i < 20; i++)
             {
@@ -318,6 +318,7 @@ namespace ProtoBoardGenerator
 
         public static List<String> WriteProtoBoard(double width, double height, double mountholediameter, double cornerrounding, double mountholeclearance, double edgeclearance = 1.26, bool WriteCombinedImage = true, bool WriteImages = false)
         {
+            int polyid = 0;
             FontSet FS = FontSet.Load("Font.xml");
 
             List<String> FilesGenerated = new List<string>();
@@ -390,7 +391,7 @@ namespace ProtoBoardGenerator
 
 
 
-            PolyLine PL = new PolyLine();
+            PolyLine PL = new PolyLine(polyid++);
 
             PL.Add(cornerrounding, 0);
             PL.Add(width - cornerrounding, 0);
@@ -502,7 +503,7 @@ namespace ProtoBoardGenerator
                     {
                         if (s3 != "None")
                         {
-                            PolyLine PL2 = new PolyLine();
+                            PolyLine PL2 = new PolyLine(polyid++);
                             PL2.Add(xc, yc);
                             PL2.Add(xc1, yc);
                             GAWTop.AddPolyLine(PL2, 0.5);
@@ -510,7 +511,7 @@ namespace ProtoBoardGenerator
                     }
                     else
                     {
-                        PolyLine PL2 = new PolyLine();
+                        PolyLine PL2 = new PolyLine(polyid++);
                         PL2.Add(xc + 2.54 / 2, yc - 2.54 / 2);
                         PL2.Add(xc + 2.54 / 2, yc1 - 2.54 / 2);
                         SilkTop.AddPolyLine(PL2, 0.1);
@@ -521,7 +522,7 @@ namespace ProtoBoardGenerator
                     {
                         if (s3 != "None")
                         {
-                            PolyLine PL2 = new PolyLine();
+                            PolyLine PL2 = new PolyLine(polyid++);
                             PL2.Add(xc, yc);
                             PL2.Add(xc, yc1);
                             GAWTop.AddPolyLine(PL2, 0.5);
@@ -529,7 +530,7 @@ namespace ProtoBoardGenerator
                     }
                     else
                     {
-                        PolyLine PL2 = new PolyLine();
+                        PolyLine PL2 = new PolyLine(polyid++);
                         PL2.Add(xc - 2.54 / 2, yc + 2.54 / 2);
                         PL2.Add(xc1 - 2.54 / 2, yc + 2.54 / 2);
                         SilkTop.AddPolyLine(PL2, 0.1);

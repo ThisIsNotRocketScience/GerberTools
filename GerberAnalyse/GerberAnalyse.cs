@@ -172,7 +172,7 @@ namespace GerberAnalyse
         public int DrillCount;
         public double Width;
         public double Height;
-        public GerberLibrary.PolyLineSet.Bounds Box = new GerberLibrary.PolyLineSet.Bounds();
+        public GerberLibrary.Bounds Box = new GerberLibrary.Bounds();
 
 
         public void AddFile(MemoryStream L, string filename)

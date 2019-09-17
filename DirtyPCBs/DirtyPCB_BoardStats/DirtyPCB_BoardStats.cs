@@ -68,7 +68,7 @@ namespace DirtyPCB_BoardStats
             public int DrillCount;
             public double Width;
             public double Height;
-            private GerberLibrary.PolyLineSet.Bounds Box = new GerberLibrary.PolyLineSet.Bounds();
+            private GerberLibrary.Bounds Box = new GerberLibrary.Bounds();
 
 
             public void AddFile(MemoryStream L, string filename)

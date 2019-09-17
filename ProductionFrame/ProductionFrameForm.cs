@@ -26,6 +26,7 @@ namespace ProductionFrame
         {
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                int polyid = 0;
                 string fname = System.IO.Path.GetFileName(saveFileDialog1.FileName);
                 string fnamenoext = System.IO.Path.GetFileNameWithoutExtension(saveFileDialog1.FileName);
                 string OutName = "";
@@ -94,10 +95,10 @@ namespace ProductionFrame
                 }
 
                 // board outline
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(polyid++);
                 PL.MakeRoundedRect(new PointD(0, 0), new PointD(OuterWidth, OuterHeight), (double)roundedOuterCorners.Value);
                 Outline.AddPolyLine(PL, 0);
-                PolyLine PL2 = new PolyLine();
+                PolyLine PL2 = new PolyLine(polyid++);
 
                 PL2.MakeRoundedRect(new PointD(LE, TE), new PointD(InnerWidth + LE, InnerHeight + TE), (double)roundedInnerCorners.Value);
                 Outline.AddPolyLine(PL2, 0);

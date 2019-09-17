@@ -73,6 +73,8 @@ namespace FrontPanelBuilder
             if (B2 != null) B2.RotateFlip(RotateFlipType.RotateNoneFlipY);
             if (B != null)
             {
+                int polyid = 0;
+
                 double Res = 200.0 / 25.4;
 
                 ParsedGerber PLS = null;
@@ -92,7 +94,7 @@ namespace FrontPanelBuilder
                     GAW3.Write(topsoldermask);
 
                     GerberArtWriter GAW = new GerberLibrary.GerberArtWriter();
-                    PolyLine PL = new PolyLine();
+                    PolyLine PL = new PolyLine(polyid++);
                     PL.Add(PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.TopLeft.Y);
                     PL.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.TopLeft.Y);
                     PL.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.TopLeft.Y + 8);
@@ -100,7 +102,7 @@ namespace FrontPanelBuilder
                     GAW.AddPolygon(PL);
 
 
-                    PolyLine PL3 = new PolyLine();
+                    PolyLine PL3 = new PolyLine(polyid++);
                     PL3.Add(PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - 8);
                     PL3.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.BottomRight.Y - 8);
                     PL3.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.BottomRight.Y);
@@ -111,7 +113,7 @@ namespace FrontPanelBuilder
 
 
                     GerberArtWriter GAW2 = new GerberLibrary.GerberArtWriter();
-                    PolyLine PL2 = new PolyLine();
+                    PolyLine PL2 = new PolyLine(polyid++);
                     PL2.Add(PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.TopLeft.Y);
                     PL2.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.TopLeft.Y);
                     PL2.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.BottomRight.Y);
