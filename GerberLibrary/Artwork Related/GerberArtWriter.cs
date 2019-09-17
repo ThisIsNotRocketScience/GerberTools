@@ -216,7 +216,7 @@ namespace GerberLibrary
                 double ScaleB = 25.0f / 50.0f;
                 while (PixelCount > 0)
                 {
-                    PolyLine S = new PolyLine();
+                    PolyLine S = new PolyLine(-6);
                     int sx = 0;
                     int sy = 0;
                     FindPixel(M, out sx, out sy);
@@ -388,7 +388,7 @@ namespace GerberLibrary
 
                 foreach (var a in CombinedOutline)
                 {
-                    PolyLine P = new PolyLine();
+                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
                     P.fromPolygon(a);
                     List<PointF> Pts = new List<PointF>();
                     foreach (var V in P.Vertices)
@@ -413,7 +413,7 @@ namespace GerberLibrary
 
                 foreach (var a in OriginalCombinedSilk)
                 {
-                    PolyLine P = new PolyLine();
+                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
                     P.fromPolygon(a);
                     List<PointF> Pts = new List<PointF>();
                     foreach (var V in P.Vertices)
@@ -820,7 +820,7 @@ namespace GerberLibrary
                 // G.SmoothingMode = SmoothingMode.AntiAlias;
                 foreach (var a in CombinedOutline)
                 {
-                    PolyLine P = new PolyLine();
+                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
                     P.fromPolygon(a);
                     List<PointF> Pts = new List<PointF>();
                     foreach (var V in P.Vertices)
@@ -1102,7 +1102,7 @@ namespace GerberLibrary
                                 bool inside = false;
                                 foreach (var a in Outline)
                                 {
-                                    PolyLine PL = new PolyLine();
+                                    PolyLine PL = new PolyLine(PolyLine.PolyIDs.ArtWork);
                                     PL.fromPolygon(a);
                                     if (Helpers.IsInPolygon(PL.Vertices, new PointD(x, y))) inside = !inside;
 
@@ -1378,7 +1378,7 @@ namespace GerberLibrary
                 // G.SmoothingMode = SmoothingMode.AntiAlias;
                 foreach (var a in CombinedOutline)
                 {
-                    PolyLine P = new PolyLine();
+                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
                     P.fromPolygon(a);
                     List<PointF> Pts = new List<PointF>();
                     foreach (var V in P.Vertices)
@@ -1595,7 +1595,7 @@ namespace GerberLibrary
                             {
                                 endlevel = C.R;
                                 active = false;
-                                PolyLine pL = new PolyLine();
+                                PolyLine pL = new PolyLine(PolyLine.PolyIDs.Bitmap);
 
                                 double offL = ((startlevel - Math.Abs(threshold)) / 128.0) * 1.0 / ResX;
                                 double offR = ((endlevel - Math.Abs(threshold)) / 128.0) * 1.0 / ResX;
@@ -1613,7 +1613,7 @@ namespace GerberLibrary
                     }
                     if (active)
                     {
-                        PolyLine pL = new PolyLine();
+                        PolyLine pL = new PolyLine(PolyLine.PolyIDs.Bitmap);
                         double offL = ((startlevel - Math.Abs(threshold)) / 128.0) * .50 / ResX;
 
                         pL.Add(sx / ResX + offL, ((double)y) / ResY);
@@ -1737,7 +1737,7 @@ namespace GerberLibrary
                 // G.SmoothingMode = SmoothingMode.AntiAlias;
                 foreach (var a in CombinedOutline)
                 {
-                    PolyLine P = new PolyLine();
+                    PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
                     P.fromPolygon(a);
                     List<PointF> Pts = new List<PointF>();
                     foreach (var V in P.Vertices)
@@ -1886,7 +1886,7 @@ namespace GerberLibrary
                             if (B3.GetPixel(x, y).R == 255)
                             {
 
-                                PolyLine pL = new PolyLine();
+                                PolyLine pL = new PolyLine(PolyLine.PolyIDs.ArtWork);
                                 //pL.Add((x-1) / Res, (y - 1) / Res);
                                 double cx = Math.Sin(-AngleRad) * Res * 0.4 * 0.8 * (1 + Math.Pow(Dist, 0.1));
                                 double cy = Math.Cos(-AngleRad) * Res * 0.4 * 0.8 * (1 + Math.Pow(Dist, 0.1));
@@ -2008,7 +2008,7 @@ namespace GerberLibrary
                     CombinedOutline = Clipper.OffsetPolygons(CombinedOutline, -add * 100000.0f, JoinType.jtRound, 0.1 * 100000.0f);
                     foreach (var p in CombinedOutline)
                     {
-                        PolyLine P = new PolyLine();
+                        PolyLine P = new PolyLine(PolyLine.PolyIDs.ArtWork);
                         P.fromPolygon(p);
                         GOW.AddPolyLine(P, add / 4);
                     }
@@ -2124,9 +2124,10 @@ namespace GerberLibrary
         Dictionary<double, List<PolyLine>> PolyLines = new Dictionary<double, List<PolyLine>>();
         Dictionary<double, int> ApertureLookup = new Dictionary<double, int>();
         List<PolyLine> Polygons = new List<PolyLine>();
-
+        int LastID = 0;
         public void AddPolyLine(PolyLine a, double width = 1)
         {
+      
             if (PolyLines.ContainsKey(width) == false)
             {
                 PolyLines[width] = new List<PolyLine>();
@@ -2136,7 +2137,7 @@ namespace GerberLibrary
 
         public void AddFlash(PointD P, double width = 1)
         {
-            PolyLine PL = new PolyLine();
+            PolyLine PL = new PolyLine(LastID++);
             PL.Vertices.Add(P);
             if (PolyLines.ContainsKey(width) == false)
             {
@@ -2308,7 +2309,7 @@ namespace GerberLibrary
                 {
                     foreach (var l in R.lines)
                     {
-                        PolyLine PL = new PolyLine();
+                        PolyLine PL = new PolyLine(LastID++);
                         foreach (var v in l)
                         {
                             if (Reverse)
@@ -2354,7 +2355,7 @@ namespace GerberLibrary
 
             foreach (var a in PreRotateTranslate)
             {
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(LastID++);
                 foreach (var v in a.Vertices)
                 {
 

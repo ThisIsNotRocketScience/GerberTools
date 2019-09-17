@@ -43,9 +43,10 @@ namespace Artwork
 
         public List<QuadTreeNode> Children = new List<QuadTreeNode>(4);
         public List<QuadTreeItem> Items = new List<QuadTreeItem>(3);
+
         public void Insert(int x, int y, QuadTreeItem Item, int maxdepth)
         {
-            if (x < xstart || y < ystart || x >= xend || y >= yend)
+            if (x <= xstart || y <= ystart || x > xend || y > yend)
             {
                 return;
             }
@@ -92,7 +93,10 @@ namespace Artwork
             }
             else
             {
-                graphics.DrawRectangle(contained > 0 ? Color.Red : Color.Yellow, xstart, ystart, xend - xstart - 1, yend - ystart - 1);
+                if (contained == 0)
+                {
+                    graphics.DrawRectangle(Color.Yellow, xstart, ystart, xend - xstart - 1, yend - ystart - 1);
+                }
             }
             foreach (var C in Children)
             {

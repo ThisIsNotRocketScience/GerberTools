@@ -18,7 +18,7 @@ namespace GerberLibrary.Core
 {
     public class GerberSet
     {
-        public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
+        public Bounds BoundingBox = new Bounds();
         public List<String> Errors = new List<string>();
 
         public bool HasLoadedOutline = false;
@@ -304,7 +304,7 @@ namespace GerberLibrary.Core
 
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<ParsedGerber> DrillFilesToReload = new List<ParsedGerber>();
-            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
+            Bounds BB = new Bounds();
             foreach (var a in PLSs)
             {
                 if (a.Layer == BoardLayer.Drill)
@@ -330,7 +330,7 @@ namespace GerberLibrary.Core
 
 
 
-            BoundingBox = new PolyLineSet.Bounds();
+            BoundingBox = new Bounds();
             foreach (var a in PLSs)
             {
                 //   Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName(a.Name));
@@ -345,7 +345,7 @@ namespace GerberLibrary.Core
         {
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<Tuple<double, ParsedGerber>> DrillFilesToReload = new List<Tuple<double, ParsedGerber>>();
-            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
+            Bounds BB = new Bounds();
             foreach (var a in PLSs)
             {
                 if (a.Layer == BoardLayer.Drill)
@@ -391,7 +391,7 @@ namespace GerberLibrary.Core
                 }
             }
 
-            BoundingBox = new PolyLineSet.Bounds();
+            BoundingBox = new Bounds();
             foreach (var a in PLSs)
             {
                 //Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName( a.Name));
@@ -401,9 +401,9 @@ namespace GerberLibrary.Core
                 BoundingBox.AddBox(a.BoundingBox);
             }
         }
-        public PolyLineSet.Bounds GetOutlineBoundingBox()
+        public Bounds GetOutlineBoundingBox()
         {
-            PolyLineSet.Bounds B = new PolyLineSet.Bounds();
+            Bounds B = new Bounds();
             int i = 0;
             foreach (var a in PLSs)
             {
@@ -510,7 +510,7 @@ namespace GerberLibrary.Core
 
         public void CreateBoxOutline()
         {
-            PolyLine Box = new PolyLine();
+            PolyLine Box = new PolyLine( PolyLine.PolyIDs.Outline);
             Box.MakeRectangle(BoundingBox.Width(), BoundingBox.Height());
             Box.Translate(BoundingBox.TopLeft.X + BoundingBox.Width() / 2.0, BoundingBox.TopLeft.Y + BoundingBox.Height() / 2.0);
             Box.Hole = false;
@@ -604,7 +604,7 @@ namespace GerberLibrary.Core
                 Offsetted = Clipper.OffsetPolygons(clips, offset * 100000.0f, JoinType.jtRound);
                 foreach (var poly in Offsetted)
                 {
-                    PolyLine P = new PolyLine();
+                    PolyLine P = new PolyLine(PolyLine.PolyIDs.Temp);
 
                     P.fromPolygon(poly);
 
@@ -689,7 +689,7 @@ namespace GerberLibrary.Core
             float scalefac = 10;
             Console.WriteLine("Report: {0} holes created in case ({1} spacers and {1} screws needed!)", Holes.Count, Holes.Count * 2);
             {
-                var BB = new GerberLibrary.PolyLineSet.Bounds();
+                var BB = new GerberLibrary.Bounds();
                 BB.AddPolygons(Offsetted);
                 BB.AddPolyLine(Biggest);
 
@@ -716,7 +716,7 @@ namespace GerberLibrary.Core
 
                 foreach (var poly in Offsetted)
                 {
-                    PolyLine Pl = new PolyLine();
+                    PolyLine Pl = new PolyLine(PolyLine.PolyIDs.Temp);
 
                     Pl.fromPolygon(poly);
                     var Points = new List<PointF>(Pl.Vertices.Count);

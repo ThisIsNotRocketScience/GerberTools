@@ -16,7 +16,7 @@ namespace GerberLibrary.Core.Algorithms
 
     public class QuadTreeNode
     {
-        int contained = 0;
+        public int contained = 0;
         public bool CallBackInside(RectangleF S, Func<QuadTreeItem, bool> callback)
         {
             if (S.X >= xend || S.Y >= yend || S.X + S.Width < xstart || S.Y + S.Height < ystart)

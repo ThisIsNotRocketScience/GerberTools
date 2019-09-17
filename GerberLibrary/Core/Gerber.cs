@@ -25,7 +25,13 @@ namespace GerberLibrary
 
         public Color BackgroundColor = Color.FromArgb(10,10,40);
         public Color BoardRenderTraceColor = Gerber.ParseColor("green");
-
+        public void SetupColors(string SolderMaskColor, string SilkScreenColor, string TracesColor = "auto", string CopperColor = "gold")
+        {
+            BoardRenderColor = GerberLibrary.Gerber.ParseColor(SolderMaskColor);
+            BoardRenderSilkColor = GerberLibrary.Gerber.ParseColor(SilkScreenColor);
+            BoardRenderPadColor = GerberLibrary.Gerber.ParseColor(CopperColor);
+            BoardRenderTraceColor = GerberLibrary.Gerber.ParseColor(TracesColor);
+        }
         public Color GetDefaultColor(BoardLayer layer, BoardSide side)
         {
             switch(layer)
@@ -299,18 +305,34 @@ namespace GerberLibrary
                             break;
 
                         default:
-                            if (gerberfile.ToLower().Contains("outline")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; }
-                            if (gerberfile.ToLower().Contains("-edge_cuts")) { Side = BoardSide.Both;Layer = BoardLayer.Outline;}
 
-                            if (gerberfile.ToLower().Contains("-b_cu")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; }
-                            if (gerberfile.ToLower().Contains("-f_cu")) { Side = BoardSide.Top; Layer = BoardLayer.Copper; }
-                            if (gerberfile.ToLower().Contains("-b_silks")) { Side = BoardSide.Bottom; Layer = BoardLayer.Silk; }
-                            if (gerberfile.ToLower().Contains("-f_silks")) { Side = BoardSide.Top; Layer = BoardLayer.Silk; }
-                            if (gerberfile.ToLower().Contains("-b_mask")) { Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; }
-                            if (gerberfile.ToLower().Contains("-f_mask")) { Side = BoardSide.Top; Layer = BoardLayer.SolderMask; }
-                            if (gerberfile.ToLower().Contains("-b_paste")) { Side = BoardSide.Bottom; Layer = BoardLayer.Paste; }
-                            if (gerberfile.ToLower().Contains("-f_paste")) { Side = BoardSide.Top; Layer = BoardLayer.Paste; }
+                            {
+                                string lcase = gerberfile.ToLower();
+                                if (lcase.Contains("board outline")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; };
+
+                                if (lcase.Contains("copper bottom")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; };
+                                if (lcase.Contains("silkscreen bottom")) { Side = BoardSide.Bottom; Layer = BoardLayer.Silk; };
+                                if (lcase.Contains("copper top")) { Side = BoardSide.Top; Layer = BoardLayer.Copper; };
+                                if (lcase.Contains("silkscreen top")) { Side = BoardSide.Top; Layer = BoardLayer.Silk; };
+
+                                if (lcase.Contains("solder mask bottom")) { Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; };
+                                if (lcase.Contains("solder mask top")) { Side = BoardSide.Top; Layer = BoardLayer.SolderMask; };
+
+                                if (lcase.Contains("drill-copper top-copper bottom")) { Side = BoardSide.Both; Layer = BoardLayer.Drill; };
+
+                                if (lcase.Contains("outline")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; }
+                                if (lcase.Contains("-edge_cuts")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; }
+                                if (lcase.Contains("-b_cu")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; }
+                                if (lcase.Contains("-f_cu")) { Side = BoardSide.Top; Layer = BoardLayer.Copper; }
+                                if (lcase.Contains("-b_silks")) { Side = BoardSide.Bottom; Layer = BoardLayer.Silk; }
+                                if (lcase.Contains("-f_silks")) { Side = BoardSide.Top; Layer = BoardLayer.Silk; }
+                                if (lcase.Contains("-b_mask")) { Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; }
+                                if (lcase.Contains("-f_mask")) { Side = BoardSide.Top; Layer = BoardLayer.SolderMask; }
+                                if (lcase.Contains("-b_paste")) { Side = BoardSide.Bottom; Layer = BoardLayer.Paste; }
+                                if (lcase.Contains("-f_paste")) { Side = BoardSide.Top; Layer = BoardLayer.Paste; }
+                            }
                             break;
+
 
                     }
                     break;
@@ -351,6 +373,7 @@ namespace GerberLibrary
                 case "fabrd":
                 case "oln":
                 case "gko":
+                case "gm1":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Outline;
                     break;
@@ -580,9 +603,9 @@ namespace GerberLibrary
 
         }
 
-        public static PolyLineSet.Bounds GetBoundingBox(List<string> generatedFiles)
+        public static Bounds GetBoundingBox(List<string> generatedFiles)
         {
-            PolyLineSet.Bounds A = new PolyLineSet.Bounds();
+            Bounds A = new Bounds();
 
             foreach (var a in generatedFiles)
             {

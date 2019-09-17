@@ -16,7 +16,11 @@ namespace Artwork
             QuadTree,
             Delaunay
         }
-
+        public enum TriangleScaleMode
+        {
+            Original,
+            Balanced
+        }
         public Artwork.Tiling.TilingType TileType = Artwork.Tiling.TilingType.Danzer7FoldOriginal;
         public int BaseTile = 0;
         public ArtMode Mode = ArtMode.Tiling;
@@ -30,6 +34,16 @@ namespace Artwork
         public bool ReloadMask = false;
         public Color BackGroundColor = Color.Black;
         public Color BackgroundHighlight;
+        public int scalesmaller;
+        public bool alwayssubdivide;
+        public int scalesmallerlevel;
+        public bool Symmetry;
+        public bool SuperSymmetry;
+        public int xscalesmallerlevel;
+        public int xscalecenter;
+
+        public float scalesmallerfactor = 1.0f;
+        public TriangleScaleMode scalingMode = TriangleScaleMode.Balanced;
     }
 
     public class Tiling
@@ -49,35 +63,35 @@ namespace Artwork
             public List<vec2> Vertices = new List<vec2>();
             public int Type = 0;
             public int depth = 0;
-            internal bool divided= false;
+            internal bool divided = false;
 
             internal bool ContainsPoint(PointF b, float rad = .10f)
             {
                 var BC = Triangle.barycentric(Vertices[0], Vertices[1], Vertices[2], new vec2(b.X, b.Y));
                 if (BC.x > 1 + rad || BC.x < 0 - rad) return false;
                 if (BC.y > 1 + rad || BC.y < 0 - rad) return false;
-                if (BC.z > 1 + rad || BC.z < 0-rad) return false;
+                if (BC.z > 1 + rad || BC.z < 0 - rad) return false;
 
-                return true;        
+                return true;
             }
 
             internal bool ContainsPointFaster(PointF b)
             {
                 var BC = Triangle.barycentric(Vertices[0], Vertices[1], Vertices[2], new vec2(b.X, b.Y));
-                if (BC.x > 1 || BC.x < 0 ) return false;
-                if (BC.y > 1 || BC.y < 0 ) return false;
-                if (BC.z > 1 || BC.z < 0 ) return false;
+                if (BC.x > 1 || BC.x < 0) return false;
+                if (BC.y > 1 || BC.y < 0) return false;
+                if (BC.z > 1 || BC.z < 0) return false;
 
                 return true;
             }
 
             public vec2 Mid()
             {
-               return (Vertices[0] + Vertices[1] + Vertices[2]) / 3;
+                return (Vertices[0] + Vertices[1] + Vertices[2]) / 3;
             }
             public void Trans(vec2 amt)
             {
-                for(int i =0;i<Vertices.Count;i++)
+                for (int i = 0; i < Vertices.Count; i++)
 
                 {
                     Vertices[i] += amt;
@@ -107,47 +121,47 @@ namespace Artwork
                     if (Vertices[i].x > maxx) maxx = Vertices[i].x; else if (Vertices[i].x < minx) minx = Vertices[i].x;
                     if (Vertices[i].y > maxy) maxy = Vertices[i].y; else if (Vertices[i].y < miny) miny = Vertices[i].y;
                 }
-                Rectangle R = new Rectangle() { X = (int)Math.Floor(minx), Y = (int)Math.Floor(miny), Width = (int)Math.Ceiling((maxx - minx)+1), Height = (int)Math.Ceiling((maxy - miny)+1) };
+                Rectangle R = new Rectangle() { X = (int)Math.Floor(minx), Y = (int)Math.Floor(miny), Width = (int)Math.Ceiling((maxx - minx) + 1), Height = (int)Math.Ceiling((maxy - miny) + 1) };
                 results = 0;
                 tree.CallBackInside(R, callback);
                 return (results > 0);
 
             }
-            public void Rotate(float degreesOff)
+            public void Rotate(float degreesOff, float xoff = 0, float yoff = 0)
             {
                 double h = (degreesOff * Math.PI * 2.0) / 360.0;
 
                 double c = Math.Cos(h);
                 double s = Math.Sin(h);
-               for(int i =0;i<Vertices.Count;i++)
+                for (int i = 0; i < Vertices.Count; i++)
                 {
-                    float x = (float)(c * Vertices[i].x + s * Vertices[i].y);
-                    float y = (float)(-s * Vertices[i].x + c * Vertices[i].y);
-                    Vertices[i] = new vec2(x, y); 
+                    float x = (float)(c * (Vertices[i].x - xoff) + s * (Vertices[i].y - yoff)) + xoff;
+                    float y = (float)(-s * (Vertices[i].x - xoff) + c * (Vertices[i].y - yoff)) + yoff;
+                    Vertices[i] = new vec2(x, y);
                 }
             }
             public void AlterToFit(int width, int height)
             {
                 var M = Mid();
 
-                for (int i =0;i<3;i++)
+                for (int i = 0; i < 3; i++)
                 {
                     Vertices[i] -= M;
                 }
                 bool done = false;
                 int iterations = 0;
-                while(!done && iterations < 10000)
+                while (!done && iterations < 10000)
                 {
                     int corners = 0;
-                    if (ContainsPoint(new PointF(-width / 2, -height / 2),0)) corners++;
-                    if (ContainsPoint(new PointF(width/2, -height / 2),0)) corners++;
-                    if (ContainsPoint(new PointF(width/2, height/2),0)) corners++;
-                    if (ContainsPoint(new PointF(-width / 2, height/2),0)) corners++;
+                    if (ContainsPoint(new PointF(-width / 2, -height / 2), 0)) corners++;
+                    if (ContainsPoint(new PointF(width / 2, -height / 2), 0)) corners++;
+                    if (ContainsPoint(new PointF(width / 2, height / 2), 0)) corners++;
+                    if (ContainsPoint(new PointF(-width / 2, height / 2), 0)) corners++;
 
                     if (corners == 4)
                     {
                         done = true;
-                        for(int i =0;i<3;i++)
+                        for (int i = 0; i < 3; i++)
                         {
                             Vertices[i] += new vec2(width / 2, height / 2);
                         }
@@ -163,6 +177,168 @@ namespace Artwork
                     }
                 }
             }
+
+            public void ShiftToEdge(float xoff = 0, float yoff = 0)
+            {
+                var centeredge = (Vertices[0] + Vertices[1]) * 0.5f;
+                for (int i = 0; i < Vertices.Count; i++)
+                {
+                    Vertices[i] = new vec2(Vertices[i].x - centeredge.x + xoff, Vertices[i].y - centeredge.y + yoff);
+                }
+            }
+
+            public void Flip(float xoff = 0, float yoff = 0)
+            {
+                for (int i = 0; i < Vertices.Count; i++)
+                {
+                    Vertices[i] = new vec2(-(Vertices[i].x - xoff) + xoff, -(Vertices[i].y - yoff) + yoff);
+                }
+            }
+
+            public void FlipY(float xoff = 0, float yoff = 0)
+            {
+                for (int i = 0; i < Vertices.Count; i++)
+                {
+                    Vertices[i] = new vec2(Vertices[i].x, -(Vertices[i].y - yoff) + yoff);
+                }
+            }
+            internal void MirrorAround(float xoff, float yoff)
+            {
+                // FlipY(xoff, yoff);
+                //     Rotate(180, xoff, yoff);
+                Reflect(Vertices[0], Vertices[1]);
+            }
+
+            private void Reflect(vec2 AA, vec2 BB)
+            {
+                vec2 N = (BB - AA);
+
+
+                N = glm.normalize(N);
+
+                for (int i = 0; i < Vertices.Count; i++)
+                {
+                    //Vect2 = Vect1 - 2 * WallN * (WallN DOT Vect1)
+                    Vertices[i] = Vertices[i] - 2 * N * (glm.dot(Vertices[i], N));
+
+                }
+
+            }
+
+            public void ScaleDown(Settings.TriangleScaleMode scalingMode, float factor)
+            {
+              
+                switch (scalingMode)
+                {
+                    case Settings.TriangleScaleMode.Original:
+                        {
+                            var M = Mid();
+                            var b0 = Vertices[0] - M;
+                            var b1 = Vertices[1] - M;
+                            var b2 = Vertices[2] - M;
+
+
+                            Vertices[0] = M + b0 * factor;
+                            Vertices[1] = M + b1 * factor;
+                            Vertices[2] = M + b2 * factor;
+                          
+                        }
+                        break;
+
+                    case Settings.TriangleScaleMode.Balanced:
+                        {
+                            var v0  = new vec2(Vertices[0]);
+                            var b0 = Mid() - v0;
+
+                            var v1 = new vec2(Vertices[1]);
+                            var v2 = new vec2(Vertices[2]);
+                            var L = (float)Math.Sqrt(b0.x * b0.x + b0.y * b0.y);
+                            //factor /= L;
+                            var d0 = Vertices[0] - Vertices[2];
+                            var d1 = Vertices[1] - Vertices[0];
+                            var d2 = Vertices[2] - Vertices[1];
+
+                            d0 = Rot90(d0);
+                            d1 = Rot90(d1);
+                            d2 = Rot90(d2);
+
+                            //if (factor > L) factor = L;
+                            factor = -factor;
+
+                            vec3 A = new vec3(d0, 0);
+                            vec3 B = new vec3(d1, 0);
+                            float crossAB = GlmNet.glm.cross(A, B).z;
+                            if (crossAB  > 0) factor = -factor;
+                            var d0n = GlmNet.glm.normalize(d0) *factor;
+                            var d1n = GlmNet.glm.normalize(d1) *factor;
+                            var d2n = GlmNet.glm.normalize(d2) *factor;
+
+                            //var b0n = GlmNet.glm.normalize(b0);
+                            //var b1n = GlmNet.glm.normalize(b1);
+                            //var b2n = GlmNet.glm.normalize(b2);
+
+
+
+                            Vertices[0] = SegmentSegmentIntersect(v0 + d1n, v1 + d1n, v2 + d0n, v0 + d0n);
+                            Vertices[1] = SegmentSegmentIntersect(v1 + d2n, v2 + d2n, v0 + d1n, v1 + d1n);
+                            Vertices[2] = SegmentSegmentIntersect(v2 + d0n, v0 + d0n, v1 + d2n, v2 + d2n);
+
+
+                            d0 = Vertices[0] - Vertices[2];
+                            d1 = Vertices[1] - Vertices[0];
+
+                            d0 = Rot90(d0);
+                            d1 = Rot90(d1);
+
+
+                            vec3 A2 = new vec3(d0, 0);
+                            vec3 B2 = new vec3(d1, 0);
+                            float crossAB2 = GlmNet.glm.cross(A2, B2).z;
+                            if (Math.Sign(crossAB2) != Math.Sign(crossAB))
+                            {
+                                Vertices[0] = Mid();
+                                Vertices[1] = Mid();
+                                Vertices[2] = Mid();
+                            }
+
+
+
+
+
+                        }
+                        break;
+                }
+            }
+
+            private vec2 Rot90(vec2 d1)
+            {
+                vec2 r = new vec2(d1.y, -d1.x);
+
+                return r;
+            }
+        }
+
+
+        public static vec2 SegmentSegmentIntersect(vec2 P0, vec2 P1, vec2 P2, vec2 P3)
+        {
+            vec2 S1 = P1 - P0;
+            vec2 S2 = P3 - P2;
+
+
+            double s, t;
+            s = (-S1.y * (P0.x - P2.x) + S1.x * (P0.y - P2.y)) / (-S2.x * S1.y + S1.x * S2.y);
+            t = (S2.x * (P0.y - P2.y) - S2.y * (P0.x - P2.x)) / (-S2.x * S1.y + S1.x * S2.y);
+
+          //  if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+           // {
+                double X = P0.x + (t * S1.x); ;
+                double Y = P0.y + (t * S1.y);
+                return new vec2((float)X, (float)Y);
+            //}
+
+           
+            return new vec2(0,0); // No collision
+
         }
 
 
@@ -183,9 +359,9 @@ namespace Artwork
             public double Alpha;
             public double Beta;
             public double Gamma;
-            
+
             public int TypeID = 0;
-            
+
             public void BuildVertex(float x = 0, float y = 0)
             {
                 A.x = x;
@@ -251,11 +427,11 @@ namespace Artwork
 
                 var D = (V2 - V1) / (float)totaledgelength;
 
-                var V3 =V1 +  D * (float)distancefrom1;
+                var V3 = V1 + D * (float)distancefrom1;
 
                 return AddPoint(V3);
-                
-                
+
+
             }
 
             public int AddTriangle(int idx1, int idx2, int idx3, int type)
@@ -272,7 +448,7 @@ namespace Artwork
             public string Str(int idx)
             {
                 var V = GetCartesian(idx);
-                return "("+ V.x.ToString("N2").Replace(",",".") + ", " + V.y.ToString("N2").Replace(",",".")+")";
+                return "(" + V.x.ToString("N2").Replace(",", ".") + ", " + V.y.ToString("N2").Replace(",", ".") + ")";
             }
         }
 
@@ -284,14 +460,14 @@ namespace Artwork
             {
                 List<Polygon> CurrentSet = new List<Polygon>();
                 CurrentSet.Add(P);
-                for (int i = 0; i < level;i++ )
+                for (int i = 0; i < level; i++)
                 {
-                     List<Polygon> NextSet = new List<Polygon>();
-               
-                   foreach(var a in CurrentSet)
-                   {
-                       NextSet.AddRange(TilingDefinition.Subdivide(DivisionSet[a.Type], a.Vertices[0], a.Vertices[1], a.Vertices[2]));
-                   }
+                    List<Polygon> NextSet = new List<Polygon>();
+
+                    foreach (var a in CurrentSet)
+                    {
+                        NextSet.AddRange(TilingDefinition.Subdivide(DivisionSet[a.Type], a.Vertices[0], a.Vertices[1], a.Vertices[2]));
+                    }
                     CurrentSet = NextSet;
                 }
                 return CurrentSet;
@@ -363,7 +539,7 @@ namespace Artwork
                     t0.AddTriangle(vE, vB, vF, 0);
                 }
                 {
-                    t1.BuildVerticesFromEdgeLengths(g,a, g);
+                    t1.BuildVerticesFromEdgeLengths(g, a, g);
                     t1.AddCorners();
 
                     int vD = t1.AddBetweenCorners(0, 1, g + b + g, g);
@@ -389,18 +565,18 @@ namespace Artwork
                     t2.BuildVerticesFromEdgeLengths(g, b, b);
                     t2.AddCorners();
                     int vD = t2.AddBetweenCorners(0, 1, g + b + g, g);
-                    int vE = t2.AddBetweenCorners(0, 1, g + b + g, g+b);
+                    int vE = t2.AddBetweenCorners(0, 1, g + b + g, g + b);
 
                     int vF = t2.AddBetweenCorners(1, 2, g + b + a, g);
-                    int vG = t2.AddBetweenCorners(1, 2, g + b + a, g+b);
-                  
+                    int vG = t2.AddBetweenCorners(1, 2, g + b + a, g + b);
+
                     int vH = t2.AddBetweenCorners(2, 0, g + b + a, g);
-                    int vI = t2.AddBetweenCorners(2, 0, g + b + a, g+b);
+                    int vI = t2.AddBetweenCorners(2, 0, g + b + a, g + b);
 
 
-                    int vJ = t2.AddPoint(t2.GetCartesian(vA) + (t0.GetCartesian(vB) - t0.GetCartesian(vt0G))*new vec2(1,-1));
+                    int vJ = t2.AddPoint(t2.GetCartesian(vA) + (t0.GetCartesian(vB) - t0.GetCartesian(vt0G)) * new vec2(1, -1));
                     int vK = t2.AddPoint(t2.GetCartesian(vA) + (t0.GetCartesian(vB) - t0.GetCartesian(vt0H)) * new vec2(1, -1));
-                    
+
                     t2.AddTriangle(vD, vA, vI, 0);
                     t2.AddTriangle(vH, vD, vI, 2);
                     t2.AddTriangle(vD, vH, vJ, 0);
@@ -409,14 +585,14 @@ namespace Artwork
                     t2.AddTriangle(vB, vK, vE, 1);
                     t2.AddTriangle(vB, vF, vK, 1);
                     t2.AddTriangle(vJ, vF, vK, 0);
-                     
+
                     t2.AddTriangle(vF, vJ, vG, 2);
                     t2.AddTriangle(vJ, vC, vG, 0);
                     t2.AddTriangle(vC, vH, vJ, 1);
 
 
                     //int vJ = t2.AddBetweenCorners(0, 1, g + b + g, g);
-                        //int vK =  t2.AddBetweenCorners(0, 1, g + b + g, g);
+                    //int vK =  t2.AddBetweenCorners(0, 1, g + b + g, g);
                 }
 
 
@@ -427,7 +603,7 @@ namespace Artwork
 
             }
 
-            public Polygon CreateBaseTriangle(int type, float renderscale, float x= 0.0f, float y=0.0f)
+            public Polygon CreateBaseTriangle(int type, float renderscale, float x = 0.0f, float y = 0.0f)
             {
                 type = type % DivisionSet.Count;
                 var T = DivisionSet[type];
@@ -435,7 +611,7 @@ namespace Artwork
 
                 Polygon p = new Polygon();
                 // todo: do more than a triangle here..
-                p.Vertices.Add((T.A - MID + new vec2(x, y)) * renderscale );
+                p.Vertices.Add((T.A - MID + new vec2(x, y)) * renderscale);
                 p.Vertices.Add((T.B - MID + new vec2(x, y)) * renderscale);
                 p.Vertices.Add((T.C - MID + new vec2(x, y)) * renderscale);
                 p.Type = type;
@@ -456,9 +632,9 @@ namespace Artwork
                 double b = Math.Sin((3.0 * Math.PI) / 7.0);
 
 
-                
-                double d = Math.Sin((3.0 * Math.PI) / 7.0) +Math.Sin((2.0 * Math.PI) / 7.0);
-             
+
+                double d = Math.Sin((3.0 * Math.PI) / 7.0) + Math.Sin((2.0 * Math.PI) / 7.0);
+
 
                 a = 0.44504186791263;
                 b = 1.000000000000002;
@@ -468,7 +644,7 @@ namespace Artwork
                 //Console.WriteLine("{0} : {1}", b/c,  (d+b)/(c+b+c));
                 //Console.WriteLine("{0} : {1}", d,  b * InflationFactor - a);
                 //Console.WriteLine("{0} : {1}", d, (d + b)/ InflationFactor );
-                
+
                 //double d = b + c;
                 //Console.WriteLine("a: {0} b: {1} c: {2} d: {3}, inflate:{4}", a, b, c, d, InflationFactor);
 
@@ -481,8 +657,8 @@ namespace Artwork
                     t0.BuildVerticesFromEdgeLengths(a, b, b);
                     t0.AddCorners();
 
-                    int vD = t0.AddBetweenCorners(1, 2, d+  b,  d);
-                    int vE = t0.AddBetweenCorners(2, 0, d + b,  b);
+                    int vD = t0.AddBetweenCorners(1, 2, d + b, d);
+                    int vE = t0.AddBetweenCorners(2, 0, d + b, b);
 
                     int vF = t0.AddPoint(((t0.GetCartesian(vD) + t0.GetCartesian(vE)) * 0.5f - t0.GetCartesian(vC)) * 2 + t0.GetCartesian(vC));
 
@@ -498,15 +674,15 @@ namespace Artwork
                     t2.AddCorners();
 
                     int vD = t2.AddBetweenCorners(0, 1, b + b + d + c, b);
-                    int vE = t2.AddBetweenCorners(0, 1, b + b + d + c, b+d);
-                    int vF = t2.AddBetweenCorners(0, 1, b + b + d + c, b+d+c);
-                              
-                    int vG = t2.AddBetweenCorners(1, 2, d+b, d);
-                    int vH = t2.AddBetweenCorners(2, 0, d+b, d);
+                    int vE = t2.AddBetweenCorners(0, 1, b + b + d + c, b + d);
+                    int vF = t2.AddBetweenCorners(0, 1, b + b + d + c, b + d + c);
+
+                    int vG = t2.AddBetweenCorners(1, 2, d + b, d);
+                    int vH = t2.AddBetweenCorners(2, 0, d + b, d);
 
 
                     int vI = t2.AddPoint(((t2.GetCartesian(vD) + t2.GetCartesian(vH)) * 0.5f - t2.GetCartesian(vA)) * 2 + t2.GetCartesian(vA));
-                    t2.AddTriangle(vD ,vH, vA, 0);
+                    t2.AddTriangle(vD, vH, vA, 0);
                     t2.AddTriangle(vH, vD, vI, 0);
                     t2.AddTriangle(vE, vD, vI, 2);
                     t2.AddTriangle(vC, vH, vI, 2);
@@ -520,11 +696,11 @@ namespace Artwork
                     t1.BuildVerticesFromEdgeLengths(c, b, b);
                     t1.AddCorners();
 
-                    int vD = t1.AddBetweenCorners(0, 1, c+b+c, c);
-                    int vE = t1.AddBetweenCorners(0, 1, c+b+c, c+b);
-                              
-                    int vF = t1.AddBetweenCorners(1, 2, b + d, b );
-                              
+                    int vD = t1.AddBetweenCorners(0, 1, c + b + c, c);
+                    int vE = t1.AddBetweenCorners(0, 1, c + b + c, c + b);
+
+                    int vF = t1.AddBetweenCorners(1, 2, b + d, b);
+
                     int vG = t1.AddBetweenCorners(2, 0, d + b, d);
 
 
@@ -540,7 +716,7 @@ namespace Artwork
                     t1.AddTriangle(vA, vD, vG, 1);
                     t1.AddTriangle(vD, vH, vG, 1);
                     t1.AddTriangle(vC, vG, vH, 2);
-                     
+
                     t1.AddTriangle(vE, vI, vD, 0);
                     t1.AddTriangle(vH, vD, vI, 1);
                     t1.AddTriangle(vC, vI, vH, 2);
@@ -561,7 +737,7 @@ namespace Artwork
             {
                 PolygonMapping t0 = new PolygonMapping() { TypeID = 0 };
                 PolygonMapping t1 = new PolygonMapping() { TypeID = 1 };
-                PolygonMapping t2 = new PolygonMapping(){ TypeID = 2} ;
+                PolygonMapping t2 = new PolygonMapping() { TypeID = 2 };
 
                 List<PolygonMapping> T = new List<PolygonMapping>();
                 int vA = 0;
@@ -574,7 +750,7 @@ namespace Artwork
                 foreach (var t in T)
                 {
                     t.BuildVerticesFromEdgeLengths(5, 4, 3);
-                    
+
                     t.AddCorners();
                     int vD = t.AddPoint(new vec2(t.C.x, 0));
 
@@ -586,13 +762,13 @@ namespace Artwork
 
                     t.AddTriangle(vA, vC, vD, (off) % 3);
                     t.AddTriangle(vC, vF, vG, (off) % 3);
-                    t.AddTriangle(vE, vG, vD, (off+1) % 3);
-                    t.AddTriangle(vG, vE, vF, (off+1) % 3);
-                    t.AddTriangle(vF, vB, vE, (off+2) % 3);
+                    t.AddTriangle(vE, vG, vD, (off + 1) % 3);
+                    t.AddTriangle(vG, vE, vF, (off + 1) % 3);
+                    t.AddTriangle(vF, vB, vE, (off + 2) % 3);
 
 
-                        off++;
-                //    t.ad
+                    off++;
+                    //    t.ad
                 }
                 DivisionSet[0] = t0;
                 DivisionSet[1] = t1;
@@ -681,8 +857,8 @@ namespace Artwork
                 double a = Math.Sin(Math.PI / 7.0);
                 double b = Math.Sin((2.0 * Math.PI) / 7.0);
                 double c = Math.Sin((3.0 * Math.PI) / 7.0);
-           //     Console.WriteLine("{0} {1} {2}", a, b, c);
-                
+                //     Console.WriteLine("{0} {1} {2}", a, b, c);
+
 
                 int vA = 0;
                 int vB = 1;
@@ -701,12 +877,12 @@ namespace Artwork
                     int vJ = t0.AddBetweenCorners(2, 0, b + c + a + b + c, b + c + a);
                     int vK = t0.AddBetweenCorners(2, 0, b + c + a + b + c, b + c + a + b);
 
-                    int vL = t0.AddPoint(t0.GetCartesian(vA) + glm.normalize(((t0.GetCartesian(vK) + t0.GetCartesian(vD)) * 0.5f)) * (float)(c/ (c+b+a+c+b)));
+                    int vL = t0.AddPoint(t0.GetCartesian(vA) + glm.normalize(((t0.GetCartesian(vK) + t0.GetCartesian(vD)) * 0.5f)) * (float)(c / (c + b + a + c + b)));
 
 
                     int vM = t0.AddPoint(mirror(t0.GetCartesian(vK), t0.GetCartesian(vJ), t0.GetCartesian(vL)));
 
-                    
+
                     t0.AddTriangle(vD, vL, vA, 1);
                     t0.AddTriangle(vK, vL, vA, 1);
                     t0.AddTriangle(vL, vD, vB, 0);
@@ -725,7 +901,7 @@ namespace Artwork
                     t0.AddTriangle(vG, vH, vC, 0);
 
                     //       t0.AddTriangle(vD, vE, vF, 0);
-               //     t0.AddTriangle(vE, vD, vC, 0);
+                    //     t0.AddTriangle(vE, vD, vC, 0);
                 }
 
                 {
@@ -739,15 +915,15 @@ namespace Artwork
                     int vG = t1.AddBetweenCorners(1, 2, b + c + a + b + c, b + c + a);
                     int vH = t1.AddBetweenCorners(1, 2, b + c + a + b + c, b + c + a + b);
 
-                    int vI = t1.AddBetweenCorners(2, 0, b + c + a + b + c, b );
-                    int vJ = t1.AddBetweenCorners(2, 0, b + c + a + b + c, b + c );
-                    int vK = t1.AddBetweenCorners(2, 0, b + c + a + b + c, b + c + a );
+                    int vI = t1.AddBetweenCorners(2, 0, b + c + a + b + c, b);
+                    int vJ = t1.AddBetweenCorners(2, 0, b + c + a + b + c, b + c);
+                    int vK = t1.AddBetweenCorners(2, 0, b + c + a + b + c, b + c + a);
                     int vL = t1.AddBetweenCorners(2, 0, b + c + a + b + c, b + c + a + b);
-                              
-                    int vM = t1.AddPoint(t1.GetCartesian(vA) + ((t1.GetCartesian(vF) - t1.GetCartesian(vA)) /(float)(b+a+c)) * (float)c  );
-                    int vN = t1.AddPoint(t1.GetCartesian(vA) + ((t1.GetCartesian(vF) - t1.GetCartesian(vA)) / (float)(b + a + c)) * (float)(c+a));
-                    int vO = t1.AddPoint(t1.GetCartesian(vA) + glm.normalize(((t1.GetCartesian(vE)) )) * (float)((c ) / (c + b + a + c + b)));
-                              
+
+                    int vM = t1.AddPoint(t1.GetCartesian(vA) + ((t1.GetCartesian(vF) - t1.GetCartesian(vA)) / (float)(b + a + c)) * (float)c);
+                    int vN = t1.AddPoint(t1.GetCartesian(vA) + ((t1.GetCartesian(vF) - t1.GetCartesian(vA)) / (float)(b + a + c)) * (float)(c + a));
+                    int vO = t1.AddPoint(t1.GetCartesian(vA) + glm.normalize(((t1.GetCartesian(vE)))) * (float)((c) / (c + b + a + c + b)));
+
                     //int vN = t1.AddPoint(mirror(t0.GetCartesian(vK), t0.GetCartesian(vJ), t0.GetCartesian(vL)));
 
                     t1.AddTriangle(vO, vD, vA, 0);
@@ -759,22 +935,22 @@ namespace Artwork
 
                     t1.AddTriangle(vM, vO, vE, 0);
                     t1.AddTriangle(vM, vN, vE, 0);
-            
-                  
+
+
                     t1.AddTriangle(vE, vF, vN, 2);
                     t1.AddTriangle(vM, vL, vK, 0);
                     t1.AddTriangle(vM, vN, vK, 0);
-                    
+
                     t1.AddTriangle(vK, vF, vN, 2);
                     t1.AddTriangle(vK, vJ, vF, 1);
                     t1.AddTriangle(vF, vG, vJ, 0);
-                    
+
                     t1.AddTriangle(vJ, vH, vG, 2);
                     t1.AddTriangle(vI, vH, vJ, 1);
 
-                    
+
                     t1.AddTriangle(vH, vI, vC, 0);
-                
+
 
                 }
 
@@ -789,23 +965,23 @@ namespace Artwork
 
 
                     int vH = t2.AddBetweenCorners(1, 2, c + a + b + c, c);
-                    int vI = t2.AddBetweenCorners(1, 2, c + a + b + c, c+a);
-                    int vJ = t2.AddBetweenCorners(1, 2, c + a + b + c, c+a+b);
+                    int vI = t2.AddBetweenCorners(1, 2, c + a + b + c, c + a);
+                    int vJ = t2.AddBetweenCorners(1, 2, c + a + b + c, c + a + b);
 
                     int vK = t2.AddBetweenCorners(2, 0, c + a + b + c, c);
-                    int vL = t2.AddBetweenCorners(2, 0, c + a + b + c, c+a);
-                    int vM = t2.AddBetweenCorners(2, 0, c + a + b + c, c+a+b);
+                    int vL = t2.AddBetweenCorners(2, 0, c + a + b + c, c + a);
+                    int vM = t2.AddBetweenCorners(2, 0, c + a + b + c, c + a + b);
                     int vP = t2.AddPoint(mirror(t2.GetCartesian(vC), t2.GetCartesian(vK), t2.GetCartesian(vJ)));
 
-                    int vN = t2.AddBetweenCorners(vA, vP, c + a + b , c );
+                    int vN = t2.AddBetweenCorners(vA, vP, c + a + b, c);
 
-                    int vO = t2.AddBetweenCorners(vA, vP, c + a + b , c + a);
-                    
+                    int vO = t2.AddBetweenCorners(vA, vP, c + a + b, c + a);
 
-                    int vQ = t2.AddBetweenCorners(vP, vB, c + a + b,  a );
+
+                    int vQ = t2.AddBetweenCorners(vP, vB, c + a + b, a);
                     int vR = t2.AddBetweenCorners(vP, vB, c + a + b, a + b);
 
-                    int vS = t2.AddBetweenCorners(vK, vJ, b+a,b);
+                    int vS = t2.AddBetweenCorners(vK, vJ, b + a, b);
 
                     t2.AddTriangle(vD, vN, vA, 1);
                     t2.AddTriangle(vM, vN, vA, 1);
@@ -815,13 +991,13 @@ namespace Artwork
                     t2.AddTriangle(vE, vP, vO, 2);
 
                     t2.AddTriangle(vE, vF, vP, 1);
-                    
+
                     t2.AddTriangle(vP, vQ, vF, 0);
 
                     t2.AddTriangle(vG, vR, vF, 1);
 
                     t2.AddTriangle(vR, vG, vB, 0);
-                   
+
                     t2.AddTriangle(vR, vH, vB, 1);
                     t2.AddTriangle(vH, vR, vQ, 0);
                     t2.AddTriangle(vH, vI, vQ, 0);
@@ -836,13 +1012,13 @@ namespace Artwork
                     t2.AddTriangle(vJ, vS, vC, 0);
                     t2.AddTriangle(vC, vK, vS, 2);
                     t2.AddTriangle(vP, vK, vS, 2);
-                    
+
                     t2.AddTriangle(vL, vK, vP, 1);
                     t2.AddTriangle(vL, vP, vO, 2);
-                    
+
                     t2.AddTriangle(vN, vO, vL, 0);
                     t2.AddTriangle(vN, vM, vL, 0);
-                    
+
                 }
 
 
@@ -870,10 +1046,10 @@ namespace Artwork
                 int vC = 2;
 
                 {
-                    t0.BuildVerticesFromEdgeLengths(a,b,b);
+                    t0.BuildVerticesFromEdgeLengths(a, b, b);
                     t0.AddCorners();
                     int vD = t0.AddBetweenCorners(vC, vA, a + b, b);
-                    t0.AddTriangle(vD, vA, vB,0);
+                    t0.AddTriangle(vD, vA, vB, 0);
                     t0.AddTriangle(vB, vC, vD, 1);
                 }
                 {
@@ -894,7 +1070,7 @@ namespace Artwork
             public vec2 NormalizeSize()
             {
                 double len = 0;
-                foreach(var a in DivisionSet.Values)
+                foreach (var a in DivisionSet.Values)
                 {
                     len = Math.Max(len, a.AB);
                     len = Math.Max(len, a.AC);
@@ -922,7 +1098,7 @@ namespace Artwork
 
             public vec2 Create(TilingType tilingType)
             {
-                switch(tilingType)
+                switch (tilingType)
                 {
                     case TilingType.Danzer7Fold: CreateDanzers7Fold(); break;
                     case TilingType.Walton: CreateDaleWalton1(); break;
@@ -930,26 +1106,27 @@ namespace Artwork
                     case TilingType.Conway: CreateConway(); break;
                     case TilingType.Maloney: CreateMaloney(); break;
                     case TilingType.Penrose: CreatePenrose(); break;
-           
+
                 }
                 return NormalizeSize();
-           
+
             }
 
-            public List<Polygon> SubdivideAdaptive(Polygon P, int level, QuadTreeNode Tree)
+            public List<Polygon> SubdivideAdaptive(Polygon P, int level, QuadTreeNode Tree, bool alwayssubdivide = false)
             {
 
-                
+
                 List<Polygon> CurrentSet = new List<Polygon>(1);
                 CurrentSet.Add(P);
 
                 for (int i = 0; i < level; i++)
                 {
-                    List<Polygon> NextSet = new List<Polygon>(CurrentSet.Count+1000);
+                    List<Polygon> NextSet = new List<Polygon>(CurrentSet.Count + 1000);
 
                     foreach (var a in CurrentSet)
                     {
                         int divide = 0;
+                        if (alwayssubdivide) divide++;
                         if (a.divided == false)
                         {
                             if (a.ContainsPointsInTree(Tree)) divide++;
@@ -977,8 +1154,8 @@ namespace Artwork
                     CurrentSet = NextSet;
                 }
                 List<Polygon> ResultSet = new List<Polygon>(CurrentSet.Count);
-              
-                foreach(var a in CurrentSet)
+
+                foreach (var a in CurrentSet)
                 {
                     if (CheckPoints(a, Tree))
                     {
@@ -990,7 +1167,7 @@ namespace Artwork
 
             public bool CheckPoints(Polygon a, QuadTreeNode Tree)
             {
-                   if (a.ContainsPointsInTree(Tree)) return false;
+                if (a.ContainsPointsInTree(Tree)) return false;
                 return true;
             }
         }
@@ -1322,7 +1499,7 @@ namespace Artwork
 
         public static int DefaultTilingDepth(TilingType Type)
         {
-            switch(Type)
+            switch (Type)
             {
                 case TilingType.Conway: return 5;
                 case TilingType.Maloney: return 3;
@@ -1332,7 +1509,7 @@ namespace Artwork
                 case TilingType.Danzer7FoldOriginal: return 5;
             }
             return 1;
-            
+
         }
     }
 }

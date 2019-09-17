@@ -52,7 +52,9 @@ namespace ImageToGerber
 
             Bitmap B = (Bitmap)Image.FromFile(png);
             Bitmap B2 = null;
+
             if (System.IO.File.Exists(goldpng)) B2 = (Bitmap)Image.FromFile(goldpng);
+
             try
             {
                 System.IO.Directory.CreateDirectory(basename);
@@ -61,15 +63,18 @@ namespace ImageToGerber
             {
 
             }
+
             string newa = basename + "\\" + System.IO.Path.GetFileName(a); ;
             string gko = basename + ".gko";
             string pnl = basename + ".pnl";
+
             if (System.IO.File.Exists(gko) == false && System.IO.File.Exists(pnl) == true)
             {
                 gko = pnl;
             }
 
-                string newgko = basename + "\\" + System.IO.Path.GetFileNameWithoutExtension(a) + ".gko" ; ;
+            string newgko = basename + "\\" + System.IO.Path.GetFileNameWithoutExtension(a) + ".gko" ; ;
+
             if (System.IO.File.Exists(gko))
             {
                 System.IO.File.Copy(gko, newgko, true);

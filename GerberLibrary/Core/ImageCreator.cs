@@ -17,7 +17,7 @@ namespace GerberLibrary
     public class GerberImageCreator
     {
         public static bool AA = true;
-        public PolyLineSet.Bounds BoundingBox = new PolyLineSet.Bounds();
+        public Bounds BoundingBox = new Bounds();
         public List<String> Errors = new List<string>();
         public double scale = 25.0f / 25.4f; // dpi
         private BoardRenderColorSet ActiveColorSet = new BoardRenderColorSet();
@@ -58,7 +58,7 @@ namespace GerberLibrary
             }
 
             GerberArtWriter GAW = new GerberArtWriter();
-            
+            int lineID = 0; 
             foreach (var a in toclip.DisplayShapes)
             {
                 ClipperLib.Clipper CP = new ClipperLib.Clipper();
@@ -70,12 +70,12 @@ namespace GerberLibrary
 
                     if (ClipperLib.Clipper.Orientation(poly) == false)
                     {
-                        Console.WriteLine("pos");
+                        //Console.WriteLine("pos");
                     }
                     else
                     {
                         poly.Reverse();
-                        Console.WriteLine("neg");
+                        //Console.WriteLine("neg");
                     }
 
                         CP.AddPolygon(poly, ClipperLib.PolyType.ptClip);
@@ -86,7 +86,7 @@ namespace GerberLibrary
                 CP.Execute(ClipperLib.ClipType.ctIntersection, solution);
                 foreach(var p in solution)
                 {
-                    PolyLine P = new PolyLine();
+                    PolyLine P = new PolyLine(lineID++);
                     P.fromPolygon(p);
                     GAW.AddPolygon(P);
                 }
@@ -353,7 +353,7 @@ namespace GerberLibrary
 
         public void CreateBoxOutline()
         {
-            PolyLine Box = new PolyLine();
+            PolyLine Box = new PolyLine(PolyLine.PolyIDs.Outline);
             Box.MakeRectangle(BoundingBox.Width(), BoundingBox.Height());
             Box.Translate(BoundingBox.TopLeft.X + BoundingBox.Width() / 2.0, BoundingBox.TopLeft.Y + BoundingBox.Height() / 2.0);
             Box.Hole = false;
@@ -523,8 +523,9 @@ namespace GerberLibrary
             {
                 for (int y = 0; y < h; y++)
                 {
-                    Color TargetPixel = Target.GetPixel(x, y);
-                    Color B1 = BumpMap.GetPixel(x, y);
+                    int idx = (y * BumpMap.Width + x) * 4;
+                    Color TargetPixel = Target.GetPixelIDX(idx);
+                    Color B1 = BumpMap.GetPixelIDX(idx);
 
                     if (true)//B1.A > 0)
                     {
@@ -557,10 +558,10 @@ namespace GerberLibrary
                             double ang = Math.Atan2(dy, dx);
                             double dist = Math.Sqrt(dx * dx + dy * dy);
                             double L = Math.Sin(ang - 1.4);
-                            if (L > 0) Target.SetPixel(x, y, Lighter(TargetPixel, L * 0.04));
+                            if (L > 0) Target.SetPixelIDX(idx, Lighter(TargetPixel, L * 0.04));
                             else
                             {
-                                Target.SetPixel(x, y, Darker(TargetPixel, Math.Abs(L * 0.04)));
+                                Target.SetPixelIDX(idx, Darker(TargetPixel, Math.Abs(L * 0.04)));
                             }
                         }
 
@@ -658,10 +659,12 @@ namespace GerberLibrary
             {
                 for (int x = 0; x < w; x++)
                 {
-                    var S = Source.GetPixel(x, y);
+                    int idx = (y * Target.Width + x) * 4;
+
+                    var S = Source.GetPixelIDX(idx);
                     if (S.R > 0)
                     {
-                        Target.SetPixel(x, y, Color.FromArgb(255 - S.R, Target.GetPixel(x, y)));
+                        Target.SetPixelIDX(idx, Color.FromArgb(255 - S.R, Target.GetPixelIDX(idx)));
                     }
                 }
             }
@@ -789,7 +792,7 @@ namespace GerberLibrary
 
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<ParsedGerber> DrillFilesToReload = new List<ParsedGerber>();
-            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
+            Bounds BB = new Bounds();
             foreach (var a in PLSs)
             {
                 if (a.Layer == BoardLayer.Drill)
@@ -815,7 +818,7 @@ namespace GerberLibrary
 
 
 
-            BoundingBox = new PolyLineSet.Bounds();
+            BoundingBox = new Bounds();
             foreach (var a in PLSs)
             {
                 //   Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName(a.Name));
@@ -942,19 +945,21 @@ namespace GerberLibrary
                         LockBitmap BoardPlate = new LockBitmap(_BoardPlate);
                         BoardPlate.LockBits();
                         DrillHoles.LockBits();
+
                         for (int x = 0; x < w; x++)
                         {
                             for (int y = 0; y < h; y++)
                             {
-                                var O = BoardPlate.GetPixel(x, y);
-                                var Drill = DrillHoles.GetPixel(x, y);
+                                int idx = (y * BoardPlate.Width + x) * 4;
+                                var O = BoardPlate.GetPixelIDX(idx);
+                                var Drill = DrillHoles.GetPixelIDX(idx);
                                 Color newC = O;
                                 if (Drill.A > 0)
                                 {
                                     float OA = 1.0f - (Drill.A / 255.0f);
                                     float DA = O.A / 255.0f;
                                     newC = Color.FromArgb((byte)Math.Round((OA * DA) * 255.0f), O.R, O.G, O.B);
-                                    BoardPlate.SetPixel(x, y, newC);
+                                    BoardPlate.SetPixelIDX(idx, newC);
                                 }
                             }
                         }
@@ -977,8 +982,10 @@ namespace GerberLibrary
                     {
                         for (int y = 0; y < h; y++)
                         {
-                            var O = Final.GetPixel(x, y);
-                            var C = Copper.GetPixel(x, y);
+                            int idx = (y * Copper.Width + x) * 4;
+
+                            var O = Final.GetPixelIDX(idx);
+                            var C = Copper.GetPixelIDX(idx);
 
                             if (O.A > 0)
                             {
@@ -991,7 +998,7 @@ namespace GerberLibrary
                                         (byte)Math.Round(CopperColor.R * A + O.R * IA),
                                         (byte)Math.Round(CopperColor.G * A + O.G * IA),
                                         (byte)Math.Round(CopperColor.B * A + O.B * IA));
-                                    Final.SetPixel(x, y, newDC);
+                                    Final.SetPixelIDX(idx, newDC);
                                 }
                             }
                             //G.DrawImage(Copper, new Rectangle(0, 0, w, h), 0, 0, w, h, GraphicsUnit.Pixel);
@@ -1025,32 +1032,35 @@ namespace GerberLibrary
                     SilkMask.LockBits();
                     LockBitmap BoardPlate = new LockBitmap(_BoardPlate);
                     BoardPlate.LockBits();
+
+                    
                     for (int x = 0; x < w; x++)
                     {
                         for (int y = 0; y < h; y++)
                         {
 
+                            int idx = (y * Final.Width + x) * 4;
 
-                            var O = Final.GetPixel(x, y);
-                            var Mask = SolderMaskHoles.GetPixel(x, y);
+                            var O = Final.GetPixelIDX(idx);
+                            var Mask = SolderMaskHoles.GetPixelIDX(idx);
 
 
                             if (Mask.A > 0)
                             {
-                                var OSM = SilkMask.GetPixel(x, y);
+                                var OSM = SilkMask.GetPixelIDX(idx);
 
                                 float OA = 1.0f - (Mask.A / 255.0f);
                                 float DA = O.A / 255.0f;
                                 Color newDC = Color.FromArgb((byte)Math.Round((OA * DA) * 255.0f), O.R, O.G, O.B);
-                                SilkMask.SetPixel(x, y, newDC);
+                                SilkMask.SetPixelIDX(idx, newDC);
                             }
 
 
                             Color Cop = Color.Transparent;
 
-                            if (Copper != null) Cop = Copper.GetPixel(x, y);
+                            if (Copper != null) Cop = Copper.GetPixelIDX(idx);
 
-                            var BmP = BoardPlate.GetPixel(x, y);
+                            var BmP = BoardPlate.GetPixelIDX(idx);
                             if (Cop.A > 0 && Mask.A > 0)
                             {
 
@@ -1083,7 +1093,7 @@ namespace GerberLibrary
                                 (byte)Math.Round(O.G * OA2 + S.G * IOA),
                                 (byte)Math.Round(O.B * OA2 + S.B * IOA));
 
-                            Final.SetPixel(x, y, newC);
+                            Final.SetPixelIDX(idx, newC);
                         }
                     }
 
@@ -1121,19 +1131,21 @@ namespace GerberLibrary
                     {
                         for (int x = 0; x < w; x++)
                         {
+                            int idx = (y * Silk.Width + x) * 4;
 
-                            var SilkPixel = Silk.GetPixel(x, y);
+
+                            var SilkPixel = Silk.GetPixelIDX(idx);
                             float AS = SilkPixel.A / 255.0f;
                             if (AS > 0)
                             {
-                                var OutputPixel = Final.GetPixel(x, y);
-                                var Mask = SilkMask.GetPixel(x, y);
+                                var OutputPixel = Final.GetPixelIDX(idx);
+                                var Mask = SilkMask.GetPixelIDX(idx);
 
                                 //    float AO = O.A / 255.0f;
                                 float AM = (Mask.A / 255.0f) * (1 - AS);
                                 if (Mask.A < 255 && Copper != null)
                                 {
-                                    var CopperPixel = Copper.GetPixel(x, y);
+                                    var CopperPixel = Copper.GetPixelIDX(idx);
                                     if (CopperPixel.A > 0)
                                     {
                                         AM = AM * (1 - (CopperPixel.A / 255.0f)) + 1 * (CopperPixel.A / 255.0f);
@@ -1147,7 +1159,7 @@ namespace GerberLibrary
                                   (byte)Math.Round(OutputPixel.R * AM + SilkPixel.R * iAM),
                                   (byte)Math.Round(OutputPixel.G * AM + SilkPixel.G * iAM),
                                   (byte)Math.Round(OutputPixel.B * AM + SilkPixel.B * iAM));
-                                Final.SetPixel(x, y, newC);
+                                Final.SetPixelIDX(idx, newC);
                             }
                         }
                     }
@@ -1179,8 +1191,10 @@ namespace GerberLibrary
                 {
                     for (int x = 0; x < w; x++)
                     {
-                        var C = Final.GetPixel(x, y);
-                        if (C.A == 0) Final.SetPixel(x, y, Color.White);
+                        int idx = (y * Final.Width + x) * 4;
+
+                        var C = Final.GetPixelIDX(idx);
+                        if (C.A == 0) Final.SetPixelIDX(idx, Color.White);
                     }
                 }
                 Final.UnlockBits();
@@ -1291,7 +1305,7 @@ namespace GerberLibrary
             if (Gerber.SkipEagleDrillFix == true) { Logger.AddString("skipping eagle fix"); return; };
             List<ParsedGerber> DrillFiles = new List<ParsedGerber>();
             List<Tuple<double, ParsedGerber>> DrillFilesToReload = new List<Tuple<double, ParsedGerber>>();
-            PolyLineSet.Bounds BB = new PolyLineSet.Bounds();
+            Bounds BB = new Bounds();
             foreach (var a in PLSs)
             {
                 if (a.Layer == BoardLayer.Drill)
@@ -1340,7 +1354,7 @@ namespace GerberLibrary
                 }
             }
 
-            BoundingBox = new PolyLineSet.Bounds();
+            BoundingBox = new Bounds();
             foreach (var a in PLSs)
             {
                 //Console.WriteLine("Progress: Adding board {6} to box::{0:N2},{1:N2} - {2:N2},{3:N2} -> {4:N2},{5:N2}", a.BoundingBox.TopLeft.X, a.BoundingBox.TopLeft.Y, a.BoundingBox.BottomRight.X, a.BoundingBox.BottomRight.Y, a.BoundingBox.Width(), a.BoundingBox.Height(), Path.GetFileName( a.Name));
@@ -1352,9 +1366,9 @@ namespace GerberLibrary
         }
 
 
-        private PolyLineSet.Bounds GetOutlineBoundingBox()
+        private Bounds GetOutlineBoundingBox()
         {
-            PolyLineSet.Bounds B = new PolyLineSet.Bounds();
+            Bounds B = new Bounds();
             int i = 0;
             foreach(var a in PLSs)
             {
@@ -1501,6 +1515,16 @@ namespace GerberLibrary
         public int Height { get; private set; }
         public byte[] Pixels { get; set; }
         public int Width { get; private set; }
+
+        public Color GetPixelIDX(int idx)
+        {
+            byte b = Pixels[idx];
+            byte g = Pixels[idx + 1];
+            byte r = Pixels[idx + 2];
+            byte a = Pixels[idx + 3]; // a
+            return Color.FromArgb(a, r, g, b);
+        }
+
         /// <summary>
         /// Get the color of the specified pixel
         /// </summary>
@@ -1641,6 +1665,14 @@ namespace GerberLibrary
             {
                 throw ex;
             }
+        }
+
+        public void SetPixelIDX(int i, Color color)
+        {
+            Pixels[i] = color.B;
+            Pixels[i + 1] = color.G;
+            Pixels[i + 2] = color.R;
+            Pixels[i + 3] = color.A;
         }
     }
 }

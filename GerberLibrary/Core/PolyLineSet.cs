@@ -1,6 +1,5 @@
 ﻿using GerberLibrary.Core.Primitives;
 using GerberLibrary.Core;
-using Polygon = System.Collections.Generic.List<ClipperLib.IntPoint>;
 using Polygons = System.Collections.Generic.List<System.Collections.Generic.List<ClipperLib.IntPoint>>;
 
 using System;
@@ -40,6 +39,7 @@ namespace GerberLibrary
         public int CurrentLineIndex = 0;
         public bool IgnoreZeroWidth = false;
         public int LastD;
+        public int LastShapeID = 0;
         // blank default
         public double LastX = 0;
 
@@ -64,7 +64,7 @@ namespace GerberLibrary
         public PolyLine ThinLine;
     }
 
-    public class PolyLineSet
+    public partial class PolyLineSet
     {
         public string Name;
 
@@ -226,7 +226,7 @@ namespace GerberLibrary
 
                 foreach (var Hole in Tool.Drills)
                 {
-                    PolyLine DispPL = new PolyLine();
+                    PolyLine DispPL = new PolyLine(State.LastShapeID++);
 
                     for (int i = 0; i < sides; i++)
                     {
@@ -240,7 +240,7 @@ namespace GerberLibrary
 
                 foreach (var Slot in Tool.Slots)
                 {
-                    PolyLine DispPL = new PolyLine();
+                    PolyLine DispPL = new PolyLine(State.LastShapeID++);
 
                     double dy = Slot.End.Y - Slot.Start.Y;
                     double dx = Slot.End.X - Slot.Start.X;
@@ -296,7 +296,7 @@ namespace GerberLibrary
 
                 foreach (var Hole in Tool.Drills)
                 {
-                    PolyLine DispPL = new PolyLine();
+                    PolyLine DispPL = new PolyLine(State.LastShapeID++);
 
                     for (int i = 0; i < sides; i++)
                     {
@@ -310,7 +310,7 @@ namespace GerberLibrary
 
                 foreach (var Slot in Tool.Slots)
                 {
-                    PolyLine DispPL = new PolyLine();
+                    PolyLine DispPL = new PolyLine(State.LastShapeID++);
 
                     double dy = Slot.End.Y - Slot.Start.Y;
                     double dx = Slot.End.X - Slot.Start.X;
@@ -407,7 +407,7 @@ namespace GerberLibrary
                 }
                 for (int i = 0; i < solution.Count; i++)
                 {
-                    PolyLine PL = new PolyLine();
+                    PolyLine PL = new PolyLine(State.LastShapeID++);
 
                     PL.fromPolygon(solution[i]);
                     PL.MyColor = Color.FromArgb(255, 200, 128, 0);
@@ -419,7 +419,7 @@ namespace GerberLibrary
                 for (int i = 0; i < State.NewShapes.Count; i++)
                 {
 
-                    PolyLine PL = new PolyLine();
+                    PolyLine PL = new PolyLine(State.LastShapeID++);
                     PL.ClearanceMode = State.NewShapes[i].ClearanceMode;
                     PL.fromPolygon(State.NewShapes[i].toPolygon());
                     Gerb.DisplayShapes.Add(PL);
@@ -437,7 +437,7 @@ namespace GerberLibrary
 
             foreach (var a in shapeslinked)
             {
-                PolyLine PL = new PolyLine();
+                PolyLine PL = new PolyLine(State.LastShapeID++);
                 PL.Vertices = a.Vertices;
                 PL.Thin = true;
                 Gerb.DisplayShapes.Add(PL);
@@ -467,7 +467,7 @@ namespace GerberLibrary
                 {
                     Progress("Converting back to gerber", i, Gerb.DisplayShapes.Count);
 
-                    PolyLine PL = new PolyLine();
+                    PolyLine PL = new PolyLine(State.LastShapeID++);
                     PL.fromPolygon(solution2[i]);
                     PL.MyColor = Color.FromArgb(255, 200, 128, 0);
                     Gerb.OutlineShapes.Add(PL);
@@ -478,7 +478,7 @@ namespace GerberLibrary
 
                 for (int i = 0; i < Gerb.DisplayShapes.Count; i++)
                 {
-                    PolyLine PL = new PolyLine();
+                    PolyLine PL = new PolyLine(State.LastShapeID++);
                     PL.fromPolygon(Gerb.DisplayShapes[i].toPolygon());
                     PL.ClearanceMode = Gerb.DisplayShapes[i].ClearanceMode;
 
@@ -835,22 +835,22 @@ namespace GerberLibrary
         {
             return Name;
         }
-
-        private static void AddExtrudedCurveSegment(ref double LastX, ref double LastY, List<PolyLine> NewShapes, GerberApertureType CurrentAperture, bool ClearanceMode, double X, double Y)
+        private static void AddExtrudedCurveSegment(ref double LastX, ref double LastY, List<PolyLine> NewShapes, GerberApertureType CurrentAperture, bool ClearanceMode, double X, double Y, int ShapeID)
         {
-            PolyLine PL = new PolyLine();
+            PolyLine PL = new PolyLine(ShapeID);
             PL.ClearanceMode = ClearanceMode;
 
             // TODO: use CreatePolyLineSet and extrude that!
-            var PolySet = CurrentAperture.CreatePolyLineSet(0, 0);
+            var PolySet = CurrentAperture.CreatePolyLineSet(0, 0, ShapeID);
             //       var Shapes = CurrentAperture.CreatePolyLineSet(0, 0);
 
             foreach (var currpoly in PolySet)
             {
+                currpoly.ID = ShapeID;
                 Polygons Combined = new Polygons();
 
-                PolyLine A = new PolyLine();
-                PolyLine B = new PolyLine();
+                PolyLine A = new PolyLine( ShapeID);
+                PolyLine B = new PolyLine(ShapeID);
 
                 PointD start = new PointD(LastX, LastY);
                 PointD end = new PointD(X, Y);
@@ -887,7 +887,7 @@ namespace GerberLibrary
                     A.Close();
                     B.Close();
 
-                    PolyLine C = new PolyLine();
+                    PolyLine C = new PolyLine(ShapeID); ;
                     C.Add(RightMost.X + LastX, RightMost.Y + LastY);
                     C.Add(LeftMost.X + LastX, LeftMost.Y + LastY);
                     C.Add(LeftMost.X + X, LeftMost.Y + Y);
@@ -912,7 +912,7 @@ namespace GerberLibrary
 
                     foreach (var a in Combined)
                     {
-                        PolyLine PP = new PolyLine();
+                        PolyLine PP = new PolyLine(ShapeID) ;
                         PP.fromPolygon(a);
                         PP.Close();
                         NewShapes.Add(PP);
@@ -959,7 +959,7 @@ namespace GerberLibrary
                     break;
                 case "G37":
                     {
-                        PolyLine PL = new PolyLine();
+                        PolyLine PL = new PolyLine( State.LastShapeID++);
                         foreach (var a in State.PolygonPoints)
                         {
                             PL.Add(a.X, a.Y);
@@ -1004,13 +1004,16 @@ namespace GerberLibrary
                     {
                         double xoff = State.RepeatXOff * x;
                         double yoff = State.RepeatYOff * y;
-
+                        int LastShapeID = -1;
                         for (int i = State.RepeatStartThinShapeIdx; i < LastThin; i++)
                         {
-
                             var C = State.NewThinShapes[i];
-                            PolyLine P = new PolyLine();
-                            P.Width = C.Width;
+                            if (LastShapeID != C.ID)
+                            {
+                                State.LastShapeID++;
+                                LastShapeID = C.ID;
+                            }
+                            PolyLine P = new PolyLine(State.LastShapeID );
                             foreach (var a in C.Vertices)
                             {
                                 P.Vertices.Add(new PointD(a.X + xoff, a.Y + yoff));
@@ -1020,7 +1023,12 @@ namespace GerberLibrary
                         for (int i = State.RepeatStartShapeIdx; i < LastShape; i++)
                         {
                             var C = State.NewShapes[i];
-                            PolyLine P = new PolyLine();
+                            if (LastShapeID != C.ID)
+                            {
+                                State.LastShapeID++;
+                                LastShapeID = C.ID;
+                            }
+                            PolyLine P = new PolyLine(State.LastShapeID ); 
                             P.Width = C.Width;
                             foreach (var a in C.Vertices)
                             {
@@ -1580,7 +1588,7 @@ namespace GerberLibrary
                                                 case 2:
                                                     if (State.PolygonPoints.Count > 0)
                                                     {
-                                                        PolyLine PL = new PolyLine();
+                                                        PolyLine PL = new PolyLine( State.LastShapeID++);
                                                         PL.ClearanceMode = State.ClearanceMode;
                                                         foreach (var a in State.PolygonPoints)
                                                         {
@@ -1624,7 +1632,7 @@ namespace GerberLibrary
                                                                 switch (State.MoveInterpolation)
                                                                 {
                                                                     case InterpolationMode.Linear:
-                                                                        AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, X, Y);
+                                                                        AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, X, Y,  State.LastShapeID++ );
                                                                         break;
                                                                     default:
 
@@ -1632,8 +1640,9 @@ namespace GerberLibrary
                                                                         foreach (var D in CurvePoints)
                                                                         {
                                                                             //   AddExtrudedCurveSegment(ref LastX, ref LastY, NewShapes, CurrentAperture, ClearanceMode, LastX + I, LastY + J);
-                                                                            AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, D.X, D.Y);
+                                                                            AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, D.X, D.Y, State.LastShapeID);
                                                                         }
+                                                                        State.LastShapeID++;
                                                                         break;
                                                                 }
                                                             }
@@ -1641,7 +1650,7 @@ namespace GerberLibrary
                                                             {
                                                                 if (State.ThinLine == null)
                                                                 {
-                                                                    State.ThinLine = new PolyLine();
+                                                                    State.ThinLine = new PolyLine(State.LastShapeID ++);
                                                                     State.ThinLine.ClearanceMode = State.ClearanceMode;
                                                                     State.ThinLine.Width = State.CurrentAperture.CircleRadius;
                                                                     //Console.WriteLine("Start: {0:N2} , {1:N2} - {2}", State.LastX, State.LastY, Line);
@@ -1685,7 +1694,7 @@ namespace GerberLibrary
                                                         {
                                                             if (State.CurrentAperture != null)
                                                             {
-                                                                List<PolyLine> PL = State.CurrentAperture.CreatePolyLineSet(X, Y);
+                                                                List<PolyLine> PL = State.CurrentAperture.CreatePolyLineSet(X, Y, State.LastShapeID++);
                                                                 foreach (var p in PL)
                                                                 {
                                                                     p.ClearanceMode = State.ClearanceMode;
@@ -1777,178 +1786,6 @@ namespace GerberLibrary
 
             State.RepeatStartThinShapeIdx = State.NewThinShapes.Count();
             State.RepeatStartShapeIdx = State.NewShapes.Count();
-        }
-
-        public class Bounds
-        {
-            public PointD BottomRight = new PointD(0, 0);
-            public bool Contains(PointD inp)
-            {
-                if (inp.X >= TopLeft.X && inp.X < BottomRight.X
-                    && inp.Y >= TopLeft.Y && inp.Y < BottomRight.Y) return true;
-                return false;
-                   
-            }
-            public PointD TopLeft = new PointD(0, 0);
-
-            public bool Valid = false;
-
-            public void AddBox(Bounds bounds)
-            {
-                if (!bounds.Valid) return;
-
-                FitPoint(bounds.TopLeft);
-                FitPoint(bounds.BottomRight);
-
-            }
-
-            public void AddPolyLines(List<PolyLine> Shapes)
-            {
-                foreach (var a in Shapes)
-                {
-                    AddPolyLine(a);
-
-                }
-            }
-
-            public void AddPolyLine(PolyLine a)
-            {
-                foreach (var r in a.Vertices)
-                {
-                    FitPoint(new PointD(r.X, r.Y));
-                }
-            }
-
-            public void FitPoint(double x, double y)
-            {
-                FitPoint(new PointD(x, y));
-            }
-
-            public void FitPoint(PointD P)
-            {
-                if (!Valid)
-                {
-                    TopLeft.X = P.X;
-                    TopLeft.Y = P.Y;
-                    BottomRight.X = P.X;
-                    BottomRight.Y = P.Y;
-                    Valid = true;
-
-                }
-                if (P.X < TopLeft.X) TopLeft.X = P.X;
-                if (P.Y < TopLeft.Y) TopLeft.Y = P.Y;
-                if (P.X > BottomRight.X) BottomRight.X = P.X;
-                if (P.Y > BottomRight.Y) BottomRight.Y = P.Y;
-            }
-
-            public float GenerateTransform(Graphics g, int width, int height, int margin, bool flipY = false)
-            {
-                if (Valid == false)
-                {
-                    return 1;
-                }
-                float scale = Math.Min((width - margin * 2) / (float)Width(), (height - margin * 2) / (float)Height());
-                g.TranslateTransform(width / 2, height / 2);
-                g.ScaleTransform(scale, scale);
-                if (flipY)
-                {
-                    g.ScaleTransform(1, -1);
-                
-                }
-                else
-                {
-                    g.RotateTransform(180);
-                }
-                var M = Middle();
-                g.TranslateTransform(-(float)M.X, -(float)M.Y);
-                return scale;
-            }
-
-            public double Height()
-            {
-                if (!Valid) return 0;
-                return BottomRight.Y - TopLeft.Y;
-            }
-
-            public bool Intersects(Bounds B)
-            {
-                var M1 = Middle();
-                var M2 = B.Middle();
-
-                return (Math.Abs(M1.X - M2.X) * 2 < (Width() + B.Width())) && (Math.Abs(M1.Y - M2.Y) * 2 < (Height() + B.Height()));
-            }
-
-            public PointD Middle()
-            {
-                return new PointD((TopLeft.X + BottomRight.X) * 0.5, (TopLeft.Y + BottomRight.Y) * 0.5);
-            }
-
-            public void Reset()
-            {
-                TopLeft.X = 10000;
-                TopLeft.Y = 10000;
-                BottomRight.X = -10000;
-                BottomRight.Y = -10000;
-
-                Valid = false;
-            }
-
-            public override string ToString()
-            {
-                return String.Format("({0:N2}, {1:N2}) - ({2:N2}, {3:N2}) -> {4:N2} x {5:N2} mm", TopLeft.X, TopLeft.Y, BottomRight.X, BottomRight.Y, Width(), Height() );
-            }
-            public double Width()
-            {
-                if (!Valid) return 0;
-                return BottomRight.X - TopLeft.X;
-            }
-
-            public double Area()
-            {
-                return Width() * Height();
-            }
-
-            internal void FitPoint(List<PointD> vertices)
-            {
-                foreach(var v in vertices)
-                {
-                    FitPoint(v);
-                }                
-            }
-
-            public float GenerateTransformWithScaleOffset(Graphics g2, int width, int height, int margin, bool flipy, float scale, PointF offset)
-            {
-                var S = GenerateTransform(g2, width, height, margin, flipy);
-                g2.ScaleTransform(scale, scale);
-                g2.TranslateTransform(offset.X, offset.Y);
-                S *= scale;
-
-                return S;
-            }
-
-            public void AddPolygons(Polygons Polies)
-            {
-                foreach(var a in Polies)
-                {
-                    AddPolygon(a);
-                }                
-            }
-
-            public void AddPolygon(Polygon a)
-            {
-                PolyLine P = new PolyLine();
-                P.fromPolygon(a);
-                AddPolyLine(P);
-            }
-
-            public Bounds Grow(double v)
-            {
-                Bounds B = new Bounds();
-                B.TopLeft = TopLeft - new PointD(v, v);
-                B.BottomRight = BottomRight + new PointD(v, v);
-
-                return B;
-            }
         }
         
         public class GerberBlock

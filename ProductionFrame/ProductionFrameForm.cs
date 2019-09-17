@@ -93,7 +93,7 @@ namespace ProductionFrame
                     Files.Add(OutName + ".txt");
                 }
 
-
+                // board outline
                 PolyLine PL = new PolyLine();
                 PL.MakeRoundedRect(new PointD(0, 0), new PointD(OuterWidth, OuterHeight), (double)roundedOuterCorners.Value);
                 Outline.AddPolyLine(PL, 0);
@@ -102,19 +102,36 @@ namespace ProductionFrame
                 PL2.MakeRoundedRect(new PointD(LE, TE), new PointD(InnerWidth + LE, InnerHeight + TE), (double)roundedInnerCorners.Value);
                 Outline.AddPolyLine(PL2, 0);
 
-                if (fiducials.Checked)
+                #region fiducials
+
+                List<PointD> Fiducials = new List<PointD>();
+                Fiducials.Add(new PointD(LE * 2.0, TE / 2.0));                              // bottom left
+                Fiducials.Add(new PointD(OuterWidth - LE * 2.0, TE / 2.0));                 // bottom right
+                Fiducials.Add(new PointD(LE * 2.0, OuterHeight - TE / 2.0));                // top left
+
+                // add the fourth fiducial only if no orientation safety is desired
+                if (!cb_fiducials_orientationSafe.Checked)
                 {
-                    List<PointD> Fiducials = new List<PointD>();
-                    Fiducials.Add(new PointD(LE * 2.0, TE / 2.0));
-                    Fiducials.Add(new PointD(OuterWidth - LE * 2.0, TE / 2.0));
-                    Fiducials.Add(new PointD(OuterWidth - LE * 2.0, OuterHeight - TE / 2.0));
-                    Fiducials.Add(new PointD(LE * 2.0, OuterHeight - TE / 2.0));
-                    foreach (var A in Fiducials)
+                    Fiducials.Add(new PointD(OuterWidth - LE * 2.0, OuterHeight - TE / 2.0));   // top right                    
+                }
+                                 
+                foreach (var A in Fiducials)
+                {
+                    if (cb_fiducialsTopLayer.Checked)
                     {
                         TopCopper.AddFlash(A, 1.0);
                         TopSolderMask.AddFlash(A, 3.0);
                     }
+
+                    if (cb_fiducialsBottomLayer.Checked)
+                    {
+                        BottomCopper.AddFlash(A, 1.0);
+                        BottomSolderMask.AddFlash(A, 3.0);
+                    }
                 }
+
+                #endregion
+
                 string FrameTitle = FrameTitleBox.Text;
 
                 if (FrameTitle.Length > 0)

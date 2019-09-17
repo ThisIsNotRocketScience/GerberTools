@@ -245,7 +245,7 @@ namespace GerberLibrary
                                     if ((int)GCC.numbercommands[0] == 3 || (int)GCC.numbercommands[0] == 2 || (int)GCC.numbercommands[0] == 1)
                                 {
 
-                                    GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
+                                    //GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
                                     GS.ScaleToMM(File1Parsed.State.CoordinateFormat);
                                     GS.ScaleToFile(GNF);
 
@@ -459,7 +459,7 @@ namespace GerberLibrary
                                                 {
                                                  //   double X = 0;
                                                     //     double Y = 0;
-                                                    GS.Split(GCC.originalline, otherfile.State.CoordinateFormat);
+                                                    //GS.Split(GCC.originalline, otherfile.State.CoordinateFormat);
                                                     GS.ScaleToMM(otherfile.State.CoordinateFormat);
                                                     GS.ScaleToFile(GNF);
                                                     //         if (GS.Has("X")) GS.Set("X", File2Parsed.CoordinateFormat.ScaleFileToMM(GS.Get("X")));
@@ -1185,6 +1185,285 @@ namespace GerberLibrary
                 catch (Exception) { }
             }
 
+
+            OutputLines.Add(Gerber.EOF);
+            Gerber.WriteAllLines(output, PolyLineSet.SanitizeInputLines(OutputLines));
+        }
+
+
+        public static void WriteContainedOnly(string file1,PolyLine Boundary, string output, ProgressLog Log)
+        {
+            if (File.Exists(file1) == false)
+            {
+                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(file1));
+                return;
+            }
+           
+
+            Log.AddString(String.Format("Clipping {0} to {1}", Path.GetFileName(file1), Path.GetFileName(output)));
+            //    Console.WriteLine("*** Reading {0}", Path.GetFileName( file1));
+            List<string> File1Lines = File.ReadAllLines(file1).ToList();
+
+            File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false });
+
+
+            CheckAllApertures(File1Parsed, File1Lines, Log);
+
+            int ApertureOffset = 0;
+            if (File1Parsed.State.Apertures.Count > 0) ApertureOffset = File1Parsed.State.Apertures.Keys.Max() + 1;
+
+
+            //            Console.WriteLine("*** Writing  {0}", output);
+
+            List<string> OutputLines = new List<string>();
+            GerberNumberFormat GNF = new GerberNumberFormat();
+            GNF.DigitsBefore = File1Parsed.State.CoordinateFormat.DigitsBefore;
+            GNF.DigitsAfter = File1Parsed.State.CoordinateFormat.DigitsAfter;
+            if (File1Parsed.State.CoordinateFormat.CurrentNumberScale == GerberNumberFormat.NumberScale.Metric
+                )
+            {
+                GNF.SetMetricMode();
+            }
+            else
+            {
+                GNF.SetImperialMode();
+            }
+
+            GNF.SetImperialMode();
+
+            //OutputLines.Add(String.Format("G04 merged from {0} and {1}", Path.GetFileNameWithoutExtension(file1), Path.GetFileNameWithoutExtension(file2)));
+            OutputLines.Add(GNF.BuildMetricImperialFormatLine());
+            OutputLines.Add("%OFA0B0*%");
+            OutputLines.Add(GNF.BuildGerberFormatLine());
+            OutputLines.Add("%IPPOS*%");
+            OutputLines.Add("%LPD*%");
+
+            Dictionary<string, string> MacroDict = new Dictionary<string, string>();
+
+
+            foreach (var a in File1Parsed.State.ApertureMacros)
+            {
+                OutputLines.Add(a.Value.BuildGerber(GNF, 0).Trim());
+                MacroDict[a.Value.Name + "____"] = a.Value.Name;
+            }
+
+          
+            foreach (var a in File1Parsed.State.Apertures)
+            {
+                OutputLines.Add(a.Value.BuildGerber(GNF));
+            }
+
+            // stuff goes here.
+            //OutputLines.Add(String.Format("G04 :starting {0}", Path.GetFileNameWithoutExtension(file1)));
+            string CurrentPolarity = "LPD";
+            for (int i = 0; i < File1Lines.Count; i++)
+            {
+                string CurrentLine = File1Lines[i];
+                if (CurrentLine.Length == 0) continue;
+
+                try
+                {
+                    GCodeCommand GCC = new GCodeCommand();
+                    GCC.Decode(CurrentLine, GNF);
+
+                    switch (CurrentLine[0])
+                    {
+                        case '%':
+                            {
+                                string FinalLine = "" + CurrentLine;
+                                FinalLine = FinalLine.Replace("%", "").Replace("*", "").Trim();
+                                switch (FinalLine)
+                                {
+                                    case "LPD":
+                                        if (CurrentPolarity != CurrentLine) { OutputLines.Add("%LPD*%"); CurrentPolarity = CurrentLine; }
+
+                                        break;
+                                    case "LPC":
+                                        if (CurrentPolarity != CurrentLine) { OutputLines.Add("%LPC*%"); CurrentPolarity = CurrentLine; }
+                                        break;
+                                    default:
+                                        if (CurrentLine.Length > 1 && CurrentLine[CurrentLine.Length - 1] != '%')
+                                        {
+                                            while (CurrentLine[CurrentLine.Length - 1] != '%')
+                                            {
+                                                i++;
+                                                CurrentLine = File1Lines[i];
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                            break;
+                        case 'G': // machine status commands and interpolations?
+                            {
+                                GerberSplitter GS = new GerberSplitter();
+                                GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
+                                if ((int)GS.Get("G") == 54)
+                                {
+                                    if (GS.Has("D") && GS.Get("D") > 3)
+                                    {
+                                        OutputLines.Add(CurrentLine);
+                                    }
+                                }
+                                else
+                                    if ((int)GCC.numbercommands[0] == 3 || (int)GCC.numbercommands[0] == 2 || (int)GCC.numbercommands[0] == 1)
+                                {
+
+                                    //GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
+                                    GS.ScaleToMM(File1Parsed.State.CoordinateFormat);
+                                    GS.ScaleToFile(GNF);
+
+
+                                    OutputLines.Add(GS.Rebuild(GNF));
+                                    //   Log.AddString("Unsupported arc command found!");
+                                    //  MessageBox.Show("Unsupported arc type found during merge! File will NOT be exported correctly!", "Error during export", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+
+                                    //         Log.AddString("Unsupported arc command found!");
+                                    //       MessageBox.Show("Unsupported arc type found during merge! File will NOT be exported correctly!", "Error during export", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                                else
+                                {
+                                    if (GS.Has("G") && (GS.Get("G") == 71 || GS.Get("G") == 70))
+                                    {
+                                        if (GS.Get("G") == 71)
+                                        {
+                                            File1Parsed.State.CoordinateFormat.SetMetricMode();
+                                        }
+                                        if (GS.Get("G") == 70)
+                                        {
+                                            File1Parsed.State.CoordinateFormat.SetImperialMode();
+                                        }
+                                        // skip changing metric mode!
+                                        Console.WriteLine("ignoring metric/imperial gcode: G{0}", GS.Get("G"));
+
+                                    }
+                                    else
+                                    {
+                                        if (GS.Get("G") == 4)
+                                        {
+                                            Console.WriteLine("skipping comment: {0}", CurrentLine);
+                                        }
+                                        else
+                                        {
+                                            OutputLines.Add(CurrentLine);
+                                        }
+
+                                        //OutputLines.Add(CurrentLine);
+                                    }
+                                    //tputLines.Add(CurrentLine);
+                                }
+
+                            }
+                            break;
+                        default: // move commands -> transform 
+                            {
+                                GerberSplitter GS = new GerberSplitter();
+                                double X = 0;
+                                double Y = 0;
+                                GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
+
+                                if (GS.Has("D") || GS.Has("X") || GS.Has("Y"))
+                                {
+                                    if (GS.Get("D") > 3)
+                                    {
+                                        OutputLines.Add(CurrentLine);
+                                    }
+                                    else
+                                    {
+                                        if (GS.Has("X") == false && GS.Has("Y") == false)
+                                        {
+                                            OutputLines.Add(CurrentLine);
+                                        }
+                                        else
+                                        {
+                                            string OutLine = ";";
+                                            bool skipline = false;
+                                            if (GS.Has("X") && GS.Has("Y"))
+                                            {
+
+                                                X = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("X"));
+                                                Y = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
+
+                                                if (Boundary.PointInPoly(new PointD(X,Y)) == false)
+                                                {
+                                                    skipline = true;
+                                                }
+
+                                                OutLine = String.Format("X{0}Y{1}", GNF.Format(GNF._ScaleMMToFile(X)), GNF.Format(GNF._ScaleMMToFile(Y)));
+                                            }
+                                            else
+                                            {
+                                                if (GS.Has("X"))
+                                                {
+                                                    X = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("X"));
+                                                    OutLine = String.Format("X{0}", GNF.Format(GNF._ScaleMMToFile(X)));
+                                                }
+                                                else
+                                                {
+                                                    if (GS.Has("Y"))
+                                                    {
+                                                        Y = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
+                                                        OutLine = String.Format("Y{0}", GNF.Format(GNF._ScaleMMToFile(Y)));
+                                                    }
+                                                    else
+                                                    {
+                                                        OutLine = "";
+                                                    }
+
+                                                }
+                                            }
+
+                                            if (GS.Has("I"))
+                                            {
+
+                                                var I = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("I"));
+                                                OutLine += String.Format("I{0}", GNF.Format(GNF._ScaleMMToFile(I)));
+
+                                            }
+                                            if (GS.Has("J"))
+                                            {
+                                                var J = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("J"));
+                                                OutLine += String.Format("J{0}", GNF.Format(GNF._ScaleMMToFile(J)));
+                                            }
+                                            if (GS.Has("D"))
+                                            {
+                                                OutLine += String.Format("D{0}", ((int)GS.Get("D")).ToString("D2"));
+                                            }
+                                            OutLine += "*";
+                                            if (skipline == false) OutputLines.Add(OutLine);
+                                        }
+
+                                    }
+
+                                    //                                OutputLines.Add(String.Format("X{0}Y{1}D{2}*", GNF.Format(GNF.ScaleMMToFile(X)), GNF.Format(GNF.ScaleMMToFile(Y)), ((int)GS.Get("D")).ToString("D2")));
+                                }
+                            }
+
+                            break;
+                        case 'M': // skip
+                            break;
+                    }
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+            // TODO: set polarity back to "neutral" - or should each file do this at the start anyway? 
+            if (Gerber.ShowProgress)
+            {
+                Console.WriteLine("File 1 format: {0}", File1Parsed.State.CoordinateFormat);
+               
+            }
+            OutputLines.Add("G04 next file*");
+
+            if (CurrentPolarity != "LPD") { OutputLines.Add("%LPD*%"); CurrentPolarity = "LPD"; }
+
+            //OutputLines.Add( String.Format("G04 :starting {0}", Path.GetFileNameWithoutExtension(file2)));
+   
+        
 
             OutputLines.Add(Gerber.EOF);
             Gerber.WriteAllLines(output, PolyLineSet.SanitizeInputLines(OutputLines));

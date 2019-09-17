@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26206.0
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberLibrary", "..\GerberLibrary\GerberLibrary.csproj", "{E1C3AA23-3A02-485F-976B-50A96052F00A}"
 EndProject
@@ -50,9 +50,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberViewer", "..\GerberViewer\GerberViewer.csproj", "{02887DBB-12F0-40A7-B5ED-B30B18C503F3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{00796066-7833-4827-BCFB-1724A5D2E636}"
-	ProjectSection(SolutionItems) = preProject
-		Performance1.psess = Performance1.psess
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaseBuilder", "..\CaseBuilder\CaseBuilder.csproj", "{12C70AD0-0172-48B3-B7B7-560B157887E7}"
 EndProject
@@ -71,6 +68,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TINRS-ArtWork", "..\Project_Utilities\TilingLibrary\TINRS-ArtWork.csproj", "{02FDA308-BE9D-424E-950E-D86E72F4C16C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberClipper", "..\GerberClipper\GerberClipper.csproj", "{4F1EC287-9873-4A1A-BB2E-6343B5237A91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FitBitmapToOutlineAndMerge", "..\FitBitmapToOutlineAndMerge\FitBitmapToOutlineAndMerge.csproj", "{822016C1-52B8-449C-BE7A-D3ABA943B8B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontPanelBuilder", "..\FrontPanelBuilder\FrontPanelBuilder.csproj", "{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberToDxf", "..\GerberToDxf\GerberToDxf\GerberToDxf.csproj", "{843057E6-2FC0-4C78-AAB3-197C60AE72BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -296,6 +299,30 @@ Global
 		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Release|x86.ActiveCfg = Release|Any CPU
 		{4F1EC287-9873-4A1A-BB2E-6343B5237A91}.Release|x86.Build.0 = Release|Any CPU
+		{822016C1-52B8-449C-BE7A-D3ABA943B8B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{822016C1-52B8-449C-BE7A-D3ABA943B8B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{822016C1-52B8-449C-BE7A-D3ABA943B8B6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{822016C1-52B8-449C-BE7A-D3ABA943B8B6}.Debug|x86.Build.0 = Debug|Any CPU
+		{822016C1-52B8-449C-BE7A-D3ABA943B8B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{822016C1-52B8-449C-BE7A-D3ABA943B8B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{822016C1-52B8-449C-BE7A-D3ABA943B8B6}.Release|x86.ActiveCfg = Release|Any CPU
+		{822016C1-52B8-449C-BE7A-D3ABA943B8B6}.Release|x86.Build.0 = Release|Any CPU
+		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}.Debug|x86.Build.0 = Debug|Any CPU
+		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}.Release|x86.ActiveCfg = Release|Any CPU
+		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}.Release|x86.Build.0 = Release|Any CPU
+		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Debug|x86.Build.0 = Debug|Any CPU
+		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|x86.ActiveCfg = Release|Any CPU
+		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -328,6 +355,9 @@ Global
 		{2FA9476A-8780-44CF-A4E8-5EEB1E00D184} = {49E3D49C-EC26-42F7-B67D-742F8692E11E}
 		{02FDA308-BE9D-424E-950E-D86E72F4C16C} = {AE8159BA-937D-4BDB-A5CA-FB8003121AC5}
 		{4F1EC287-9873-4A1A-BB2E-6343B5237A91} = {F705564A-6956-4675-A941-6ED916ADC0AD}
+		{822016C1-52B8-449C-BE7A-D3ABA943B8B6} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
+		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
+		{843057E6-2FC0-4C78-AAB3-197C60AE72BF} = {F705564A-6956-4675-A941-6ED916ADC0AD}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

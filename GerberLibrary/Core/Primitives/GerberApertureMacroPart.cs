@@ -159,7 +159,7 @@ namespace GerberLibrary.Core.Primitives
             ApertureMacroParam X = new ApertureMacroParam(true) { boundparam = A.boundparam, scaledvalue = A.scaledvalue, value = A.value };
             ApertureMacroParam Y = new ApertureMacroParam(true) { boundparam = B.boundparam, scaledvalue = B.scaledvalue, value = B.value };
 
-            PolyLine R = new PolyLine();
+            PolyLine R = new PolyLine(PolyLine.PolyIDs.Temp);
             R.Add(X.value, Y.value);
             R.Add(X.scaledvalue, Y.scaledvalue);
             R.RotateDegrees(rotation);
@@ -206,7 +206,7 @@ namespace GerberLibrary.Core.Primitives
                     res += String.Format("4,1,{0}," + Gerber.LineEnding, OutlineVertices.Count - 1);
                     if (rotationdegrees != 0)
                     {
-                        PolyLine P = new PolyLine();
+                        PolyLine P = new PolyLine(PolyLine.PolyIDs.Aperture);
                         for (int i = 0; i < OutlineVertices.Count; i++)
                         {
                             PointD B = OutlineVertices[i].Get(Params);
