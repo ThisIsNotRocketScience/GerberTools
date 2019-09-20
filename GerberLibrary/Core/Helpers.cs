@@ -21,6 +21,18 @@ namespace GerberLibrary.Core
         {
             g.DrawLine(new Pen(C, W), x1, y1, x2, y2);
         }
+
+        public static float SumLengths(List<Line> outline)
+        {
+            return outline.Sum(x => x.Length());            
+        }
+
+        private float Length()
+        {
+            float dx = x2 - x1;
+            float dy = y2 - y1;
+            return (float)Math.Sqrt(dx * dx + dy * dy);
+        }
     }
 
 
