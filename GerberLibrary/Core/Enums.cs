@@ -18,7 +18,8 @@ namespace GerberLibrary.Core
         Mill,
         Unknown,
         Notes,
-        Assembly
+        Assembly,
+        Utility
     }
 
     public enum BoardSide

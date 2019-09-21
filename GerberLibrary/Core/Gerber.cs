@@ -246,6 +246,7 @@ namespace GerberLibrary
             string ext = filesplit[filesplit.Count() - 1].ToLower();
             switch (ext)
             {
+                case "slices": Side = BoardSide.Both; Layer = BoardLayer.Utility;break;
                 case "copper_bottom": Side = BoardSide.Bottom;Layer = BoardLayer.Copper;break;
                 case "copper_top": Side = BoardSide.Top; Layer = BoardLayer.Copper; break;
                 case "silk_bottom": Side = BoardSide.Bottom; Layer = BoardLayer.Silk; break;
