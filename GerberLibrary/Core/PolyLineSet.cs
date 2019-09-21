@@ -1639,7 +1639,8 @@ namespace GerberLibrary
                                                                 switch (State.MoveInterpolation)
                                                                 {
                                                                     case InterpolationMode.Linear:
-                                                                        if (State.GenerateGeometry) AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, X, Y,  State.LastShapeID++ );
+                                                                        if (State.GenerateGeometry) AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, X, Y,  State.LastShapeID );
+                                                                        State.LastShapeID++;
                                                                         break;
                                                                     default:
 
