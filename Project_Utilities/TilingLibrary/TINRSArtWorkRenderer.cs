@@ -1,4 +1,6 @@
-﻿using GerberLibrary.Core;
+﻿using ArtWork;
+using GerberLibrary.Core;
+using GlmNet;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -10,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace Artwork
 {
+    using Path = List<ClipperLib.IntPoint>;
+    using Paths = List<List<ClipperLib.IntPoint>>;
+
     public class SolidQuadTreeItem : QuadTreeItem
     {
         int _x;
@@ -345,17 +350,16 @@ namespace Artwork
             if (S.Mode == Settings.ArtMode.Tiling)
             {
                 if (Clear) G.Clear(BG);
-                PointF[] ThePoints = new PointF[3] { new PointF(), new PointF(), new PointF() };
                 Pen P = new Pen(FG, linewidth);
                 for (int j = 0; j < SubDivPoly.Count; j++)
                 {
                     var a = SubDivPoly[j];
-                    for (int i = 0; i < 3; i++)
+                    PointF[] ThePoints = new PointF[a.Vertices.Count];
+                    for (int i = 0; i < a.Vertices.Count; i++)
                     {
-                        ThePoints[i].X = (float)a.Vertices[i].x;
-                        ThePoints[i].Y = (float)a.Vertices[i].y;
+                        ThePoints[i] = new PointF((float)a.Vertices[i].x,(float)a.Vertices[i].y);
                     }
-                    G.DrawPolygon(P, ThePoints);
+                    G.DrawPolygon(P,  ThePoints);
                 }
             }
         }
@@ -521,7 +525,7 @@ namespace Artwork
                                 }
                             }
                         }
-                        
+
                         Delaunay.Build(ArtTree, TheSettings.DegreesOff);
 
                         var Elapsed = DateTime.Now - rR;
@@ -565,7 +569,7 @@ namespace Artwork
                             foreach (var A in SubDivPoly)
                             {
                                 var M = A.Mid();
-                                float scaler = 1.0f - ((float)(M.x-offs) / width) * TheSettings.xscalesmallerlevel * 0.01f;
+                                float scaler = 1.0f - ((float)(M.x - offs) / width) * TheSettings.xscalesmallerlevel * 0.01f;
                                 //scaler = Math.Max(0, Math.Min(1.0f, scaler));
                                 A.ScaleDown(TheSettings.scalingMode, scaler);
                             }
@@ -591,7 +595,7 @@ namespace Artwork
                             }
                             foreach (var A in SubDivPoly)
                             {
-                              
+
                                 if (A.depth - TheSettings.scalesmallerlevel <= 1)
                                 {
 
@@ -599,10 +603,72 @@ namespace Artwork
                                 else
                                 {
                                     A.ScaleDown(TheSettings.scalingMode, (1 + scaler * (1.0f / (A.depth - TheSettings.scalesmallerlevel))));
-                                   
+
                                 }
                             }
                         }
+                        if (TheSettings.distanceToMaskScale != 0)
+                        {
+                            float scaler = Math.Abs(TheSettings.distanceToMaskScale);
+                            if (TheSettings.distanceToMaskScale > 0)
+                            {
+                                scaler = scaler / 10.0f;
+                            }
+                            else
+                            {
+                                scaler = -scaler / 10.0f;
+                            }
+
+
+                            float aThresholdLevel = TheSettings.Threshold * 0.01f;
+
+                            foreach (var A in SubDivPoly)
+                            {
+
+                                var m = A.Mid();
+                                float sum = GetPixelSum(m, Mask, TheSettings.distanceToMaskRange, aThresholdLevel, TheSettings.InvertSource);
+                                //if (sum > 1) sum = 1;
+                                A.ScaleDown(TheSettings.scalingMode, (scaler * sum));
+
+
+                            }
+                        }
+
+
+                        if (TheSettings.MarcelPlating)
+                        {
+                            List<Tiling.Polygon> MarcelShapes = new List<Tiling.Polygon>();
+                            foreach (var A in SubDivPoly)
+                            {
+
+
+                                MarcelShape MS = new MarcelShape();
+                                MarcelShape MS2 = new MarcelShape();
+
+                                foreach (var v in A.Vertices)
+                                {
+                                    MS2.Vertices.Add(new ClipperLib.IntPoint((long)((v.x+1000)*1000), (long)((v.y+1000)*1000)));
+                                }
+
+                                MS.ShrinkFromShape(MS2.Vertices, TheSettings.Gap /2 + TheSettings.Rounding/2 );
+                                Paths Ps = new Paths();
+
+                                Ps.AddRange(MS.BuildOutlines(TheSettings.Rounding / 2.0f));
+                                if (TheSettings.BallRadius > 0) Ps.AddRange(MS.BuildHoles(TheSettings.BallRadius));
+
+                                foreach(var p in Ps)
+                                {
+                                    Tiling.Polygon Poly = new Tiling.Polygon();
+                                    Poly.Vertices.AddRange(from a in p select new vec2((a.X) * 0.001f-1000, (a.Y ) * 0.001f-1000));
+                                    MarcelShapes.Add(Poly);
+                                }
+
+
+                            }
+                            SubDivPoly.Clear();
+                            SubDivPoly = MarcelShapes;
+                        }
+
                         var Elapsed = DateTime.Now - rR;
                         return (int)Elapsed.TotalMilliseconds;
                     }
@@ -611,6 +677,58 @@ namespace Artwork
             return 0;
         }
 
+
+
+        private float GetPixelSum(vec2 m, Bitmap mask, float distanceToMaskRange, float ThresholdLevel, bool invert)
+        {
+            float sum = 0;
+            if (distanceToMaskRange == 0) distanceToMaskRange = 0.001f;
+            float wrange = distanceToMaskRange * mask.Width * 0.5f;
+            float hrange = distanceToMaskRange * mask.Width * 0.5f;
+            float total = 0;
+            float[] cp = new float[40];
+            float[] sp = new float[40];
+            for (int p = 0; p < 40; p++)
+
+            {
+                double P = (p * Math.PI * 2) / 40.0f;
+                sp[p] = (float)Math.Sin(P) * wrange;
+                cp[p] = (float)Math.Cos(P) * wrange ;
+            }
+
+            for (int ring = 1;ring<10;ring++)
+            {
+                float RW = ring / 10.0f;
+                for (int p = 0; p < 40; p++)
+                    
+                {
+                      int x = (int)(cp[p] * RW + m.x);
+                    int y = (int)(sp[p] * RW + m.y);
+                    total++;
+                    if (x >= 0 && x < mask.Width)
+                    {
+                        if (y >= 0 && y < mask.Height)
+                        {
+                            var C = mask.GetPixel(x, y);
+                            bool doit = false;
+                            if (invert)
+                            {
+                                doit = C.GetBrightness() > ThresholdLevel;
+                            }
+                            else
+                            {
+                                doit = C.GetBrightness() < ThresholdLevel;
+                            }
+                            if (doit) sum++;
+
+                        }
+                    }
+                }
+
+            }
+            
+            return 1000*sum / total;
+        }
     }
 
 }

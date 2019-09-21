@@ -108,7 +108,7 @@ namespace GerberLibrary
 
                 List<string> OtherLines = File.ReadAllLines(otherfile).ToList();
                 OtherLines = PolyLineSet.SanitizeInputLines(OtherLines);
-                ParsedGerber OtherFileParsed = PolyLineSet.ParseGerber274x(OtherLines, true, false, new GerberParserState() { PreCombinePolygons = false });
+                ParsedGerber OtherFileParsed = PolyLineSet.ParseGerber274x(OtherLines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
                 OtherFiles.Add(OtherFileParsed);
                 OtherFileParsed.OriginalLines = OtherLines;
                 MaxDigitsAfter = Math.Max(OtherFileParsed.State.CoordinateFormat.DigitsAfter, MaxDigitsAfter);
@@ -118,7 +118,7 @@ namespace GerberLibrary
             List<string> File1Lines = File.ReadAllLines(file1).ToList();
 
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
-            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false });
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
                         
                    
@@ -694,12 +694,12 @@ namespace GerberLibrary
             List<string> File1Lines = File.ReadAllLines(file1).ToList();
 
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
-            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true,false, new GerberParserState(){ PreCombinePolygons = false});
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true,false, new GerberParserState(){ PreCombinePolygons = false, GenerateGeometry = false});
           
          //   Console.WriteLine("*** Reading {0}",  Path.GetFileName(file2));
             List<string> File2Lines = File.ReadAllLines(file2).ToList();
             File2Lines = PolyLineSet.SanitizeInputLines(File2Lines);
-            ParsedGerber File2Parsed = PolyLineSet.ParseGerber274x(File2Lines, true, false, new GerberParserState() { PreCombinePolygons = false });
+            ParsedGerber File2Parsed = PolyLineSet.ParseGerber274x(File2Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
             CheckAllApertures(File1Parsed, File1Lines, Log);
             CheckAllApertures(File2Parsed, File2Lines, Log);
@@ -1205,7 +1205,7 @@ namespace GerberLibrary
             List<string> File1Lines = File.ReadAllLines(file1).ToList();
 
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
-            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false });
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
 
             CheckAllApertures(File1Parsed, File1Lines, Log);
@@ -1343,7 +1343,7 @@ namespace GerberLibrary
                                     {
                                         if (GS.Get("G") == 4)
                                         {
-                                            Console.WriteLine("skipping comment: {0}", CurrentLine);
+                                            //Console.WriteLine("skipping comment: {0}", CurrentLine);
                                         }
                                         else
                                         {

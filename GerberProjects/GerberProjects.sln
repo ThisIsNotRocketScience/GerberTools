@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberLibrary", "..\GerberLibrary\GerberLibrary.csproj", "{E1C3AA23-3A02-485F-976B-50A96052F00A}"
 EndProject
@@ -74,6 +74,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontPanelBuilder", "..\FrontPanelBuilder\FrontPanelBuilder.csproj", "{485C42A7-B359-4091-9BE7-7B8E99A8D7EA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberToDxf", "..\GerberToDxf\GerberToDxf\GerberToDxf.csproj", "{843057E6-2FC0-4C78-AAB3-197C60AE72BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberSplitter", "GerberSplitter\GerberSplitter.csproj", "{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -323,6 +325,14 @@ Global
 		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|x86.ActiveCfg = Release|Any CPU
 		{843057E6-2FC0-4C78-AAB3-197C60AE72BF}.Release|x86.Build.0 = Release|Any CPU
+		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}.Debug|x86.Build.0 = Debug|Any CPU
+		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}.Release|x86.ActiveCfg = Release|Any CPU
+		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -358,6 +368,10 @@ Global
 		{822016C1-52B8-449C-BE7A-D3ABA943B8B6} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{485C42A7-B359-4091-9BE7-7B8E99A8D7EA} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{843057E6-2FC0-4C78-AAB3-197C60AE72BF} = {F705564A-6956-4675-A941-6ED916ADC0AD}
+		{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1} = {F705564A-6956-4675-A941-6ED916ADC0AD}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FF204A88-D467-4D27-816B-E8B2C30CA74F}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

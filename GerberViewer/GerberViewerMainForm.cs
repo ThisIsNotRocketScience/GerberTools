@@ -140,7 +140,14 @@ namespace GerberViewer
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                e.Effect = DragDropEffects.Copy;
+                if ((e.KeyState & 8) == 8)
+                {
+                    e.Effect = DragDropEffects.Copy;
+                }
+                else
+                {
+                    e.Effect = DragDropEffects.Link;
+                }
             }
             else
             {
@@ -154,9 +161,11 @@ namespace GerberViewer
             {
                 if (Document.Gerbers.Count >0)
                 {
-                    if (MessageBox.Show("Clear first?", "Clear?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    //if (MessageBox.Show("Clear first?", "Clear?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    if ((e.KeyState & 8) != 8)
                     {
-                        ClearAll();   
+                        
+                            ClearAll();   
                     }
                 }
                 string[] D = e.Data.GetData(DataFormats.FileDrop) as string[];
