@@ -210,10 +210,12 @@ namespace GerberLibrary
             Gerb.Name = origfilename;
             Gerb.Shapes.Clear();
             Gerb.DisplayShapes.Clear();
-            GerberParserState State = new GerberParserState();
-            State.Side = BoardSide.Both;
-            State.PreCombinePolygons = Precombine;
-            State.Layer = BoardLayer.Drill;
+            GerberParserState State = new GerberParserState
+            {
+                Side = BoardSide.Both,
+                PreCombinePolygons = Precombine,
+                Layer = BoardLayer.Drill
+            };
 
             ExcellonFile EF = new ExcellonFile();
             EF.Load(s, drillscaler);
@@ -280,10 +282,12 @@ namespace GerberLibrary
             Gerb.Name = drillfile;
             Gerb.Shapes.Clear();
             Gerb.DisplayShapes.Clear();
-            GerberParserState State = new GerberParserState();
-            State.Side = BoardSide.Both;
-            State.PreCombinePolygons = Precombine;
-            State.Layer = BoardLayer.Drill;
+            GerberParserState State = new GerberParserState
+            {
+                Side = BoardSide.Both,
+                PreCombinePolygons = Precombine,
+                Layer = BoardLayer.Drill
+            };
 
             ExcellonFile EF = new ExcellonFile();
             EF.Load(drillfile, drillscaler);
@@ -378,9 +382,11 @@ namespace GerberLibrary
 
             List<String> lines = SanitizeInputLines(inputlines, State.SanitizedFile);
 
-            ParsedGerber Gerb = new ParsedGerber();
+            ParsedGerber Gerb = new ParsedGerber
+            {
+                State = State
+            };
 
-            Gerb.State = State;
             ParseGerber274_Lines(forcezerowidth, State, lines);
 
             if (parseonly) return Gerb;
@@ -1245,8 +1251,8 @@ namespace GerberLibrary
                                                                         double[] paramlist = new double[macroparamstrings.Count];
                                                                         for (int i = 0; i < macroparamstrings.Count; i++)
                                                                         {
-                                                                            double R;
-                                                                            if (Gerber.TryParseDouble(macroparamstrings[i], out R))
+                                                                            
+                                                                            if (Gerber.TryParseDouble(macroparamstrings[i], out double R))
                                                                             {
                                                                                 paramlist[i] = R;
                                                                             }
