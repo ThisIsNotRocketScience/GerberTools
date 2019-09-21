@@ -62,6 +62,7 @@ namespace GerberLibrary
         public string SanitizedFile = "";
         public BoardSide Side;
         public PolyLine ThinLine;
+        internal bool GenerateGeometry = true;
     }
 
     public partial class PolyLineSet
@@ -1632,7 +1633,7 @@ namespace GerberLibrary
                                                                 switch (State.MoveInterpolation)
                                                                 {
                                                                     case InterpolationMode.Linear:
-                                                                        AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, X, Y,  State.LastShapeID++ );
+                                                                        if (State.GenerateGeometry) AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, X, Y,  State.LastShapeID++ );
                                                                         break;
                                                                     default:
 
@@ -1640,7 +1641,7 @@ namespace GerberLibrary
                                                                         foreach (var D in CurvePoints)
                                                                         {
                                                                             //   AddExtrudedCurveSegment(ref LastX, ref LastY, NewShapes, CurrentAperture, ClearanceMode, LastX + I, LastY + J);
-                                                                            AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, D.X, D.Y, State.LastShapeID);
+                                                                            if (State.GenerateGeometry) AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, D.X, D.Y, State.LastShapeID);
                                                                         }
                                                                         State.LastShapeID++;
                                                                         break;
