@@ -1314,8 +1314,21 @@ namespace GerberLibrary
                                     GS.ScaleToMM(File1Parsed.State.CoordinateFormat);
                                     GS.ScaleToFile(GNF);
 
+                                    bool skipline = false;
+                                    if (GS.Has("X") && GS.Has("Y"))
+                                    {
 
-                                    OutputLines.Add(GS.Rebuild(GNF));
+                                        double X = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("X"));
+                                        double Y = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
+
+                                        if (Boundary.PointInPoly(new PointD(X, Y)) == false)
+                                        {
+                                            skipline = true;
+                                        }
+
+                                     //   OutLine = String.Format("X{0}Y{1}", GNF.Format(GNF._ScaleMMToFile(X)), GNF.Format(GNF._ScaleMMToFile(Y)));
+                                    }
+                                    if (!skipline) OutputLines.Add(GS.Rebuild(GNF));
                                     //   Log.AddString("Unsupported arc command found!");
                                     //  MessageBox.Show("Unsupported arc type found during merge! File will NOT be exported correctly!", "Error during export", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -1374,6 +1387,7 @@ namespace GerberLibrary
                                     {
                                         if (GS.Has("X") == false && GS.Has("Y") == false)
                                         {
+                                            
                                             OutputLines.Add(CurrentLine);
                                         }
                                         else
