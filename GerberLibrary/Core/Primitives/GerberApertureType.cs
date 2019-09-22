@@ -245,6 +245,7 @@ namespace GerberLibrary.Core.Primitives
         public int NGonSides = 0;
         public double NGonRotation = 0;
         public bool ZeroWidth = false;
+        internal bool Polarity;
 
         public void NGon(int sides, double radius, double xoff = 0, double yoff = 0, double rotation = 0)
         {
@@ -336,8 +337,13 @@ namespace GerberLibrary.Core.Primitives
             if (Parts.Count > 0)
             {
                 List<PolyLine> ResPre = new List<PolyLine>();
+                List<PolyLine> ResPreNeg = new List<PolyLine>();
 
-                foreach (var a in Parts)
+                foreach (var a in Parts.Where(x => x.Polarity == true))
+                {
+                    ResPre.AddRange(a.CreatePolyLineSet(X, Y, ShapeID));
+                }
+                foreach (var a in Parts.Where(x => x.Polarity == false))
                 {
                     ResPre.AddRange(a.CreatePolyLineSet(X, Y, ShapeID));
                 }

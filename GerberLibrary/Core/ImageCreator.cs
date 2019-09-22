@@ -579,7 +579,7 @@ namespace GerberLibrary
         {
             var T = G.Transform.Clone();
             G.Transform = TransformCopy;
-            var L = from i in PLSs where i.Layer == BoardLayer.Outline || i.Layer == BoardLayer.Mill && i.Side == BoardSide.Both select i;
+            var L = from i in PLSs where (i.Layer == BoardLayer.Outline || i.Layer == BoardLayer.Mill) && i.Side == BoardSide.Both select i;
             if (L.Count() == 0) return;
 
             List<PolyLine> ShapesList = new List<PolyLine>();

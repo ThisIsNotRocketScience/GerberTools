@@ -32,6 +32,7 @@ namespace GerberLibrary.Core.Primitives
             {
                 var part = Parts[i];
                 var Part = part.BuildAperture(paramlist, GNF);
+                Part.Polarity = Parts[i].Polarity;
                 GAT.Parts.Add(Part);
 
                 if (Gerber.ShowProgress) Console.WriteLine("part with {0} vertices", Part.Shape.Count());
