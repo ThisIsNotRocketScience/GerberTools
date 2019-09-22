@@ -2170,7 +2170,7 @@ namespace GerberLibrary
                 GerberApertureType Apt = new GerberApertureType();
                 if (rectx > 0)
                 {
-                    Apt.SetRectangle(rectx, recty);
+                    Apt.SetRectangle(rectx, recty,0);
                 }
                 else
                 {

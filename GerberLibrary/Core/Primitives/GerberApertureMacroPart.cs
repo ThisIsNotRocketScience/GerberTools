@@ -125,6 +125,7 @@ namespace GerberLibrary.Core.Primitives
                         srccopy = srccopy.Replace("$" + i.ToString(), "V" + i.ToString());
                     }
                     srccopy = srccopy.Replace("X", " * ");
+                    srccopy = srccopy.Replace("x", " * ");
                     // srccopy = srccopy.Replace('.', ',');
                     MacroExpressionEvaluator E = new MacroExpressionEvaluator();
 
@@ -437,7 +438,8 @@ namespace GerberLibrary.Core.Primitives
                     Diameter = GNF.ScaleFileToMM(Params[2].BuildValue(paramlist));
                     Xoff = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
                     Yoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
-                    AT.SetCircle(Diameter / 2, Xoff, Yoff);
+                    Rotation = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
+                    AT.SetCircle(Diameter / 2, Xoff, Yoff, Rotation);
 
                     break;
 

@@ -18,7 +18,8 @@ namespace GerberLibrary.Core.Primitives
         Macro,
         Outline,
         Compound,
-        Empty
+        Empty,
+        GerberBlock
     }
 
 
@@ -190,7 +191,7 @@ namespace GerberLibrary.Core.Primitives
         public GerberApertureType()
         {
             Shape = new PolyLine(PolyLine.PolyIDs.ApertureConstr);
-            SetRectangle(1, 1);
+            SetRectangle(1, 1,0);
             ID = 0;
         }
 
@@ -205,7 +206,7 @@ namespace GerberLibrary.Core.Primitives
         public double CircleRadius;
         private double RectWidth;
         private double RectHeight;
-        public void SetCircle(double radius, double xoff = 0, double yoff = 0)
+        public void SetCircle(double radius, double xoff = 0, double yoff = 0, double rotation =0)
         {
             CircleRadius = Math.Max(0, radius);
             if (CircleRadius == 0)
@@ -214,14 +215,14 @@ namespace GerberLibrary.Core.Primitives
             }
             else
             {
-                NGon((int)Math.Floor(10 * Math.Max(2.0, CircleRadius)), CircleRadius, xoff, yoff);
+                NGon((int)Math.Floor(10 * Math.Max(2.0, CircleRadius)), CircleRadius, xoff, yoff, rotation);
             };
 
             ShapeType = GerberApertureShape.Circle;
 
         }
 
-        public void SetRectangle(double width, double height)
+        public void SetRectangle(double width, double height, double Rotation)
         {
             RectWidth = width;
             RectHeight = height;
@@ -233,6 +234,8 @@ namespace GerberLibrary.Core.Primitives
             Shape.Add(-W, -H);
             Shape.Add(-W, H);
             Shape.Add(W, H);
+
+            Shape.RotateDegrees(Rotation);
 
         }
 
@@ -247,19 +250,22 @@ namespace GerberLibrary.Core.Primitives
         public bool ZeroWidth = false;
         internal bool Polarity;
 
+        public List<string> GerberLines;
+
         public void NGon(int sides, double radius, double xoff = 0, double yoff = 0, double rotation = 0)
         {
             NGonRadius = radius;
             NGonSides = sides;
             NGonRotation = rotation;
             ShapeType = GerberApertureShape.Polygon;
-            double padd = -rotation * Math.PI * 2.0 / 360;
+            double padd = 0;// -rotation * Math.PI * 2.0 / 360;
             Shape.Vertices.Clear();
             for (int i = 0; i < sides; i++)
             {
                 double P = i / (double)sides * Math.PI * 2.0 + padd;
                 Shape.Add((double)(xoff + Math.Sin(P) * radius), (double)(yoff + Math.Cos(P) * radius));
             }
+            Shape.RotateDegrees(rotation);
         }
 
         public bool isLeft(PointD a, PointD b, PointD c)
@@ -331,7 +337,7 @@ namespace GerberLibrary.Core.Primitives
 
         }
 
-        public List<PolyLine> CreatePolyLineSet(double X, double Y, int ShapeID)
+        public List<PolyLine> CreatePolyLineSet(double X, double Y, int ShapeID, double rotation, double scale , GerberParserState.MirrorMode mirrored)
         {
             List<PolyLine> Res = new List<PolyLine>();
             if (Parts.Count > 0)
@@ -341,11 +347,11 @@ namespace GerberLibrary.Core.Primitives
 
                 foreach (var a in Parts.Where(x => x.Polarity == true))
                 {
-                    ResPre.AddRange(a.CreatePolyLineSet(X, Y, ShapeID));
+                    ResPre.AddRange(a.CreatePolyLineSet(0, 0, ShapeID, 0 , 1, GerberParserState.MirrorMode.NoMirror));
                 }
                 foreach (var a in Parts.Where(x => x.Polarity == false))
                 {
-                    ResPre.AddRange(a.CreatePolyLineSet(X, Y, ShapeID));
+                    ResPre.AddRange(a.CreatePolyLineSet(0, 0, ShapeID, 0, 1, GerberParserState.MirrorMode.NoMirror));
                 }
                 Polygons Combined = new Polygons();
 
@@ -381,15 +387,54 @@ namespace GerberLibrary.Core.Primitives
                     var PL = new PolyLine(ShapeID);
                     for (int i = 0; i < Shape.Count(); i++)
                     {
-                        PL.Add(X + Shape.Vertices[i].X, Y + Shape.Vertices[i].Y);
+                        PL.Add(Shape.Vertices[i].X, Shape.Vertices[i].Y);
                     }
-                    PL.Add(X + Shape.Vertices[0].X, Y + Shape.Vertices[0].Y);
+                    PL.Add(Shape.Vertices[0].X, Shape.Vertices[0].Y);
                     PL.Close();
                     Res.Add(PL);
                 }
                 else
                 {
                     if (Gerber.ShowProgress) Console.WriteLine("creating empty shape?? {0} {1}", MacroName, ShapeType);
+                }
+            }
+            if (rotation != 0 || scale != 1 || mirrored != GerberParserState.MirrorMode.NoMirror)
+            {
+                double CA = Math.Cos((rotation * Math.PI * 2) / 360.0);
+                double SA = Math.Sin((rotation * Math.PI * 2) / 360.0);
+
+                double xscale = scale;
+                double yscale = scale;
+                switch(mirrored)
+                {
+                    case GerberParserState.MirrorMode.X: xscale = -xscale;break;
+                    case GerberParserState.MirrorMode.XY: xscale = -xscale; yscale = -yscale; break;
+                    case GerberParserState.MirrorMode.Y: yscale = -yscale; break;
+                }
+                foreach (var a in Res)
+                {
+                    foreach (var p in a.Vertices)
+                    {
+                        double Xin = p.X;
+                        double Yin = p.Y;
+        
+                        double nX = Xin * CA - Yin * SA;
+                        double nY = Xin * SA + Yin * CA;
+
+
+                        p.X = nX * xscale;
+                        p.Y = nY * yscale;
+                    }
+                }
+
+            }
+
+            foreach (var a in Res)
+            {
+                foreach(var p in a.Vertices)
+                {
+                    p.X += X;
+                    p.Y += Y;
                 }
             }
             return Res;
