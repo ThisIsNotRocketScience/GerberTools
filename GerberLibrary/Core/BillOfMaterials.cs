@@ -356,6 +356,10 @@ namespace GerberLibrary.Core
             }
             ToIgnore.AddRange(IgnoreList);
             List<Tuple<string, string, string>> Lines = new List<Tuple<string, string, string>>();
+
+            string Header = "Count,Name,Type,Package,Value,MfgPartNumber,RefDes";
+            Lines.Add(new Tuple<string, string, string>("!", "!", Header));
+
             int partcount = 0;
             List<String> re = new List<string>();
             foreach (var a in DeviceTree)
@@ -606,6 +610,17 @@ namespace GerberLibrary.Core
             return s;
         }
 
+        public static string XiconThroughHolePartno(string value)
+        {
+            var r = new Regex("R-US__0204V_([^_]*)$");
+            Match m = r.Match(value);
+            if (m.Groups.Count != 2) return "";
+            string val = m.Groups[1].Value;
+
+            string s = "270-" + val + "-RC";
+            return s;
+        }
+
         public static string MakePartNo(string partno, string value)
         {
 
@@ -624,6 +639,10 @@ namespace GerberLibrary.Core
             else if (partno.Equals("%%SUSUMUTHINRES%%"))
             {
                 return SusumuThinFilmResistorPartno(value);
+            }
+            else if (partno.Equals("%%XICONTHROUGHHOLE%%"))
+            {
+                return XiconThroughHolePartno(value);
             }
 
             return partno;
