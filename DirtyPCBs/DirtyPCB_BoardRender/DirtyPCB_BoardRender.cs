@@ -21,7 +21,8 @@ namespace DirtyPCB_BoardRender
             Copper,
             SkipFix,
             None,
-            TimeOut
+            TimeOut,
+            TraceColor
         }
 
         public class BoardRenderSettings
@@ -34,6 +35,8 @@ namespace DirtyPCB_BoardRender
             public string OutputFolder { get; internal set; }
             public int TimeOut = -1;
             public bool TimeOutExpired = false;
+            public Color TraceColor;
+            public bool HasTraceColor = false;
         }
         public static BoardRenderSettings TheSettings = new BoardRenderSettings();
 
@@ -49,11 +52,14 @@ namespace DirtyPCB_BoardRender
                 Console.WriteLine("Usage:");
                 Console.WriteLine("DirtyPCB_BoardRender.exe  [--soldermask_color {blue,yellow,green,black,white,red}]");
                 Console.WriteLine("\t[--silkscreen_color {white, black}]");
+                Console.WriteLine("\t[--trace_color {blue,yellow,green,black,white,red}]");
                 Console.WriteLine("\t[--copper_color {silver, gold}]");
                 Console.WriteLine("\t[--timeout {seconds}]");
                 Console.WriteLine("\t[--skipeaglefix]");
                 Console.WriteLine("\tinput_path");
                 Console.WriteLine("\toutput_directory");
+                Console.WriteLine("");
+                Console.WriteLine("\tHTML colors in the form of #rrggbb are also supported");
 
                 return;
             }
@@ -66,6 +72,7 @@ namespace DirtyPCB_BoardRender
                     case Arguments.SilkScreen: TheSettings.SilkScreenColor = GerberLibrary.Gerber.ParseColor(args[i]); NextArg = Arguments.None; break;
                     case Arguments.Copper: TheSettings.CopperColor = GerberLibrary.Gerber.ParseColor(args[i]); NextArg = Arguments.None; break;
                     case Arguments.SolderMask: TheSettings.SolderMaskColor = GerberLibrary.Gerber.ParseColor(args[i]); NextArg = Arguments.None; break;
+                    case Arguments.TraceColor: TheSettings.TraceColor = GerberLibrary.Gerber.ParseColor(args[i]); NextArg = Arguments.None; TheSettings.HasTraceColor = true;  break;
                     case Arguments.TimeOut: TheSettings.TimeOut = int.Parse(args[i]); NextArg = Arguments.None; break;
 
                     case Arguments.None:
@@ -74,6 +81,7 @@ namespace DirtyPCB_BoardRender
                             case "--silkscreen_color": NextArg = Arguments.SilkScreen; break;
                             case "--copper_color": NextArg = Arguments.Copper; break;
                             case "--soldermask_color": NextArg = Arguments.SolderMask; break;
+                            case "--trace_color": NextArg = Arguments.TraceColor; break;
                             case "--timeout": NextArg = Arguments.TimeOut; break;
                             case "--skipeaglefix": NextArg = Arguments.None; Gerber.SkipEagleDrillFix = true; break;
                         }
@@ -130,6 +138,7 @@ namespace DirtyPCB_BoardRender
                 BoardRenderColorSet Colors = new BoardRenderColorSet();
                 Colors.BoardRenderColor = TheSettings.SolderMaskColor;
                 Colors.BoardRenderTraceColor = TheSettings.SolderMaskColor;
+                if (TheSettings.HasTraceColor) Colors.BoardRenderTraceColor = TheSettings.TraceColor;
 
                 Colors.BoardRenderSilkColor = TheSettings.SilkScreenColor;
                 Colors.BoardRenderPadColor = TheSettings.CopperColor;

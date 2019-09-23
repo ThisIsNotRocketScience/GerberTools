@@ -210,8 +210,25 @@ namespace GerberLibrary.Core
             return Boundary;
         }
 
-        public void Normalize()
+        public void Translate(PointD T)
         {
+            TranslationSinceLoad.X += T.X;
+            TranslationSinceLoad.Y += T.Y;
+
+            foreach (var a in DisplayShapes)
+            {
+                a.Translate(T.X, T.Y);
+            }
+
+            foreach (var a in OutlineShapes)
+            {
+                a.Translate(T.X, T.Y);
+            }
+        }
+        public PointD Normalize()
+        {
+
+            PointD t = new PointD(-BoundingBox.TopLeft.X, -BoundingBox.TopLeft.Y);
             // return;
             TranslationSinceLoad.X -= BoundingBox.TopLeft.X;
             TranslationSinceLoad.Y -= BoundingBox.TopLeft.Y;
@@ -225,7 +242,7 @@ namespace GerberLibrary.Core
             {
                 a.MoveBack(BoundingBox.TopLeft);
             }
-
+            return t;
         }
 
         public void BuildBoundary()

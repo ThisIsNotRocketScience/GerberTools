@@ -517,5 +517,47 @@ namespace GerberLibrary
             }
             return headerdone;
         }
+
+
+        public static void WriteContainedOnly(string inputfile, PolyLine Boundary, string outputfilename, ProgressLog Log)
+        {
+            if (File.Exists(inputfile) == false)
+            {
+                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(inputfile));
+                return;
+            }
+            Log.AddString(String.Format("Clipping {0} to {1}", Path.GetFileName(inputfile), Path.GetFileName(outputfilename)));
+
+            ExcellonFile EF = new ExcellonFile();
+            EF.Load(inputfile);
+            EF.WriteContained(Boundary, outputfilename, Log);
+
+        }
+
+        private void WriteContained(PolyLine boundary, string outputfilename, ProgressLog log)
+        {
+            ExcellonFile Out = new ExcellonFile();
+
+            foreach(var T in Tools)
+            {
+                Out.Tools[T.Key] = new ExcellonTool() { ID = T.Value.ID, Radius = T.Value.Radius };
+                foreach(var d in T.Value.Drills)
+                {
+                    if (boundary.PointInPoly(new PointD(d.X , d.Y)))
+                      {
+                        Out.Tools[T.Key].Drills.Add(d);
+                    }
+                }
+                foreach (var d in T.Value.Slots)
+                {
+                    if (boundary.PointInPoly(d.Start) || boundary.PointInPoly(d.End))
+                    {
+                        Out.Tools[T.Key].Slots.Add(d);
+                    }
+                }
+            }
+
+            Out.Write(outputfilename, 0, 0, 0, 0);
+        }
     }
 }

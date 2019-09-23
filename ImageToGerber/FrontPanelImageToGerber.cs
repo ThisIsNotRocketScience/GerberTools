@@ -97,6 +97,7 @@ namespace ImageToGerber
                 string f = basename + ".gko";
                 if (System.IO.File.Exists(f))
                 {
+                    int polyid = 0;
                     PLS = PolyLineSet.LoadGerberFile(f);
 
                 
@@ -110,7 +111,7 @@ namespace ImageToGerber
                     GAW3.Write(topsoldermask);
                     
                     GerberArtWriter GAW = new GerberLibrary.GerberArtWriter();
-                    PolyLine PL = new PolyLine();
+                    PolyLine PL = new PolyLine(polyid++);
                     PL.Add(PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.TopLeft.Y);
                     PL.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.TopLeft.Y);
                     PL.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.TopLeft.Y + 8);
@@ -118,7 +119,7 @@ namespace ImageToGerber
                     GAW.AddPolygon(PL);
 
 
-                    PolyLine PL3 = new PolyLine();
+                    PolyLine PL3 = new PolyLine(polyid++);
                     PL3.Add(PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - 8);
                     PL3.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.BottomRight.Y - 8);
                     PL3.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.BottomRight.Y);
@@ -129,7 +130,7 @@ namespace ImageToGerber
 
 
                     GerberArtWriter GAW2 = new GerberLibrary.GerberArtWriter();
-                    PolyLine PL2 = new PolyLine();
+                    PolyLine PL2 = new PolyLine(polyid++);
                     PL2.Add(PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.TopLeft.Y);
                     PL2.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.TopLeft.Y);
                     PL2.Add(PLS.BoundingBox.BottomRight.X, PLS.BoundingBox.BottomRight.Y);

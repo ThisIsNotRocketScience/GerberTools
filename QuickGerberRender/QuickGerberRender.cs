@@ -122,7 +122,7 @@ namespace WindowsFormsApplication1
 
         private void SolderMaskColor_TextChanged(object sender, EventArgs e)
         {
-
+            ReDoColor();
         }
 
         private void SolderMaskColor_SelectedIndexChanged(object sender, EventArgs e)
@@ -171,6 +171,11 @@ namespace WindowsFormsApplication1
         }
 
         private void TracesBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ReDoColor();
+        }
+
+        private void TracesBox_TextUpdate(object sender, EventArgs e)
         {
             ReDoColor();
         }

@@ -1585,6 +1585,18 @@ namespace GerberLibrary
                 string ext = Path.GetExtension(s).ToLower(); ;
                 if (ext == "xln") ext = "txt";
                 if (ext == "drl") ext = "txt";
+
+                if (TheSet.MergeFileTypes)
+                {
+                    BoardLayer layer;
+                    BoardSide Side;
+
+                    Gerber.DetermineBoardSideAndLayer(s, out Side, out layer);
+
+                    ext = String.Format(".{0}_{1}", layer, Side);
+                }
+                
+
                 if (FilesPerExt.ContainsKey(ext) == false)
                 {
                     FilesPerExt[ext] = new List<string>();
@@ -2086,6 +2098,7 @@ namespace GerberLibrary
         public string LastExportFolder = "";
 
         public bool DoNotGenerateMouseBites = false;
+        public bool MergeFileTypes = false;
 
         public List<string> SaveTo(string OutputFolder, Dictionary<string, GerberOutline> GerberOutlines, ProgressLog Logger)
         {

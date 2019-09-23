@@ -633,7 +633,7 @@ namespace GerberLibrary
                             B2.Save(target + "_" + (img++).ToString() + ".png");
 
                         }
-
+/*
 
                         if (false)//i>= 1500 && ((i % 400) == 0 ) && i< 2300)
                         {
@@ -681,7 +681,7 @@ namespace GerberLibrary
                                 }
                             }
                         }
-
+                        */
 
                     }
 

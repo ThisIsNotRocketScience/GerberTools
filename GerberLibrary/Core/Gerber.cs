@@ -246,6 +246,32 @@ namespace GerberLibrary
             string ext = filesplit[filesplit.Count() - 1].ToLower();
             switch (ext)
             {
+                case "slices": Side = BoardSide.Both; Layer = BoardLayer.Utility;break;
+                case "copper_bottom": Side = BoardSide.Bottom;Layer = BoardLayer.Copper;break;
+                case "copper_top": Side = BoardSide.Top; Layer = BoardLayer.Copper; break;
+                case "silk_bottom": Side = BoardSide.Bottom; Layer = BoardLayer.Silk; break;
+                case "silk_top": Side = BoardSide.Top; Layer = BoardLayer.Silk; break;
+                case "paste_bottom": Side = BoardSide.Bottom; Layer = BoardLayer.Paste; break;
+                case "paste_top": Side = BoardSide.Top; Layer = BoardLayer.Paste; break;
+                case "soldermask_bottom": Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; break;
+                case "soldermask_top": Side = BoardSide.Top; Layer = BoardLayer.SolderMask; break;
+                case "drill_both": Side = BoardSide.Both; Layer = BoardLayer.Drill; break;
+                case "outline_both": Side = BoardSide.Both; Layer = BoardLayer.Outline; break;
+                case "png":
+                {
+                        Side = BoardSide.Both;
+                        Layer = BoardLayer.Silk;
+                    }
+                    break;
+               
+                case "assemblytop":
+                    Layer = BoardLayer.Assembly;
+                    Side = BoardSide.Top;
+                    break;
+                case "assemblybottom":
+                    Layer = BoardLayer.Assembly;
+                    Side = BoardSide.Bottom;
+                    break;
                 case "gbr":
 
                     switch (Path.GetFileNameWithoutExtension(gerberfile).ToLower())

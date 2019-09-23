@@ -61,7 +61,7 @@ namespace GerberLibrary
 
             if (Gerber.WriteSanitized) Gerber.WriteAllLines(sourcefile + ".sanitized.txt", lines);
          //   PolyLineSet Parsed = new PolyLineSet("parsed gerber");
-            ParsedGerber Parsed = PolyLineSet.ParseGerber274x(lines, true);
+            ParsedGerber Parsed = PolyLineSet.ParseGerber274x(lines, true, false, new GerberParserState() { GenerateGeometry = false });
 
             if (Gerber.ShowProgress)
             {

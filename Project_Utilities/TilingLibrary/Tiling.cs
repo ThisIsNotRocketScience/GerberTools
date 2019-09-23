@@ -21,7 +21,7 @@ namespace Artwork
             Original,
             Balanced
         }
-        public Artwork.Tiling.TilingType TileType = Artwork.Tiling.TilingType.Danzer7FoldOriginal;
+        public Artwork.Tiling.TilingType TileType = Artwork.Tiling.TilingType.Danzer7Fold;
         public int BaseTile = 0;
         public ArtMode Mode = ArtMode.Tiling;
         public int MaxSubDiv = 5;
@@ -44,6 +44,12 @@ namespace Artwork
 
         public float scalesmallerfactor = 1.0f;
         public TriangleScaleMode scalingMode = TriangleScaleMode.Balanced;
+        public float distanceToMaskScale;
+        public float distanceToMaskRange;
+        public bool MarcelPlating = true;
+        public float BallRadius = 2000;
+        public float Gap = 6000;
+        public float Rounding = 8000;
     }
 
     public class Tiling
@@ -55,7 +61,9 @@ namespace Artwork
             Maloney,
             Conway,
             Walton,
-            Penrose
+            Penrose,
+            RegularTriangle,
+            SameSameDifferent
         }
 
         public class Polygon
@@ -98,6 +106,8 @@ namespace Artwork
                 }
             }
             public int results = 0;
+            public vec3 AvgColor;
+
             public bool callback(QuadTreeItem Item)
             {
                 if (ContainsPointFaster(new PointF(Item.x, Item.y)))
@@ -140,6 +150,15 @@ namespace Artwork
                     Vertices[i] = new vec2(x, y);
                 }
             }
+
+            public Color GetColor()
+            {
+                int R =(int) Math.Max(0, Math.Min(255, AvgColor.x));
+                int G = (int)Math.Max(0, Math.Min(255, AvgColor.y));
+                int B= (int)Math.Max(0, Math.Min(255, AvgColor.z));
+                return Color.FromArgb(R, G, B);
+            }
+
             public void AlterToFit(int width, int height)
             {
                 var M = Mid();
@@ -472,7 +491,7 @@ namespace Artwork
                 }
                 return CurrentSet;
             }
-            public static List<Polygon> Subdivide(PolygonMapping map, vec2 a, vec2 b, vec2 c, int depth = 0) // subdivide based on first 3 barycentric coords
+            public static List<Polygon> Subdivide(PolygonMapping map, vec2 a, vec2 b, vec2 c, int depth = 0, int storedepth = -1) // subdivide based on first 3 barycentric coords
             {
                 List<Polygon> T = new List<Polygon>();
                 List<vec2> Vertices = new List<vec2>();
@@ -482,7 +501,7 @@ namespace Artwork
                     vec2 R = bc.x * a + bc.y * b + bc.z * c;
                     Vertices.Add(R);
                 }
-
+                if (storedepth == -1) storedepth = depth + 1;
                 foreach (var sp in map.SubPolygons)
                 {
                     int type = sp.Type;
@@ -492,7 +511,7 @@ namespace Artwork
                         PolyVertices.Add(Vertices[v]);
                     }
 
-                    T.Add(new Polygon() { Type = type, Vertices = PolyVertices, depth = depth + 1 });
+                    T.Add(new Polygon() { Type = type, Vertices = PolyVertices, depth = storedepth });
                 }
                 return T;
             }
@@ -1106,12 +1125,79 @@ namespace Artwork
                     case TilingType.Conway: CreateConway(); break;
                     case TilingType.Maloney: CreateMaloney(); break;
                     case TilingType.Penrose: CreatePenrose(); break;
+                    case TilingType.RegularTriangle: CreateRegular();break;
+                    case TilingType.SameSameDifferent: CreateSameSameDifferent(); break;
 
                 }
                 return NormalizeSize();
 
             }
 
+            private void CreateSameSameDifferent()
+            {
+                InflationFactor = 1.0 + Math.Sin((2.0 * Math.PI) / 7.0) / Math.Sin(Math.PI / 7.0);
+                PolygonMapping t0 = new PolygonMapping();
+                PolygonMapping t1 = new PolygonMapping();
+
+                double a = 1;
+
+                int vA = 0;
+                int vB = 1;
+                int vC = 2;
+
+
+
+                {
+                    t0.BuildVerticesFromEdgeLengths(a, a, a);
+                    t0.AddCorners();
+                    var mid = (t0.A + t0.B + t0.C);
+                    int vAa = t0.AddPoint(mid + (t0.A - mid) * 0.9f);
+                    int vBb = t0.AddPoint(mid + (t0.B - mid) * 0.9f);
+                    int vCc = t0.AddPoint(mid + (t0.C - mid) * 0.9f);
+                    t0.AddTriangle(vAa, vBb, vCc, 0);
+
+
+                    t1.BuildVerticesFromEdgeLengths(a, a, a);
+                    t1.AddCorners();
+                    int vAB = t1.AddBetweenCorners(vA, vB, a, a / 2);
+                    int vBC = t1.AddBetweenCorners(vB, vC, a, a / 2);
+                    int vCA = t1.AddBetweenCorners(vC, vA, a, a / 2);
+                    t1.AddTriangle(vAB, vBC, vCA, 1);
+                    t1.AddTriangle(vA, vAB, vCA, 1);
+                    t1.AddTriangle(vAB, vB, vBC, 1);
+                    t1.AddTriangle(vBC, vC, vCA, 1);
+
+                }
+                DivisionSet[0] = t1;
+                DivisionSet[1] = t0;
+            }
+
+            private void CreateRegular()
+            {
+                InflationFactor = 1.0 + Math.Sin((2.0 * Math.PI) / 7.0) / Math.Sin(Math.PI / 7.0);
+                PolygonMapping t0 = new PolygonMapping();
+
+                double a = 1;
+               
+
+
+                int vA = 0;
+                int vB = 1;
+                int vC = 2;
+
+                {
+                    t0.BuildVerticesFromEdgeLengths(a, a, a);
+                    t0.AddCorners();
+                    int vAB = t0.AddBetweenCorners(vA, vB, a, a/2);
+                    int vBC = t0.AddBetweenCorners(vB, vC, a, a/2);
+                    int vCA = t0.AddBetweenCorners(vC, vA, a, a/2);
+                    t0.AddTriangle(vAB, vBC, vCA, 0);
+                    t0.AddTriangle(vA, vAB, vCA, 0);
+                    t0.AddTriangle(vAB, vB, vBC, 0);
+                    t0.AddTriangle(vBC, vC, vCA, 0);
+                }
+                DivisionSet[0] = t0;
+            }
             public List<Polygon> SubdivideAdaptive(Polygon P, int level, QuadTreeNode Tree, bool alwayssubdivide = false)
             {
 
@@ -1129,12 +1215,12 @@ namespace Artwork
                         if (alwayssubdivide) divide++;
                         if (a.divided == false)
                         {
-                            if (a.ContainsPointsInTree(Tree)) divide++;
+                            if (Tree != null)  if (a.ContainsPointsInTree(Tree)) divide++;
                             if (divide > 0)
                             {
 
                                 a.divided = true;
-                                NextSet.AddRange(TilingDefinition.Subdivide(DivisionSet[a.Type], a.Vertices[0], a.Vertices[1], a.Vertices[2], a.depth));
+                                NextSet.AddRange(TilingDefinition.Subdivide(DivisionSet[a.Type], a.Vertices[0], a.Vertices[1], a.Vertices[2], a.depth,(alwayssubdivide && divide < 2)?a.depth:a.depth+1));
 
                             }
                             else
@@ -1157,11 +1243,12 @@ namespace Artwork
 
                 foreach (var a in CurrentSet)
                 {
-                    if (CheckPoints(a, Tree))
+                    if (Tree == null || CheckPoints(a, Tree))
                     {
                         ResultSet.Add(a);
                     }
                 }
+
                 return ResultSet;
             }
 

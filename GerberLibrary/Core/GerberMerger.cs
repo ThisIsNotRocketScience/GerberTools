@@ -108,7 +108,7 @@ namespace GerberLibrary
 
                 List<string> OtherLines = File.ReadAllLines(otherfile).ToList();
                 OtherLines = PolyLineSet.SanitizeInputLines(OtherLines);
-                ParsedGerber OtherFileParsed = PolyLineSet.ParseGerber274x(OtherLines, true, false, new GerberParserState() { PreCombinePolygons = false });
+                ParsedGerber OtherFileParsed = PolyLineSet.ParseGerber274x(OtherLines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
                 OtherFiles.Add(OtherFileParsed);
                 OtherFileParsed.OriginalLines = OtherLines;
                 MaxDigitsAfter = Math.Max(OtherFileParsed.State.CoordinateFormat.DigitsAfter, MaxDigitsAfter);
@@ -118,7 +118,7 @@ namespace GerberLibrary
             List<string> File1Lines = File.ReadAllLines(file1).ToList();
 
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
-            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false });
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
                         
                    
@@ -694,12 +694,12 @@ namespace GerberLibrary
             List<string> File1Lines = File.ReadAllLines(file1).ToList();
 
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
-            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true,false, new GerberParserState(){ PreCombinePolygons = false});
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true,false, new GerberParserState(){ PreCombinePolygons = false, GenerateGeometry = false});
           
          //   Console.WriteLine("*** Reading {0}",  Path.GetFileName(file2));
             List<string> File2Lines = File.ReadAllLines(file2).ToList();
             File2Lines = PolyLineSet.SanitizeInputLines(File2Lines);
-            ParsedGerber File2Parsed = PolyLineSet.ParseGerber274x(File2Lines, true, false, new GerberParserState() { PreCombinePolygons = false });
+            ParsedGerber File2Parsed = PolyLineSet.ParseGerber274x(File2Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
             CheckAllApertures(File1Parsed, File1Lines, Log);
             CheckAllApertures(File2Parsed, File2Lines, Log);
@@ -1191,37 +1191,32 @@ namespace GerberLibrary
         }
 
 
-        public static void WriteContainedOnly(string file1,PolyLine Boundary, string output, ProgressLog Log)
+        public static void WriteContainedOnly(string inputfile,PolyLine Boundary, string outputfilename, ProgressLog Log)
         {
-            if (File.Exists(file1) == false)
+            if (File.Exists(inputfile) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(file1));
+                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(inputfile));
                 return;
             }
            
 
-            Log.AddString(String.Format("Clipping {0} to {1}", Path.GetFileName(file1), Path.GetFileName(output)));
+            Log.AddString(String.Format("Clipping {0} to {1}", Path.GetFileName(inputfile), Path.GetFileName(outputfilename)));
             //    Console.WriteLine("*** Reading {0}", Path.GetFileName( file1));
-            List<string> File1Lines = File.ReadAllLines(file1).ToList();
+            List<string> File1Lines = File.ReadAllLines(inputfile).ToList();
 
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
-            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false });
-
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
             CheckAllApertures(File1Parsed, File1Lines, Log);
 
             int ApertureOffset = 0;
             if (File1Parsed.State.Apertures.Count > 0) ApertureOffset = File1Parsed.State.Apertures.Keys.Max() + 1;
 
-
-            //            Console.WriteLine("*** Writing  {0}", output);
-
             List<string> OutputLines = new List<string>();
             GerberNumberFormat GNF = new GerberNumberFormat();
             GNF.DigitsBefore = File1Parsed.State.CoordinateFormat.DigitsBefore;
             GNF.DigitsAfter = File1Parsed.State.CoordinateFormat.DigitsAfter;
-            if (File1Parsed.State.CoordinateFormat.CurrentNumberScale == GerberNumberFormat.NumberScale.Metric
-                )
+            if (File1Parsed.State.CoordinateFormat.CurrentNumberScale == GerberNumberFormat.NumberScale.Metric)
             {
                 GNF.SetMetricMode();
             }
@@ -1240,7 +1235,6 @@ namespace GerberLibrary
             OutputLines.Add("%LPD*%");
 
             Dictionary<string, string> MacroDict = new Dictionary<string, string>();
-
 
             foreach (var a in File1Parsed.State.ApertureMacros)
             {
@@ -1314,8 +1308,21 @@ namespace GerberLibrary
                                     GS.ScaleToMM(File1Parsed.State.CoordinateFormat);
                                     GS.ScaleToFile(GNF);
 
+                                    bool skipline = false;
+                                    if (GS.Has("X") && GS.Has("Y"))
+                                    {
 
-                                    OutputLines.Add(GS.Rebuild(GNF));
+                                        double X = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("X"));
+                                        double Y = File1Parsed.State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
+
+                                        if (Boundary.PointInPoly(new PointD(X, Y)) == false)
+                                        {
+                                            skipline = true;
+                                        }
+
+                                     //   OutLine = String.Format("X{0}Y{1}", GNF.Format(GNF._ScaleMMToFile(X)), GNF.Format(GNF._ScaleMMToFile(Y)));
+                                    }
+                                    if (!skipline) OutputLines.Add(GS.Rebuild(GNF));
                                     //   Log.AddString("Unsupported arc command found!");
                                     //  MessageBox.Show("Unsupported arc type found during merge! File will NOT be exported correctly!", "Error during export", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
@@ -1343,7 +1350,7 @@ namespace GerberLibrary
                                     {
                                         if (GS.Get("G") == 4)
                                         {
-                                            Console.WriteLine("skipping comment: {0}", CurrentLine);
+                                            //Console.WriteLine("skipping comment: {0}", CurrentLine);
                                         }
                                         else
                                         {
@@ -1374,6 +1381,7 @@ namespace GerberLibrary
                                     {
                                         if (GS.Has("X") == false && GS.Has("Y") == false)
                                         {
+                                            
                                             OutputLines.Add(CurrentLine);
                                         }
                                         else
@@ -1466,7 +1474,7 @@ namespace GerberLibrary
         
 
             OutputLines.Add(Gerber.EOF);
-            Gerber.WriteAllLines(output, PolyLineSet.SanitizeInputLines(OutputLines));
+            Gerber.WriteAllLines(outputfilename, PolyLineSet.SanitizeInputLines(OutputLines));
         }
     }
 }
