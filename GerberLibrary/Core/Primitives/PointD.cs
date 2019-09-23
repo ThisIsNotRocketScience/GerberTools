@@ -109,6 +109,10 @@ namespace GerberLibrary.Core.Primitives
             X = pointF.X;
             Y = pointF.Y;
         }
+
+        // private parameterless constructor for XMLSerializer
+        private PointD() { }
+
         public double X;
         public double Y;
 

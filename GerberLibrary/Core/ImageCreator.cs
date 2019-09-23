@@ -19,7 +19,7 @@ namespace GerberLibrary
         public static bool AA = true;
         public Bounds BoundingBox = new Bounds();
         public List<String> Errors = new List<string>();
-        public double scale = 25.0f / 25.4f; // dpi
+        public double scale = 25.0d / 25.4d; // dpi
         private BoardRenderColorSet ActiveColorSet = new BoardRenderColorSet();
         Dictionary<string, MemoryStream> Streams = new Dictionary<string, MemoryStream>();
         public Dictionary<string, double> DrillFileScale = new Dictionary<string, double>();
@@ -375,7 +375,7 @@ namespace GerberLibrary
         public void DrawAllFiles(string v1, double dpi, ProgressLog Logger = null)
         {
 
-            scale = dpi / 25.4f; // dpi
+            scale = dpi / 25.4d; // dpi
             var OutlineBoundingBox = GetOutlineBoundingBox();
             double bw = Math.Abs(OutlineBoundingBox.BottomRight.X - OutlineBoundingBox.TopLeft.X);
             double bh = Math.Abs(OutlineBoundingBox.BottomRight.Y - OutlineBoundingBox.TopLeft.Y);
@@ -832,7 +832,7 @@ namespace GerberLibrary
 
         Bitmap DrawBoard(double dpi, BoardSide CurrentLayer, BoardRenderColorSet Colors, string basefilename = null, ProgressLog Logger = null, bool ForceWhite = false)
         {
-            scale = dpi / 25.4f; // dpi
+            scale = dpi / 25.4d; // dpi
             var OutlineBoundingBox = GetOutlineBoundingBox();
 
             double bw = Math.Abs(OutlineBoundingBox.BottomRight.X - OutlineBoundingBox.TopLeft.X);

@@ -146,13 +146,13 @@ namespace GerberLibrary.Core.Primitives
         public void SetImperialMode()
         {
             CurrentNumberScale = NumberScale.Imperial;
-            Multiplier = 25.4;
+            Multiplier = 25.4d;
         }
 
         public void SetMetricMode()
         {
             CurrentNumberScale = NumberScale.Metric;
-            Multiplier = 1.0;
+            Multiplier = 1.0d;
         }
 
         public string BuildMetricImperialFormatLine()
