@@ -94,6 +94,7 @@ namespace GerberLibrary.Core.Primitives
                     srccopy = srccopy.Replace("$" + i.ToString(), "V" + i.ToString());
                 }
                 srccopy = srccopy.Replace("X", " * ");
+                srccopy = srccopy.Replace("x", " * ");
                 // srccopy = srccopy.Replace('.', ',');
                 MacroExpressionEvaluator E = new MacroExpressionEvaluator();
 
