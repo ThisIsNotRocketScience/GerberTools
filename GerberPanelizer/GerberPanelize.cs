@@ -58,7 +58,7 @@ namespace GerberCombinerBuilder
         public GerberPanelize(GerberPanelizerParent Host, Treeview tv, InstanceDialog id)
         {
             ParentFrame = Host;
-            Gerber.ArcQualityScaleFactor = 15;
+            Gerber.ArcQualityScaleFactor = 20;
             InitializeComponent();
             RotateLeftHover.Visible = false;
             RotateRightHover.Visible = false;
@@ -368,7 +368,7 @@ namespace GerberCombinerBuilder
                 {
                     MouseCapture = true;
                     DragStartCoord = new PointD(e.X, e.Y);
-                    DragInstanceOriginalPosition = new PointD(SelectedInstance.Center);
+                    DragInstanceOriginalPosition = SelectedInstance.Center;
                 }
                 SetSelectedInstance(SelectedInstance);
             }
@@ -421,7 +421,7 @@ namespace GerberCombinerBuilder
                 {
                     if (SelectedInstance != null)
                     {
-                        SelectedInstance.Center = DragInstanceOriginalPosition.ToF();
+                        SelectedInstance.Center = DragInstanceOriginalPosition;
                         
                     }
                     Redraw(false);
@@ -453,7 +453,7 @@ namespace GerberCombinerBuilder
                 PointD Delta = new PointD(e.X, e.Y) - DragStartCoord;
                 Delta.X /= Zoom;
                 Delta.Y /= -Zoom;
-                SelectedInstance.Center = Snap(DragInstanceOriginalPosition + Delta).ToF();
+                SelectedInstance.Center = Snap(DragInstanceOriginalPosition + Delta);
                 UpdateHoverControls();
                 //       SelectedInstance.Center.Y = (float)(DragInstanceOriginalPosition.Y + Delta.Y);
                 Redraw(false);
@@ -732,7 +732,7 @@ namespace GerberCombinerBuilder
                         foreach (var s in R)
                         {
                             GerberInstance GI = new GerberInstance() { GerberPath = s };
-                            GI.Center = DropPoint.ToF();
+                            GI.Center = DropPoint;
                             ThePanel.TheSet.Instances.Add(GI);
                             SelectedInstance = GI;
                         }
