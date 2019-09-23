@@ -20,6 +20,14 @@ namespace ProductionFrame
             InitializeComponent();
             innerWidth.Maximum = 6000;
             innerHeight.Maximum = 6000;
+
+            fiducialsListData.Rows.Add("Top", (double)leftEdge.Value / 2.0, (double)innerHeight.Value + (double)topEdge.Value + (double)topEdge.Value / 2.0, 1.0, 3.0);
+            fiducialsListData.Rows.Add("Top", (double)leftEdge.Value /2.0, (double)topEdge.Value / 2.0, 1.0, 3.0);
+            fiducialsListData.Rows.Add("Top", (double)innerWidth.Value + (double)leftEdge.Value + (double)leftEdge.Value / 2.0, (double)topEdge.Value / 2.0, 1.0, 3.0);
+
+            fiducialsListData.Rows.Add("Bottom", (double)leftEdge.Value / 2.0, (double)innerHeight.Value + (double)topEdge.Value + (double)topEdge.Value / 2.0, 1.0, 3.0);
+            fiducialsListData.Rows.Add("Bottom", (double)leftEdge.Value / 2.0, (double)topEdge.Value / 2.0, 1.0, 3.0);
+            fiducialsListData.Rows.Add("Bottom", (double)innerWidth.Value + (double)leftEdge.Value + (double)leftEdge.Value / 2.0, (double)topEdge.Value / 2.0, 1.0, 3.0);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -39,7 +47,6 @@ namespace ProductionFrame
                 {
                     OutName = saveFileDialog1.FileName;
                 }
-
 
 
                 List<string> Files = new List<string>();
@@ -72,12 +79,11 @@ namespace ProductionFrame
                     double side = LE / 2.0;
                     double top = TE / 2.0;
 
-
+      
                     DrillHoles.Add(new PointD(side, top));
                     DrillHoles.Add(new PointD(OuterWidth - side, top));
                     DrillHoles.Add(new PointD(OuterWidth - side, OuterHeight - top));
                     DrillHoles.Add(new PointD(side, OuterHeight - top));
-
 
                     ExcellonFile EF = new ExcellonFile();
 
@@ -106,29 +112,28 @@ namespace ProductionFrame
                 #region fiducials
 
                 List<PointD> Fiducials = new List<PointD>();
-                Fiducials.Add(new PointD(LE * 2.0, TE / 2.0));                              // bottom left
-                Fiducials.Add(new PointD(OuterWidth - LE * 2.0, TE / 2.0));                 // bottom right
-                Fiducials.Add(new PointD(LE * 2.0, OuterHeight - TE / 2.0));                // top left
 
-                // add the fourth fiducial only if no orientation safety is desired
-                if (!cb_fiducials_orientationSafe.Checked)
+                foreach (DataGridViewRow dataRow in fiducialsListData.Rows)
                 {
-                    Fiducials.Add(new PointD(OuterWidth - LE * 2.0, OuterHeight - TE / 2.0));   // top right                    
-                }
-                                 
-                foreach (var A in Fiducials)
-                {
-                    if (cb_fiducialsTopLayer.Checked)
+                    PointD fiducialPoint = new PointD();
+
+                    if (dataRow.Cells != null && dataRow.Cells["XCoordinate"].Value != null && dataRow.Cells["YCoordinate"].Value != null)
                     {
-                        TopCopper.AddFlash(A, 1.0);
-                        TopSolderMask.AddFlash(A, 3.0);
+                        fiducialPoint.X = double.Parse(dataRow.Cells["XCoordinate"].Value.ToString());
+                        fiducialPoint.Y = double.Parse(dataRow.Cells["YCoordinate"].Value.ToString());
+
+                        if (string.Equals(dataRow.Cells["fiducialLayer"].Value.ToString(), "Top"))
+                        {
+                            TopCopper.AddFlash(fiducialPoint, double.Parse(dataRow.Cells["fiducialCopperDiameter"].Value.ToString())/2.0);
+                            TopSolderMask.AddFlash(fiducialPoint, double.Parse(dataRow.Cells["fiducialSolderMaskDiam"].Value.ToString())/2.0);
+                        }
+                        else
+                        {
+                            BottomCopper.AddFlash(fiducialPoint, double.Parse(dataRow.Cells["fiducialCopperDiameter"].Value.ToString())/2.0);
+                            BottomSolderMask.AddFlash(fiducialPoint, double.Parse(dataRow.Cells["fiducialSolderMaskDiam"].Value.ToString())/2.0);
+                        }
                     }
 
-                    if (cb_fiducialsBottomLayer.Checked)
-                    {
-                        BottomCopper.AddFlash(A, 1.0);
-                        BottomSolderMask.AddFlash(A, 3.0);
-                    }
                 }
 
                 #endregion
@@ -174,6 +179,18 @@ namespace ProductionFrame
                 // Gerber.SaveGerberFileToImage(OutName + ".gko", OutName + ".gko.png", 200, Color.Black, Color.White);
                 // Gerber.SaveGerberFileToImage(OutName + ".gto", OutName + ".gto.png", 200, Color.Black, Color.White);
 
+            }
+        }
+
+        private void addHolesCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            if (addHolesCheck.Checked)
+            {
+                holeDiameter.Enabled = true;
+            }
+            else
+            {
+                holeDiameter.Enabled = false;
             }
         }
     }
