@@ -15,8 +15,8 @@ namespace GerberLibrary
         {
             GerberSplitter GS = new GerberSplitter();
             GerberNumberFormat Format = new GerberNumberFormat();
-            Format.DigitsAfter = 3;
-            Format.DigitsBefore = 6;
+            Format.DigitsBefore = 3;
+            Format.DigitsAfter = 6;
 
             GS.Split("X123456789Y123456789", Format);
 
@@ -358,7 +358,6 @@ namespace GerberLibrary
                 Y = (Y * CoordinateFormat.Multiplier + DY) / CoordinateFormat.Multiplier;
             }
         }
-
-
     }
 }
+
