@@ -396,14 +396,8 @@ namespace GerberLibrary
             G.TranslateTransform((float)-OutlineBoundingBox.TopLeft.X, (float)-OutlineBoundingBox.TopLeft.Y);
             TransformCopy = G.Transform.Clone();
 
-
-
-
-
-
             foreach (var L in PLSs)
             {
-
                 string FileName = v1 + "_" + L.Layer.ToString() + "_" + L.Side.ToString() + ".png";
                 if (Logger != null) Logger.AddString(String.Format("Rendering {0}-{1}", L.Layer.ToString(), L.Side.ToString()));
 
@@ -422,7 +416,6 @@ namespace GerberLibrary
 
                 B2.Save(FileName);
             }
-
         }
 
         public string DrawToFile(string basefilename, BoardSide CurrentLayer, double dpi = 400, bool showimage = true, ProgressLog Logger = null)
