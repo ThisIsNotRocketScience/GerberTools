@@ -15,10 +15,10 @@ namespace GerberLibrary
         {
             GerberSplitter GS = new GerberSplitter();
             GerberNumberFormat Format = new GerberNumberFormat();
-            Format.DigitsAfter = 3;
-            Format.DigitsBefore = 2;
+            Format.DigitsBefore = 3;
+            Format.DigitsAfter = 6;
 
-            GS.Split("X12345Y12345", Format);
+            GS.Split("X123456789Y123456789", Format);
 
             if (Gerber.ShowProgress)
             {
@@ -207,8 +207,8 @@ namespace GerberLibrary
                             case 4: DumpToOutput = true; break;
                             case 90: CoordinateFormat.Relativemode = false; break;
                             case 91: CoordinateFormat.Relativemode = true; break;
-                            case 71: CoordinateFormat.Multiplier = 1.0f; break;
-                            case 70: CoordinateFormat.Multiplier = 25.4f; break;
+                            case 71: CoordinateFormat.Multiplier = 1.0d; break;
+                            case 70: CoordinateFormat.Multiplier = 25.4d; break;
                         }
                     }
                     if (DumpToOutput)
@@ -358,7 +358,6 @@ namespace GerberLibrary
                 Y = (Y * CoordinateFormat.Multiplier + DY) / CoordinateFormat.Multiplier;
             }
         }
-
-
     }
 }
+

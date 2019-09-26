@@ -22,7 +22,8 @@ namespace GerberToImage
               //  Gerber.WriteSanitized = true;
                 Gerber.ExtremelyVerbose = false;
                 //Gerber.Verbose = true;
-                Gerber.WaitForKey = false;
+                Gerber.WaitForKey = true;
+                Gerber.ShowProgress = true;
 
                CreateImageForSingleFile(args[0], Color.Black, Color.White);
                 if (Gerber.WaitForKey)

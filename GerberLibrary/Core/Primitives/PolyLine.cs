@@ -29,6 +29,9 @@ namespace GerberLibrary.Core.Primitives
         }
 
         public int ID = -1;
+
+        public PolyLine() : this(PolyIDs.Temp) { }
+
         public PolyLine(PolyIDs nID )
         {
             ID = (int)nID;

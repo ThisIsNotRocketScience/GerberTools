@@ -16,7 +16,7 @@ namespace GerberAnalyse
     {
         static void Main(string[] args)
         {
-
+//            Gerber.ShowProgress = true;
 
             GerberNumberFormat GNF = new GerberNumberFormat();
             GNF.DigitsAfter = 3;
@@ -230,6 +230,10 @@ namespace GerberAnalyse
                         {
                             var G = GerberLibrary.PolyLineSet.LoadGerberFile(L);
                             Box.AddBox(G.BoundingBox);
+                        }
+                        else
+                        {
+                            var G = GerberLibrary.PolyLineSet.LoadGerberFile(L);
                         }
                     }
                     break;

@@ -390,7 +390,7 @@ namespace GerberLibrary
                 foreach (var c in b.TransformedOutlines)
                 {
                     //       PolyLine PL = new PolyLine();
-                    //     PL.FillTransformed(c, new PointD(b.Center), b.Angle);
+                    //     PL.FillTransformed(c, b.Center, b.Angle);
                     clips.Add(c.toPolygon());
                 }
 
@@ -435,7 +435,7 @@ namespace GerberLibrary
             //    PolyLine Circle = new PolyLine();
             //    Circle.MakeCircle(b.Radius);
             //    PolyLine PL = new PolyLine();
-            //    PL.FillTransformed(Circle, new PointD( b.Center), b.Angle);
+            //    PL.FillTransformed(Circle,  b.Center, b.Angle);
             //    clips.Add(PL.toPolygon());
 
             //    Clipper cp = new Clipper();
@@ -480,7 +480,7 @@ namespace GerberLibrary
                 {
                     bool doit = false;
                     if (a.LastCenter == null) doit = true;
-                    if (doit || (PointD.Distance(new PointD(a.Center), a.LastCenter) != 0 || a.Angle != a.LastAngle))
+                    if (doit || (PointD.Distance(a.Center, a.LastCenter) != 0 || a.Angle != a.LastAngle))
                     {
                         a.RebuildTransformed(GerberOutlines[a.GerberPath], TheSet.ExtraTabDrillDistance);
                     }
@@ -681,8 +681,8 @@ namespace GerberLibrary
                 G.Transform = T;
                 if (active)
                 {
-                    DrawMarker(false, G, new PointD(b.Center), 1, PW, ActivePD);
-                    DrawMarker(false, G, new PointD(b.Center), 1, PW, ActiveP);
+                    DrawMarker(false, G, b.Center, 1, PW, ActivePD);
+                    DrawMarker(false, G, b.Center, 1, PW, ActiveP);
 
                 }
 
@@ -915,7 +915,7 @@ namespace GerberLibrary
             }
 
 
-            PointD center = new PointD(t.Center);
+            PointD center = t.Center;
             bool result = true;
             intersects = (from i in intersects orderby i.Angle select i).ToList();
             //intersects.Sort(x => x.Angle);
@@ -1153,7 +1153,7 @@ namespace GerberLibrary
                     {
                         PointD loc = b.Item1 - (b.Item2 * TheSet.MarginBetweenBoards * 0.5);
                         loc = loc.Rotate(a.Angle);
-                        loc += new PointD(a.Center);
+                        loc += a.Center;
                         if (loc.X >= 0 && loc.X <= TheSet.Width && loc.Y >= 0 && loc.Y <= TheSet.Height)
                         {
                             var BT = AddTab(loc);
@@ -1212,7 +1212,7 @@ namespace GerberLibrary
                     foreach (var c in b.TransformedOutlines)
                     {
                         //  PolyLine PL = new PolyLine();
-                        //  PL.FillTransformed(c, new PointD(b.Center), b.Angle);
+                        //  PL.FillTransformed(c, b.Center, b.Angle);
                         SplitPolyLineAndAddSegs(c);
 
                     }
@@ -1246,7 +1246,7 @@ namespace GerberLibrary
 
             foreach (var t in TheSet.Tabs.Where(x => x.Errors.Count == 0))
             {
-                PointD center = new PointD(t.Center);
+                PointD center = t.Center;
                 List<LineSeg> ToDelete = new List<LineSeg>();
                 List<LineSeg> ToAdd = new List<LineSeg>();
                 foreach (var s in Segs)
@@ -1320,7 +1320,7 @@ namespace GerberLibrary
                     // if (b.GerberPath.Contains("???") == false)
                     {
                         var a = GerberOutlines[b.GerberPath];
-                        var C = new PointD(t.Center);
+                        var C = t.Center.Copy();
                         C.X -= b.Center.X;
                         C.Y -= b.Center.Y;
                         C = C.Rotate(-b.Angle);
@@ -1339,9 +1339,9 @@ namespace GerberLibrary
 
 
                                 //  PolyLine PL = new PolyLine();
-                                // PL.FillTransformed(c, new PointD(b.Center), b.Angle);
+                                // PL.FillTransformed(c, b.Center, b.Angle);
 
-                                if (Helpers.IsInPolygon(c.Vertices, new PointD(t.Center), false))
+                                if (Helpers.IsInPolygon(c.Vertices, t.Center, false))
                                 {
                                     t.EvenOdd++;
                                     // t.Errors.Add("inside a polygon!");
@@ -1412,7 +1412,7 @@ namespace GerberLibrary
                         TI.Location = I1;
                         TI.Direction.X = (V1.X - V2.X) / Len;
                         TI.Direction.Y = (V1.Y - V2.Y) / Len;
-                        TI.Angle = Helpers.AngleBetween(new PointD(t.Center), I1);
+                        TI.Angle = Helpers.AngleBetween(t.Center, I1);
                         bool addedV1 = false;
 
                         bool V1Inside = Helpers.Distance(new PointD(t.Center.X, t.Center.Y), V1) < t.Radius;
@@ -1437,7 +1437,7 @@ namespace GerberLibrary
                         TabIntersection TI1 = new TabIntersection();
                         TI1.Start = true;
                         TI1.Location = I1;
-                        TI1.Angle = Helpers.AngleBetween(new PointD(t.Center), I1);
+                        TI1.Angle = Helpers.AngleBetween(t.Center, I1);
                         TI1.Direction.X = (V1.X - V2.X) / Len;
                         TI1.Direction.Y = (V1.Y - V2.Y) / Len;
                         Intersections.Add(TI1);
@@ -1447,7 +1447,7 @@ namespace GerberLibrary
                         TI2.Location = I2;
                         TI2.Direction.X = TI1.Direction.X;
                         TI2.Direction.Y = TI1.Direction.Y;
-                        TI2.Angle = Helpers.AngleBetween(new PointD(t.Center), I2);
+                        TI2.Angle = Helpers.AngleBetween(t.Center, I2);
                         Intersections.Add(TI2);
 
                     }
@@ -1725,7 +1725,7 @@ namespace GerberLibrary
 
         public GerberInstance AddInstance(string path, PointD coord, bool generateTransformed = false)
         {
-            GerberInstance GI = new GerberInstance() { GerberPath = path, Center = coord.ToF() };
+            GerberInstance GI = new GerberInstance() { GerberPath = path, Center = coord };
             TheSet.Instances.Add(GI);
             if (generateTransformed)
             {
@@ -1735,7 +1735,7 @@ namespace GerberLibrary
                     foreach (var b in GO.TheGerber.OutlineShapes)
                     {
                         PolyLine PL = new PolyLine(PolyLine.PolyIDs.Outline);
-                        PL.FillTransformed(b, new PointD(GI.Center), GI.Angle);
+                        PL.FillTransformed(b, GI.Center, GI.Angle);
                         GI.TransformedOutlines.Add(PL);
 
                     }
@@ -1775,7 +1775,7 @@ namespace GerberLibrary
         {
             foreach (var b in TheSet.Tabs)
             {
-                if (Helpers.Distance(new PointD(b.Center), pt) <= b.Radius)
+                if (Helpers.Distance(b.Center, pt) <= b.Radius)
                 {
                     return b;
                 }
@@ -1835,7 +1835,7 @@ namespace GerberLibrary
                     {
                         a.Item1.Angle = 0;
 
-                        a.Item1.Center = (Coord - OL.TheGerber.BoundingBox.TopLeft).ToF();
+                        a.Item1.Center = (Coord - OL.TheGerber.BoundingBox.TopLeft);
                         // a.Item1.Center.X += 1;
                         // a.Item1.Center.Y += 1;
                     }
@@ -1847,7 +1847,7 @@ namespace GerberLibrary
                         if (Coord != null)
                         {
                             a.Item1.Angle = 90;
-                            a.Item1.Center = (Coord - OL.TheGerber.BoundingBox.TopLeft).ToF();
+                            a.Item1.Center = (Coord - OL.TheGerber.BoundingBox.TopLeft);
                             a.Item1.Center.Y += (float)RD.Width;
 
                             // a.Item1.Center.X += 1;
@@ -1912,7 +1912,7 @@ namespace GerberLibrary
 
                         if (R.height == (int)(RD.height + TheSet.MarginBetweenBoards))
                         {
-                            a.Item1.Center = (new PointD(R.x, R.y) - OL.TheGerber.BoundingBox.TopLeft).ToF();
+                            a.Item1.Center = (new PointD(R.x, R.y) - OL.TheGerber.BoundingBox.TopLeft);
 
                             a.Item1.Angle = 0;
                             // regular
@@ -1920,7 +1920,7 @@ namespace GerberLibrary
                         else
                         {
 
-                            a.Item1.Center = (new PointD(R.x, R.y)).ToF();// - OL.TheGerber.TopLeft).ToF();
+                            a.Item1.Center = (new PointD(R.x, R.y));// - OL.TheGerber.TopLeft).ToF();
 
                             a.Item1.Center.X += (float)OL.TheGerber.BoundingBox.TopLeft.Y;
                             a.Item1.Center.Y -= (float)OL.TheGerber.BoundingBox.TopLeft.X;
@@ -1949,7 +1949,7 @@ namespace GerberLibrary
         public BreakTab AddTab(PointD center)
         {
 
-            BreakTab BT = new BreakTab() { Radius = 3, Center = center.ToF() };
+            BreakTab BT = new BreakTab() { Radius = 3, Center = center };
             TheSet.Tabs.Add(BT);
 
             return BT;
@@ -1967,17 +1967,17 @@ namespace GerberLibrary
             }
             for (int i = 0; i < TheSet.Tabs.Count; i++)
             {
-                PointD A = new PointD(TheSet.Tabs[i].Center);
+                PointD A = TheSet.Tabs[i].Center;
 
                 for (int j = i + 1; j < TheSet.Tabs.Count; j++)
                 {
                     if (Tabs[j] == false)
                     {
-                        PointD B = new PointD(TheSet.Tabs[j].Center);
+                        PointD B = TheSet.Tabs[j].Center;
                         if (PointD.Distance(A, B) < (TheSet.Tabs[j].Radius + TheSet.Tabs[i].Radius) * 0.75)
                         {
                             Tabs[j] = true;
-                            TheSet.Tabs[i].Center = ((A + B) * 0.5).ToF();
+                            TheSet.Tabs[i].Center = ((A + B) * 0.5);
                             Removethese.Add(TheSet.Tabs[j]);
                         }
                     }
@@ -1994,7 +1994,7 @@ namespace GerberLibrary
 
     public class AngledThing
     {
-        public PointF Center = new PointF(); // float for serializer... need to investigate
+        public PointD Center = new PointD(); // float for serializer... need to investigate
         public float Angle;
     }
 
@@ -2057,7 +2057,7 @@ namespace GerberLibrary
             foreach (var b in GO.TheGerber.OutlineShapes)
             {
                 PolyLine PL = new PolyLine(-2);
-                PL.FillTransformed(b, new PointD(Center), Angle);
+                PL.FillTransformed(b, Center, Angle);
                 TransformedOutlines.Add(PL);
                 BoundingBox.AddPolyLine(PL);
             }

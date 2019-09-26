@@ -2025,7 +2025,7 @@ namespace GerberLibrary
         public class TextLabel
         {
             public string Text = "Empty";
-            public double FontSize = 2.54;
+            public double FontSize = 2.54d;
             public string Font = "Arial";
             public StringAlign Alignment = StringAlign.BottomLeft;
             public BoxAttachment Attachment = BoxAttachment.TopLeft;
@@ -2151,8 +2151,8 @@ namespace GerberLibrary
             List<string> lines = new List<string>();
 
             GerberNumberFormat GNF = new GerberNumberFormat();
-            GNF.DigitsBefore = 4;
-            GNF.DigitsAfter = 4;
+            GNF.DigitsBefore = 3;
+            GNF.DigitsAfter = 6;
             GNF.SetImperialMode();
 
             lines.Add(Gerber.INCH);
@@ -2170,7 +2170,7 @@ namespace GerberLibrary
                 GerberApertureType Apt = new GerberApertureType();
                 if (rectx > 0)
                 {
-                    Apt.SetRectangle(rectx, recty);
+                    Apt.SetRectangle(rectx, recty,0);
                 }
                 else
                 {
