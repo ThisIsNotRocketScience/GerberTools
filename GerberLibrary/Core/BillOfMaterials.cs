@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ExcelLibrary.SpreadSheet;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -992,6 +993,126 @@ namespace GerberLibrary.Core
                 }
             }
 
+
+
+        }
+
+        public void WriteJLCXLS(string BaseFolder, string Name)
+        {
+
+            Workbook BOMworkbook = new Workbook();
+            Worksheet BOMworksheet = new Worksheet(String.Format("{0} BOM", Name));
+
+            
+
+            BOMworksheet.Cells[0, 0] = new Cell("Comment");
+            BOMworksheet.Cells[0, 1] = new Cell("Designator");
+            BOMworksheet.Cells[0, 2] = new Cell("Footprint");
+            BOMworksheet.Cells[0, 3] = new Cell("LCSC Part #");
+            int currentrow = 1;
+            foreach (var ds in DeviceTree)
+            {
+
+                foreach (var v in ds.Value.Values)
+                {
+                    BOMworksheet.Cells[currentrow, 0] = new Cell(v.Value);
+
+                    string refdescs = v.RefDes[0].NameOnBoard;
+                    for (int i = 1; i < v.RefDes.Count; i++)
+                    {
+                        refdescs += ", " + v.RefDes[i].NameOnBoard;
+                    }
+
+                    BOMworksheet.Cells[currentrow, 1] = new Cell(refdescs);
+                    BOMworksheet.Cells[currentrow, 2] = new Cell(v.PackageName);
+                    BOMworksheet.Cells[currentrow, 3] = new Cell(v.MfgPartNumber);
+                    currentrow++;
+                }
+            }
+
+            BOMworkbook.Worksheets.Add(BOMworksheet);
+            BOMworkbook.Save(BaseFolder + "\\" + Name + "_BOM.xls");
+
+            Workbook PNPworkbook = new Workbook();
+            Worksheet PNPworksheet = new Worksheet(String.Format("{0} PnP", Name));
+
+            PNPworksheet.Cells[0, 0] = new Cell("Designator");
+            PNPworksheet.Cells[0, 1] = new Cell("Mid X");
+            PNPworksheet.Cells[0, 2] = new Cell("Mid Y");
+            PNPworksheet.Cells[0, 3] = new Cell("Layer");
+            PNPworksheet.Cells[0, 4] = new Cell("Rotation");
+            currentrow = 1;
+            foreach (var ds in DeviceTree)
+            {
+
+                foreach (var v in ds.Value.Values)
+                {
+                    foreach (var p in v.RefDes)
+                    {
+                        PNPworksheet.Cells[currentrow, 0] = new Cell(p.NameOnBoard);
+                        PNPworksheet.Cells[currentrow, 1] = new Cell(p.x.ToString().Replace(",",".") + "mm");
+                        PNPworksheet.Cells[currentrow, 2] = new Cell(p.y.ToString().Replace(",", ".") + "mm");
+                        PNPworksheet.Cells[currentrow, 3] = new Cell(p.Side == BoardSide.Top ? "T" : "B");
+                        PNPworksheet.Cells[currentrow, 4] = new Cell(p.angle);
+
+                        currentrow++;
+                    }
+                }
+            }
+
+            PNPworkbook.Worksheets.Add(PNPworksheet);
+            PNPworkbook.Save(BaseFolder + "\\" + Name + "_PNP.xls");
+
+
+        }
+        public void WriteJLCCSV(string BaseFolder, string Name)
+        {
+
+            List<string> outlinesBOM = new List<string>();
+
+            outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #");
+            foreach (var ds in DeviceTree)
+            {
+
+                foreach (var v in ds.Value.Values)
+                {
+
+                   
+                    string refdescs = "\""  + v.RefDes[0].NameOnBoard;
+                    for (int i = 1; i < v.RefDes.Count; i++)
+                    {
+                        refdescs += ", " + v.RefDes[i].NameOnBoard;
+                    }
+                    refdescs += "\"";
+                    string line = String.Format("{0},{1},{2},{3}",v.Value ,refdescs,v.PackageName,v.MfgPartNumber);
+                    outlinesBOM.Add(line);
+
+                }
+            }
+            File.WriteAllLines(BaseFolder + "\\" + Name + "_BOM.csv", outlinesBOM);
+
+            List<string> outlinesPNP = new List<string>();
+            outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
+            foreach (var ds in DeviceTree)
+            {
+
+                foreach (var v in ds.Value.Values)
+                {
+                    foreach (var p in v.RefDes)
+                    {
+                        string line = String.Format("{0},{1},{2},{3},{4}",
+                        p.NameOnBoard,
+                        p.x.ToString().Replace(",", ".") + "mm",
+                        p.y.ToString().Replace(",", ".") + "mm",
+                        p.Side == BoardSide.Top ? "T" : "B",
+                        p.angle);
+                        outlinesPNP.Add(line);
+                        
+                    }
+                }
+            }
+
+            File.WriteAllLines(BaseFolder + "\\" + Name + "_PNP.csv", outlinesPNP);
 
 
         }
