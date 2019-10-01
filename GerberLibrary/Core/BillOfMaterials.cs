@@ -1,5 +1,4 @@
-﻿using ExcelLibrary.SpreadSheet;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -997,7 +996,7 @@ namespace GerberLibrary.Core
 
         }
 
-        public void WriteJLCXLS(string BaseFolder, string Name)
+        /*       public void WriteJLCXLS(string BaseFolder, string Name)
         {
 
             Workbook BOMworkbook = new Workbook();
@@ -1065,6 +1064,7 @@ namespace GerberLibrary.Core
 
 
         }
+        */
         public void WriteJLCCSV(string BaseFolder, string Name)
         {
 
