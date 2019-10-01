@@ -779,7 +779,7 @@ namespace GerberLibrary.Core
             for (int i = 0; i < Paths.Count; i++)
             {
                 var P = Paths[i];
-                if (P.Closed == false)
+                if (P.Closed == false && P.Vertices.Count > 1)
                 {
                     var PF = P.Vertices[0];
                     var PF2 = P.Vertices[1];
