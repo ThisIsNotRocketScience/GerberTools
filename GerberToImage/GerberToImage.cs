@@ -98,7 +98,15 @@ namespace GerberToImage
             if (arg.ToLower().EndsWith(".png") == true) return;
             GerberImageCreator.AA = false;
             //Gerber.Verbose = true;
-            Gerber.SaveGerberFileToImage(arg, arg + "_render.png", 1000, Foreground, Background);
+            if (Gerber.ThrowExceptions)
+            {
+                Gerber.SaveGerberFileToImageUnsafe(arg, arg + "_render.png", 1000, Foreground, Background);
+            }
+            else
+            {
+                Gerber.SaveGerberFileToImage(arg, arg + "_render.png", 1000, Foreground, Background);
+            }
+
             if (Gerber.SaveDebugImageOutput)
             {
                 Gerber.SaveDebugImage(arg, arg + "_debugviz.png", 1000, Foreground, Background);

@@ -90,6 +90,8 @@ namespace GerberLibrary
         private static readonly Regex rxScientific = new Regex(@"^(?<sign>-?)(?<head>\d+)(\.(?<tail>\d*?)0*)?E(?<exponent>[+\-]\d+)$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
         public static bool SkipEagleDrillFix = false;
 
+        public static bool ThrowExceptions = false; // set to true to make the debugger die in useful places.
+
         public static List<PointD> CreateCurvePoints(double LastX, double LastY, double X, double Y, double I, double J, InterpolationMode mode, GerberQuadrantMode qmode)
         {
             //   Console.WriteLine("Current curve mode: {0}", qmode);
@@ -776,45 +778,7 @@ namespace GerberLibrary
         {
             try
             {
-                ParsedGerber PLS;
-                GerberParserState State = new GerberParserState()
-                {
-                    PreCombinePolygons = false
-                };
-
-                var FileType = Gerber.FindFileType(GerberFilename);
-                Gerber.DetermineBoardSideAndLayer(GerberFilename, out State.Side, out State.Layer);
-                bool forcezero = false;
-
-                if (State.Layer == BoardLayer.Outline)
-                {
-                    //    PLS.PreCombinePolygons = true;
-                    //    forcezero = true;
-                }
-                if (FileType == BoardFileType.Drill)
-                {
-                    PLS = PolyLineSet.LoadExcellonDrillFile(GerberFilename);
-                }
-                else
-                {
-                    PLS = PolyLineSet.LoadGerberFile(GerberFilename, forcezero, Gerber.WriteSanitized, State);
-
-                }
-                double WidthInMM = PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X;
-                double HeightInMM = PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y;
-                int Width = (int)(Math.Ceiling((WidthInMM) * (dpi / 25.4)));
-                int Height = (int)(Math.Ceiling((HeightInMM) * (dpi / 25.4)));
-
-                Console.WriteLine("Progress: Exporting {0} ({2},{3}mm) to {1} ({4},{5})", GerberFilename, BitmapFilename, WidthInMM, HeightInMM, Width, Height);
-                GerberImageCreator GIC = new GerberImageCreator();
-                GIC.scale = dpi / 25.4f; // dpi
-                GIC.BoundingBox.AddBox(PLS.BoundingBox);
-
-                var Tr = GIC.BuildMatrix(Width, Height);
-                Bitmap B2 = GIC.RenderToBitmap(Width, Height, Tr, Foreground, Background, PLS, true);
-                if (B2 == null) return false;
-                B2.Save(BitmapFilename);
-                return true;
+                return SaveGerberFileToImageUnsafe(GerberFilename, BitmapFilename, dpi, Foreground, Background);
             }
             catch (Exception E)
             {
@@ -827,6 +791,49 @@ namespace GerberLibrary
                 return false;
             }
 
+        }
+
+        public static bool SaveGerberFileToImageUnsafe(string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background)
+        {
+            ParsedGerber PLS;
+            GerberParserState State = new GerberParserState()
+            {
+                PreCombinePolygons = false
+            };
+
+            var FileType = Gerber.FindFileType(GerberFilename);
+            Gerber.DetermineBoardSideAndLayer(GerberFilename, out State.Side, out State.Layer);
+            bool forcezero = false;
+
+            if (State.Layer == BoardLayer.Outline)
+            {
+                //    PLS.PreCombinePolygons = true;
+                //    forcezero = true;
+            }
+            if (FileType == BoardFileType.Drill)
+            {
+                PLS = PolyLineSet.LoadExcellonDrillFile(GerberFilename);
+            }
+            else
+            {
+                PLS = PolyLineSet.LoadGerberFile(GerberFilename, forcezero, Gerber.WriteSanitized, State);
+
+            }
+            double WidthInMM = PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X;
+            double HeightInMM = PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y;
+            int Width = (int)(Math.Ceiling((WidthInMM) * (dpi / 25.4)));
+            int Height = (int)(Math.Ceiling((HeightInMM) * (dpi / 25.4)));
+
+            Console.WriteLine("Progress: Exporting {0} ({2},{3}mm) to {1} ({4},{5})", GerberFilename, BitmapFilename, WidthInMM, HeightInMM, Width, Height);
+            GerberImageCreator GIC = new GerberImageCreator();
+            GIC.scale = dpi / 25.4f; // dpi
+            GIC.BoundingBox.AddBox(PLS.BoundingBox);
+
+            var Tr = GIC.BuildMatrix(Width, Height);
+            Bitmap B2 = GIC.RenderToBitmap(Width, Height, Tr, Foreground, Background, PLS, true);
+            if (B2 == null) return false;
+            B2.Save(BitmapFilename);
+            return true;
         }
 
         public static string ToFloatingPointString(double value)
