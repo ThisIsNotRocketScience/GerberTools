@@ -105,11 +105,8 @@ namespace GerberLibrary.Core
         None
     }
 
-
-
     public class PartLibrary
     {
-
         public static Dictionary<string, string> CreatePassivesMapping()
         {
             Dictionary<string, string> Res = new Dictionary<string, string>();
