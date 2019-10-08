@@ -318,7 +318,7 @@ namespace GerberLibrary.Core
                         double X = c.x;
                         double Y = c.y;
                         Helpers.Transform(dx, dy, cx, cy, angle, ref X, ref Y);
-                        AddBOMItem(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle + angle) % 360);
+                        AddBOMItem(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle + angle) % 360, c.Side);
                     }
                 }
             }
@@ -1084,7 +1084,12 @@ namespace GerberLibrary.Core
                         refdescs += ", " + v.RefDes[i].NameOnBoard;
                     }
                     refdescs += "\"";
-                    string line = String.Format("{0},{1},{2},{3}",v.Value ,refdescs,v.PackageName,v.MfgPartNumber);
+                    string V = v.Value;
+                    if (V.Trim().Length == 0)
+                    {
+                        V = v.MfgPartNumber;
+                    }
+                    string line = String.Format("{0},{1},{2},{3}",V,refdescs,v.PackageName,v.MfgPartNumber);
                     outlinesBOM.Add(line);
 
                 }
@@ -1105,7 +1110,7 @@ namespace GerberLibrary.Core
                         p.x.ToString().Replace(",", ".") + "mm",
                         p.y.ToString().Replace(",", ".") + "mm",
                         p.Side == BoardSide.Top ? "T" : "B",
-                        p.angle);
+                           p.angle);
                         outlinesPNP.Add(line);
                         
                     }

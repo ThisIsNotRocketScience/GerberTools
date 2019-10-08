@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using GerberLibrary.Core;
+using Ionic.Zip;
 
 namespace GerberLibrary
 {
@@ -69,7 +70,55 @@ namespace GerberLibrary
         public static bool WriteSanitized = false;
         #endregion
 
+        public static void ZipGerberFolderToFactoryFolder(string Name, string BoardGerbersFolder, string BoardFactoryFolder)
+        {
+            if (Directory.Exists(BoardGerbersFolder))
+            {
+                string TargetZip = Path.Combine(BoardFactoryFolder, Name + "_gerbers.zip");
+                if (File.Exists(TargetZip)) File.Delete(TargetZip);
+                Console.WriteLine("Zipping gerbers to {0}", TargetZip);
+                ZipFile Z = new ZipFile();
+                foreach (var F in Directory.GetFiles(BoardGerbersFolder))
+                {
+                    bool AddToZip = false;
+                    var T = GerberLibrary.Gerber.FindFileType(F);
+                    if (T == BoardFileType.Drill)
+                    {
+                        AddToZip = true;
+                    }
+                    else
+                    {
+                        GerberLibrary.Gerber.DetermineBoardSideAndLayer(F, out BoardSide Side, out BoardLayer Layer);
+                        switch (Layer)
+                        {
+                            case BoardLayer.Carbon:
+                            case BoardLayer.Mill:
+                            case BoardLayer.Outline:
+                            case BoardLayer.Paste:
+                            case BoardLayer.Silk:
+                            case BoardLayer.SolderMask:
+                            case BoardLayer.Copper:
+                            case BoardLayer.Drill:
+                                AddToZip = true;
+                                break;
+                            case BoardLayer.Assembly:
+                                string TargetGerb = Path.Combine(BoardFactoryFolder, Name +"_"+ Path.GetFileName(F));
+                                File.Copy(F, TargetGerb, true);
+                                break;
+                        }
+                    }
+                    if (AddToZip)
+                    {
+                        Console.WriteLine("Adding {0} to zip.", F);
+                        Z.AddFile(F);
+                    }
+                }
 
+                Z.Save(TargetZip);
+
+
+            }
+        }
         public static int GetDefaultSortOrder(BoardSide side, BoardLayer layer)
         {
             int R = 0;
