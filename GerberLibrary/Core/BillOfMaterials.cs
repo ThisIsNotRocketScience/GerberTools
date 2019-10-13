@@ -241,7 +241,7 @@ namespace GerberLibrary.Core
                         {
                             if (p.PointInPoly(new Primitives.PointD(n.x, n.y)))
                             {
-                                Res[i].AddBOMItem(devicevalue.Value.PackageName, devicevalue.Value.Name, devicevalue.Value.Value, n.NameOnBoard, Ns[i], n.SourceBoard, n.x, n.y, n.angle, n.Side);
+                                Res[i].AddBOMItemInt(devicevalue.Value.PackageName, devicevalue.Value.Name, devicevalue.Value.Value, n.NameOnBoard, Ns[i], n.SourceBoard, n.x, n.y, n.angle, n.Side);
                                 added++;
                             }
                             i++;
@@ -285,14 +285,19 @@ namespace GerberLibrary.Core
 
 
         public Dictionary<string, Dictionary<string, BOMEntry>> DeviceTree = new Dictionary<string, Dictionary<string, BOMEntry>>();
-        public string AddBOMItem(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle, BoardSide side = BoardSide.Top)
+
+        public string AddBOMItemExt(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle, BoardSide side = BoardSide.Top)
+        {
+            string ID = GetID(package, device, refdes);
+            return AddBOMItemInt(package, device, value, refdes, set, SourceBoard, x, y, angle + GetRotationOffset(ID), side);
+        }
+
+        string AddBOMItemInt(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle, BoardSide side = BoardSide.Top)
         {
 
+            string ID = GetID(package, device, refdes);
 
-
-            string ID = package + device;
-            if (refdes == device) ID = package;
-
+            
             if (DeviceTree.ContainsKey(ID) == false) DeviceTree[ID] = new Dictionary<string, BOMEntry>();
             if (DeviceTree[ID].ContainsKey(value) == false) DeviceTree[ID][value] = new BOMEntry() { Name = device, Value = value, PackageName = package };
             BOMEntry BE = DeviceTree[ID][value];
@@ -303,6 +308,12 @@ namespace GerberLibrary.Core
 
         }
 
+        private string GetID(string package, string device, string refdes)
+        {
+            string ID = package + device;
+            if (refdes == device) ID = package;
+            return ID;
+        }
 
         public void MergeBOM(BOM B, BOMNumberSet set, double dx, double dy, double cx, double cy, double angle)
         {
@@ -315,7 +326,7 @@ namespace GerberLibrary.Core
                         double X = c.x;
                         double Y = c.y;
                         Helpers.Transform(dx, dy, cx, cy, angle, ref X, ref Y);
-                        AddBOMItem(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle + angle) % 360, c.Side);
+                        AddBOMItemInt(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle + angle) % 360, c.Side);
                     }
                 }
             }
@@ -984,7 +995,7 @@ namespace GerberLibrary.Core
                     {
                         var S = positions[rd];
 
-                        AddBOMItem(package, "", value, rd, Set, bOMFile, S.x, S.y, S.angle, S.Side);
+                        AddBOMItemExt(package, "", value, rd, Set, bOMFile, S.x, S.y, S.angle, S.Side);
                     }
                 }
             }
@@ -1066,6 +1077,8 @@ namespace GerberLibrary.Core
         {
 
             List<string> outlinesBOM = new List<string>();
+            List<string> OutlinesRotations = new List<string>();
+
 
             outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #");
             foreach (var ds in DeviceTree)
@@ -1074,7 +1087,8 @@ namespace GerberLibrary.Core
                 foreach (var v in ds.Value.Values)
                 {
 
-                   
+                    OutlinesRotations.Add(String.Format("{0} {1}", v.Combined(), GetRotationOffset(v.Combined())));
+                    
                     string refdescs = "\""  + v.RefDes[0].NameOnBoard;
                     for (int i = 1; i < v.RefDes.Count; i++)
                     {
@@ -1116,7 +1130,43 @@ namespace GerberLibrary.Core
 
             File.WriteAllLines(BaseFolder + "\\" + Name + "_PNP.csv", outlinesPNP);
 
+            OutlinesRotations.Sort();
+            File.WriteAllLines(DefaultRotationFile, OutlinesRotations);
+        }
 
+        public static Dictionary<string, int> RotationOffsets = new Dictionary<string, int>();
+        public static int GetRotationOffset(string name)
+        {
+            if (RotationOffsets.ContainsKey(name)) return RotationOffsets[name];
+            return 0;
+
+        }
+        public const string DefaultRotationFile = "RotationOffsets.txt";
+        public static void LoadRotationOffsets(string v = DefaultRotationFile)
+        {
+            Console.WriteLine("Loading rotations from {0}", Path.GetFullPath(v));
+            try
+            {
+                var L = File.ReadAllLines(v);
+                foreach(var s in L)
+                {
+                    try
+                    {
+                        var items = s.Split(' ');
+                        string t = items[0];
+                        int rot = int.Parse(items[1]);
+                        RotationOffsets[t] = rot;
+                    }
+                    catch(Exception)
+                    {
+
+                    }
+                }
+            }
+            catch(Exception)
+            {
+
+            }
         }
     }
 }
