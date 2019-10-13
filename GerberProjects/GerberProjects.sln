@@ -75,7 +75,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrontPanelBuilder", "..\Fro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberToDxf", "..\GerberToDxf\GerberToDxf\GerberToDxf.csproj", "{843057E6-2FC0-4C78-AAB3-197C60AE72BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberSplitter", "GerberSplitter\GerberSplitter.csproj", "{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GerberSplitter", "..\GerberSplitter\GerberSplitter.csproj", "{33307FFA-F1C3-49EB-8ECF-AEC6C72E89A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

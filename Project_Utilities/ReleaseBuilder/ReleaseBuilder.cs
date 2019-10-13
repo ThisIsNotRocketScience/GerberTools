@@ -67,8 +67,8 @@ namespace ReleaseBuilder
 
         public static string RelativePath(string path1, string path2)
         {
-            Uri fullPath = new Uri(path1, UriKind.Absolute);
-            Uri relRoot = new Uri(path2, UriKind.Absolute);
+            Uri fullPath = new Uri(Path.GetFullPath(path1), UriKind.Absolute);
+            Uri relRoot = new Uri(Path.GetFullPath(path2), UriKind.Absolute);
 
             return Uri.UnescapeDataString(relRoot.MakeRelativeUri(fullPath).ToString());
         }
