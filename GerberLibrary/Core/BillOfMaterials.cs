@@ -289,7 +289,7 @@ namespace GerberLibrary.Core
         public string AddBOMItemExt(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle, BoardSide side = BoardSide.Top)
         {
             string ID = GetID(package, device, refdes);
-            return AddBOMItemInt(package, device, value, refdes, set, SourceBoard, x, y, angle + GetRotationOffset(ID), side);
+            return AddBOMItemInt(package, device, value, refdes, set, SourceBoard, x, y, angle , side);
         }
 
         string AddBOMItemInt(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle, BoardSide side = BoardSide.Top)
@@ -1086,8 +1086,7 @@ namespace GerberLibrary.Core
 
                 foreach (var v in ds.Value.Values)
                 {
-
-                    OutlinesRotations.Add(String.Format("{0} {1}", v.Combined(), GetRotationOffset(v.Combined())));
+                    SetRotationOffset(v.Combined(), GetRotationOffset(v.Combined()));
                     
                     string refdescs = "\""  + v.RefDes[0].NameOnBoard;
                     for (int i = 1; i < v.RefDes.Count; i++)
@@ -1121,7 +1120,7 @@ namespace GerberLibrary.Core
                         p.x.ToString().Replace(",", ".") + "mm",
                         p.y.ToString().Replace(",", ".") + "mm",
                         p.Side == BoardSide.Top ? "T" : "B",
-                           p.angle);
+                           (p.angle + 360 + GetRotationOffset(v.Combined()))%360);
                         outlinesPNP.Add(line);
                         
                     }
@@ -1129,7 +1128,10 @@ namespace GerberLibrary.Core
             }
 
             File.WriteAllLines(BaseFolder + "\\" + Name + "_PNP.csv", outlinesPNP);
-
+            foreach(var a in RotationOffsets)
+            {
+                OutlinesRotations.Add(String.Format("{0} {1}", a.Key, a.Value));
+            }
             OutlinesRotations.Sort();
             File.WriteAllLines(DefaultRotationFile, OutlinesRotations);
         }
@@ -1141,9 +1143,15 @@ namespace GerberLibrary.Core
             return 0;
 
         }
-        public const string DefaultRotationFile = "RotationOffsets.txt";
-        public static void LoadRotationOffsets(string v = DefaultRotationFile)
+        public static void SetRotationOffset(string name,int off)
         {
+            RotationOffsets[name] = off;
+        }
+
+        public static string DefaultRotationFile = "RotationOffsets.txt";
+        public static void LoadRotationOffsets(string v = "")
+        {
+            if (v.Length == 0) v = DefaultRotationFile; else DefaultRotationFile = v;
             Console.WriteLine("Loading rotations from {0}", Path.GetFullPath(v));
             try
             {
