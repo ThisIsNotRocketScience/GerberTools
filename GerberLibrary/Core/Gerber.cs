@@ -297,6 +297,25 @@ namespace GerberLibrary
             string ext = filesplit[filesplit.Count() - 1].ToLower();
             switch (ext)
             {
+                case "art": // ORCAD RELATED TYPES
+                    {
+
+                        switch (Path.GetFileNameWithoutExtension(gerberfile).ToUpper())
+                        {
+                            case "PMT": Side = BoardSide.Top; Layer = BoardLayer.Paste; break;
+                            case "PMB": Side = BoardSide.Bottom; Layer = BoardLayer.Paste; break;
+                            case "TOP": Side = BoardSide.Top; Layer = BoardLayer.Copper;break;
+                            case "BOTTOM": Side = BoardSide.Bottom; Layer = BoardLayer.Copper; break;
+                            case "SMBOT": Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; break;
+                            case "SMTOP": Side = BoardSide.Top; Layer = BoardLayer.SolderMask; break;
+                            case "SSBOT": Side = BoardSide.Bottom; Layer = BoardLayer.Silk; break;
+                            case "SSTOP": Side = BoardSide.Top; Layer = BoardLayer.Silk; break;
+
+                            case "DRILLING": Side = BoardSide.Both; Layer = BoardLayer.Drill;break;
+//                            case "KEEPOUT": Side = BoardSide.Both; Layer = BoardLayer.Outline; break;
+                        }
+                        break;
+                    }
                 case "slices": Side = BoardSide.Both; Layer = BoardLayer.Utility;break;
                 case "copper_bottom": Side = BoardSide.Bottom;Layer = BoardLayer.Copper;break;
                 case "copper_top": Side = BoardSide.Top; Layer = BoardLayer.Copper; break;

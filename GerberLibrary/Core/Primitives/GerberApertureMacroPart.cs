@@ -435,11 +435,18 @@ namespace GerberLibrary.Core.Primitives
                     AT.SetCustom(OutlineVerticesPostProc);
                     break;
                 case ApertureMacroTypes.Circle:
-                    if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for circle. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
-                    Diameter = GNF.ScaleFileToMM(Params[2].BuildValue(paramlist));
-                    Xoff = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
-                    Yoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
-                    Rotation = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
+                    try
+                    {
+                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for circle. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                        Diameter = GNF.ScaleFileToMM(Params[2].BuildValue(paramlist));
+                        Xoff = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
+                        Yoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
+                        Rotation = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
+                    }
+                    catch(Exception E)
+                    {
+                        Console.WriteLine("Exception while making circle macro: {0}", E);
+                    }
                     AT.SetCircle(Diameter / 2, Xoff, Yoff, Rotation);
 
                     break;
