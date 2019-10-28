@@ -723,7 +723,7 @@ namespace GerberLibrary
             {
                 case "blue": return Color.FromArgb(0, 40, 74);
                 case "yellow": return Color.FromArgb(234, 206, 39);
-                case "green": return Color.FromArgb(68, 105, 80);
+                case "green": return Color.FromArgb(0, 0x30,0);
                 case "black": return Color.FromArgb(5, 5, 5);
                 case "white": return Color.FromArgb(250, 250, 250);
                 case "red": return Color.FromArgb(192, 43, 43);
