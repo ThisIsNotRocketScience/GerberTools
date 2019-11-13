@@ -182,7 +182,9 @@ namespace GerberLibrary.Core
 
             for (int i = 0; i < solution2.Count; i++)
             {
-                PolyLine PL = new PolyLine(State.LastShapeID++);
+                int ID = i;
+                if (State != null) ID = State.LastShapeID++;
+                PolyLine PL = new PolyLine(ID);
                 PL.fromPolygon(solution2[i]);
 
                 // if (Clipper.Orientation(solution2[i]) == false)
