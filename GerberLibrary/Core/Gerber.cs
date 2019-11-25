@@ -321,6 +321,25 @@ namespace GerberLibrary
             string ext = filesplit[filesplit.Count() - 1].ToLower();
             switch (ext)
             {
+                case "art": // ORCAD RELATED TYPES
+                    {
+
+                        switch (Path.GetFileNameWithoutExtension(gerberfile).ToUpper())
+                        {
+                            case "PMT": Side = BoardSide.Top; Layer = BoardLayer.Paste; break;
+                            case "PMB": Side = BoardSide.Bottom; Layer = BoardLayer.Paste; break;
+                            case "TOP": Side = BoardSide.Top; Layer = BoardLayer.Copper;break;
+                            case "BOTTOM": Side = BoardSide.Bottom; Layer = BoardLayer.Copper; break;
+                            case "SMBOT": Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; break;
+                            case "SMTOP": Side = BoardSide.Top; Layer = BoardLayer.SolderMask; break;
+                            case "SSBOT": Side = BoardSide.Bottom; Layer = BoardLayer.Silk; break;
+                            case "SSTOP": Side = BoardSide.Top; Layer = BoardLayer.Silk; break;
+
+                            case "DRILLING": Side = BoardSide.Both; Layer = BoardLayer.Drill;break;
+//                            case "KEEPOUT": Side = BoardSide.Both; Layer = BoardLayer.Outline; break;
+                        }
+                        break;
+                    }
                 case "slices": Side = BoardSide.Both; Layer = BoardLayer.Utility;break;
                 case "copper_bottom": Side = BoardSide.Bottom;Layer = BoardLayer.Copper;break;
                 case "copper_top": Side = BoardSide.Top; Layer = BoardLayer.Copper; break;
@@ -728,7 +747,7 @@ namespace GerberLibrary
             {
                 case "blue": return Color.FromArgb(0, 40, 74);
                 case "yellow": return Color.FromArgb(234, 206, 39);
-                case "green": return Color.FromArgb(68, 105, 80);
+                case "green": return Color.FromArgb(0, 0x30,0);
                 case "black": return Color.FromArgb(5, 5, 5);
                 case "white": return Color.FromArgb(250, 250, 250);
                 case "red": return Color.FromArgb(192, 43, 43);
