@@ -22,7 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
@@ -39,8 +39,8 @@
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GlmNet, Version=0.5.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\GerberProjects\packages\GlmNet.0.5.1.0\lib\net40\GlmNet.dll</HintPath>
+    <Reference Include="GlmNet, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\GlmNet.0.7.0\lib\net40\GlmNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,12 +51,13 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Triangle, Version=0.0.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\GerberProjects\packages\Triangle.0.0.6-Beta3\lib\net45\Triangle.dll</HintPath>
+      <HintPath>..\..\..\packages\Triangle.0.0.6-Beta3\lib\net45\Triangle.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Announcer.cs" />
     <Compile Include="DelaunayBuilder.cs" />
+    <Compile Include="DirectBitmap.cs" />
     <Compile Include="MarcelShape.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuadTree.cs" />

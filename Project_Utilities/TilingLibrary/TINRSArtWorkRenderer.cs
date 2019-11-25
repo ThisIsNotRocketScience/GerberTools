@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TilingLibrary;
 
 namespace Artwork
 {
@@ -435,6 +437,51 @@ namespace Artwork
 
             float ThresholdLevel = TheSettings.Threshold * 0.01f;
 
+
+            try
+            {
+                BitmapData srcData = Mask.LockBits(new Rectangle(0,0,Mask.Width, Mask.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                
+                unsafe
+                {
+                    
+                    byte* srcPointer = (byte*)srcData.Scan0;
+
+                    for (int yy = 0; yy < Mask.Height; yy++)
+                    {
+                        for (int xx = 0; xx < Mask.Width; xx++)
+                    {
+                            byte B = srcPointer[0]; // Blue
+
+                            bool doit = false;
+                            if (TheSettings.InvertSource)
+                            {
+                                doit = B > ThresholdLevel;
+                            }
+                            else
+                            {
+                                doit = B < ThresholdLevel;
+                            }
+                            if (doit)
+                            {
+                                MaskTree.Insert(xx, yy, new SolidQuadTreeItem() { x = (int)xx, y = (int)yy }, 8);
+                            }
+
+
+                            srcPointer += 4;
+                        }
+                        srcPointer += (srcData.Stride - (Mask.Width *4));
+                    }
+                }
+
+                Mask.UnlockBits(srcData);
+            }
+            catch (InvalidOperationException e)
+            {
+
+            }
+            /*
+
             for (int x = 0; x < Mask.Width; x++)
             {
                 for (int y = 0; y < Mask.Height; y++)
@@ -455,10 +502,17 @@ namespace Artwork
                     }
                 }
             }
+
+    */
         }
 
-        public int BuildStuff(Bitmap Mask, Settings TheSettings)
+        public int BuildStuff(Bitmap aMask, Settings TheSettings)
         {
+            DirectBitmap Mask = new DirectBitmap(aMask.Width, aMask.Height);
+            Graphics mg = Graphics.FromImage(Mask.Bitmap);
+            mg.DrawImage(aMask, 0, 0);
+            
+
             int i = Math.Max(Mask.Width, Mask.Height);
             int R = 1;
             while (R < i) R *= 2;
@@ -679,7 +733,7 @@ namespace Artwork
 
 
 
-        private float GetPixelSum(vec2 m, Bitmap mask, float distanceToMaskRange, float ThresholdLevel, bool invert)
+        private float GetPixelSum(vec2 m, DirectBitmap mask, float distanceToMaskRange, float ThresholdLevel, bool invert)
         {
             float sum = 0;
             if (distanceToMaskRange == 0) distanceToMaskRange = 0.001f;
@@ -702,7 +756,7 @@ namespace Artwork
                 for (int p = 0; p < 40; p++)
                     
                 {
-                      int x = (int)(cp[p] * RW + m.x);
+                    int x = (int)(cp[p] * RW + m.x);
                     int y = (int)(sp[p] * RW + m.y);
                     total++;
                     if (x >= 0 && x < mask.Width)

@@ -78,6 +78,7 @@ namespace GerberLibrary
                 if (File.Exists(TargetZip)) File.Delete(TargetZip);
                 Console.WriteLine("Zipping gerbers to {0}", TargetZip);
                 ZipFile Z = new ZipFile();
+                List<string> OutlineMerge = new List<string>();
                 foreach (var F in Directory.GetFiles(BoardGerbersFolder))
                 {
                     bool AddToZip = false;
@@ -91,9 +92,11 @@ namespace GerberLibrary
                         GerberLibrary.Gerber.DetermineBoardSideAndLayer(F, out BoardSide Side, out BoardLayer Layer);
                         switch (Layer)
                         {
-                            case BoardLayer.Carbon:
                             case BoardLayer.Mill:
                             case BoardLayer.Outline:
+                                OutlineMerge.Add(F);
+                                break;
+                            case BoardLayer.Carbon:
                             case BoardLayer.Paste:
                             case BoardLayer.Silk:
                             case BoardLayer.SolderMask:
@@ -110,13 +113,34 @@ namespace GerberLibrary
                     if (AddToZip)
                     {
                         Console.WriteLine("Adding {0} to zip.", F);
-                        Z.AddFile(F);
+                        Z.AddFile(F,".");
                     }
                 }
-
+                if (OutlineMerge.Count > 0)
+                {
+                    if (OutlineMerge.Count == 1)
+                    {
+//                        string TargetGerb = Path.Combine(BoardFactoryFolder, Name + "_" + Path.GetFileName(OutlineMerge[0]));
+  //                      File.Copy(OutlineMerge[0], TargetGerb, true);
+                        Z.AddFile(OutlineMerge[0],".");
+                    }
+                    else
+                    {
+                        string TargetGerb = Path.Combine(BoardFactoryFolder, Name + "_" + "MergedOutlines.gko");
+                        GerberMerger.MergeAll(OutlineMerge, TargetGerb, new MergeLog());
+                        Z.AddFile(TargetGerb,".");
+                    }
+                }
                 Z.Save(TargetZip);
 
 
+            }
+        }
+        public class MergeLog : ProgressLog
+        {
+            public void AddString(string text, float progress = -1)
+            {
+                Console.WriteLine(text);
             }
         }
         public static int GetDefaultSortOrder(BoardSide side, BoardLayer layer)
@@ -599,7 +623,7 @@ namespace GerberLibrary
         public static BoardFileType FindFileType(string filename)
         {
             //filename = filename.ToLower();
-            List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp" };
+            List<string> unsupported = new List<string>() { "config", "exe", "dll", "png", "zip", "gif", "jpeg", "doc", "docx", "jpg", "bmp", "svg" };
             string[] filesplit = filename.Split('.');
             string ext = filesplit[filesplit.Count() - 1].ToLower();
             foreach (var s in unsupported)
