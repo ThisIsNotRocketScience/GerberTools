@@ -546,5 +546,27 @@ namespace TINRS_ArtWorkGenerator
             pictureBox1.Invalidate();
 
         }
+
+        private void bottomEdgeMaskToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadedMask = "bottomedgemask";
+
+            using (var bmpTemp = new Bitmap(1000, 1000))
+            {
+                Mask = new Bitmap(bmpTemp);
+            }
+            Graphics G = Graphics.FromImage(Mask);
+            G.Clear(Color.Black);
+            G.FillRectangle(Brushes.White, new RectangleF(0, 800, 1000, 200));
+
+
+            Output = new Bitmap(Mask.Width, Mask.Height);
+            ArtRender.BuildTree(Mask, TheSettings);
+            TheSettings.ReloadMask = false;
+            UpdateFunc();
+
+            this.Height = Mask.Height + 40;
+            this.Width = Mask.Width + 20;
+        }
     }
 }

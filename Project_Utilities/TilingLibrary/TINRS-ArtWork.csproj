@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TilingLibrary</RootNamespace>
     <AssemblyName>TINRS-Artwork</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -40,7 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GlmNet, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\GlmNet.0.7.0\lib\net40\GlmNet.dll</HintPath>
+      <HintPath>..\..\GerberProjects\packages\GlmNet.0.7.0\lib\net40\GlmNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,7 +51,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Triangle, Version=0.0.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Triangle.0.0.6-Beta3\lib\net45\Triangle.dll</HintPath>
+      <HintPath>..\..\GerberProjects\packages\Triangle.0.0.6-Beta3\lib\net45\Triangle.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

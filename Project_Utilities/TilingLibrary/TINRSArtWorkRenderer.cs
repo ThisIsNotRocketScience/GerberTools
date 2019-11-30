@@ -452,15 +452,15 @@ namespace Artwork
                         for (int xx = 0; xx < Mask.Width; xx++)
                     {
                             byte B = srcPointer[0]; // Blue
-
+                            Color C = Color.FromArgb(srcPointer[2], srcPointer[1], srcPointer[0]);
                             bool doit = false;
                             if (TheSettings.InvertSource)
                             {
-                                doit = B > ThresholdLevel;
+                                doit = C.GetBrightness() > ThresholdLevel;
                             }
                             else
                             {
-                                doit = B < ThresholdLevel;
+                                doit = C.GetBrightness() < ThresholdLevel;
                             }
                             if (doit)
                             {
@@ -530,7 +530,7 @@ namespace Artwork
                         {
                             for (int y = 0; y < Mask.Height; y++)
                             {
-                                var C = Mask.GetPixel(x, y);
+                                var C = Mask.GetPixelFast(x, y);
                                 bool doit = false;
                                 if (TheSettings.InvertSource)
                                 {
@@ -561,7 +561,7 @@ namespace Artwork
                         {
                             for (int y = 0; y < Mask.Height; y++)
                             {
-                                var C = Mask.GetPixel(x, y);
+                                var C = Mask.GetPixelFast(x, y);
                                 bool doit = false;
                                 if (TheSettings.InvertSource)
                                 {
@@ -763,17 +763,21 @@ namespace Artwork
                     {
                         if (y >= 0 && y < mask.Height)
                         {
-                            var C = mask.GetPixel(x, y);
+                            var C = mask.GetPixelFast(x, y);
+                            float br = C.GetBrightness();
                             bool doit = false;
                             if (invert)
                             {
-                                doit = C.GetBrightness() > ThresholdLevel;
+                                doit = br > ThresholdLevel;
                             }
                             else
                             {
                                 doit = C.GetBrightness() < ThresholdLevel;
                             }
-                            if (doit) sum++;
+                            if (doit)
+                            {
+                                sum++;
+                            }
 
                         }
                     }

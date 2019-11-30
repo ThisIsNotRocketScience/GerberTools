@@ -28,7 +28,7 @@ namespace TilingLibrary
                 Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppPArgb, BitsHandle.AddrOfPinnedObject());
             }
 
-            public void SetPixel(int x, int y, Color colour)
+            public void SetPixelFast(int x, int y, Color colour)
             {
                 int index = x + (y * Width);
                 int col = colour.ToArgb();
@@ -36,7 +36,7 @@ namespace TilingLibrary
                 Bits[index] = col;
             }
 
-            public Color GetPixel(int x, int y)
+            public Color GetPixelFast(int x, int y)
             {
                 int index = x + (y * Width);
                 int col = Bits[index];

@@ -2016,6 +2016,9 @@ namespace GerberLibrary
     {
         public PointD Center = new PointD(); // float for serializer... need to investigate
         public float Angle;
+
+
+        
     }
 
     public class GerberInstance : AngledThing
