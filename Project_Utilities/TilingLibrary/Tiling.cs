@@ -63,7 +63,8 @@ namespace Artwork
             Walton,
             Penrose,
             RegularTriangle,
-            SameSameDifferent
+            SameSameDifferent,
+            TriangleMultiscale
         }
 
         public class Polygon
@@ -1127,9 +1128,86 @@ namespace Artwork
                     case TilingType.Penrose: CreatePenrose(); break;
                     case TilingType.RegularTriangle: CreateRegular();break;
                     case TilingType.SameSameDifferent: CreateSameSameDifferent(); break;
+                    case TilingType.TriangleMultiscale: CreateMultiscale();break;
 
                 }
                 return NormalizeSize();
+
+            }
+
+            private void CreateMultiscale()
+            {
+                InflationFactor = 1.0 + Math.Sin((2.0 * Math.PI) / 7.0) / Math.Sin(Math.PI / 7.0);
+                PolygonMapping t0 = new PolygonMapping();
+                PolygonMapping t1 = new PolygonMapping();
+                
+
+                double a = Math.Sin(Math.PI / 7.0);
+                double c = Math.Sin((2.0 * Math.PI) / 7.0);
+                double b = Math.Sin((3.0 * Math.PI) / 7.0);
+
+
+
+                double d = Math.Sin((3.0 * Math.PI) / 7.0) + Math.Sin((2.0 * Math.PI) / 7.0);
+
+
+                a = 1;
+                b = Math.Sin((60 * Math.PI * 2.0) / 360) * 2.0 ;
+
+                //Console.WriteLine("{0} : {1}", b/c,  (d+b)/(c+b+c));
+                //Console.WriteLine("{0} : {1}", d,  b * InflationFactor - a);
+                //Console.WriteLine("{0} : {1}", d, (d + b)/ InflationFactor );
+
+                //double d = b + c;
+                //Console.WriteLine("a: {0} b: {1} c: {2} d: {3}, inflate:{4}", a, b, c, d, InflationFactor);
+
+
+                int vA = 0;
+                int vB = 1;
+                int vC = 2;
+
+                {
+                    t0.BuildVerticesFromEdgeLengths(a, a, a);
+                    t0.AddCorners();
+
+                    int vD = t0.AddBetweenCorners(0, 1, a + a + a, a);
+                    int vE = t0.AddBetweenCorners(0, 1, a + a + a, a + a);
+                    int vF = t0.AddBetweenCorners(1, 2, a + a + a, a);
+                    int vG = t0.AddBetweenCorners(1, 2, a + a + a, a + a);
+                    int vH = t0.AddBetweenCorners(2, 0, a + a + a, a);
+                    int vI = t0.AddBetweenCorners(2, 0, a + a + a, a + a);
+
+                    t0.AddTriangle(vA, vD, vI, 0);
+                    t0.AddTriangle(vE, vB, vF, 0);
+                    t0.AddTriangle(vG, vC, vH, 0);
+                    t0.AddTriangle(vH, vD, vF, 0);
+
+                    t0.AddTriangle(vH, vI, vD, 1);
+                    t0.AddTriangle(vD, vE, vF, 1);
+                    t0.AddTriangle(vF, vG, vH, 1);
+                }
+
+
+
+                {
+                    t1.BuildVerticesFromEdgeLengths(a, a, b);
+                    t1.AddCorners();
+
+                    int vD = t1.AddBetweenCorners(0, 1, a + a, a);
+                    int vE = t1.AddBetweenCorners(1, 2, a + a,a);
+                    int vF = t1.AddBetweenCorners(2, 0, a + a, a);
+
+                    t1.AddTriangle(vD, vB, vF, 0);
+                    t1.AddTriangle(vB, vE, vF, 0);
+                    t1.AddTriangle(vA, vD, vF, 1);
+                    t1.AddTriangle(vF, vE, vC, 1);
+
+                }
+
+
+                DivisionSet[0] = t0;
+                DivisionSet[1] = t1;
+                
 
             }
 

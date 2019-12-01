@@ -93,11 +93,11 @@ namespace DirtyPCB_DXFStats
                     for (int i = 0; i < a.Vertexes.Count - 1; i++)
                     {
 
-                        TheStats.AddSegment(a.Vertexes[i].Location.X, a.Vertexes[i].Location.Y, a.Vertexes[i + 1].Location.X, a.Vertexes[i + 1].Location.Y);
+                        TheStats.AddSegment(a.Vertexes[i].Position.X, a.Vertexes[i].Position.Y, a.Vertexes[i + 1].Position.X, a.Vertexes[i + 1].Position.Y);
                     }
                     if (a.IsClosed)
                     {
-                        TheStats.AddSegment(a.Vertexes[0].Location.X, a.Vertexes[0].Location.Y, a.Vertexes[a.Vertexes.Count - 1].Location.X, a.Vertexes[a.Vertexes.Count - 1].Location.Y);
+                        TheStats.AddSegment(a.Vertexes[0].Position.X, a.Vertexes[0].Position.Y, a.Vertexes[a.Vertexes.Count - 1].Position.X, a.Vertexes[a.Vertexes.Count - 1].Position.Y);
 
                     }
                 }
@@ -106,7 +106,7 @@ namespace DirtyPCB_DXFStats
                 {
                     for (int i = 0; i < a.Vertexes.Count - 1; i++)
                     {
-                        TheStats.AddSegment(a.Vertexes[i].Location.X, a.Vertexes[i].Location.Y, a.Vertexes[i + 1].Location.X, a.Vertexes[i + 1].Location.Y);
+                        TheStats.AddSegment(a.Vertexes[i].Position.X, a.Vertexes[i].Position.Y, a.Vertexes[i + 1].Position.X, a.Vertexes[i + 1].Position.Y);
                     }
                 }
 
@@ -158,7 +158,7 @@ namespace DirtyPCB_DXFStats
                     var V = a.ToPolyline((int)(2 + a.Radius * Math.PI * 2));
                     for (int i = 0; i < V.Vertexes.Count - 1; i++)
                     {
-                        TheStats.AddSegment(V.Vertexes[i].Location.X, V.Vertexes[i].Location.Y, V.Vertexes[i + 1].Location.X, V.Vertexes[i + 1].Location.Y);
+                        TheStats.AddSegment(V.Vertexes[i].Position.X, V.Vertexes[i].Position.Y, V.Vertexes[i + 1].Position.X, V.Vertexes[i + 1].Position.Y);
                     }
                 }
 
