@@ -370,10 +370,12 @@ namespace GerberLibrary
 
                     switch (Path.GetFileNameWithoutExtension(gerberfile).ToLower())
                     {
+                        case "profile":
                         case "boardoutline":
                             Side = BoardSide.Both;
                             Layer = BoardLayer.Outline;
                             break;
+
                         case "outline":
                             Side = BoardSide.Both;
                             Layer = BoardLayer.Outline;
@@ -383,63 +385,76 @@ namespace GerberLibrary
                             Side = BoardSide.Both;
                             Layer = BoardLayer.Outline;
                             break;
+                        
+                        case "copper_bottom":
                         case "bottom":
                             Side = BoardSide.Bottom;
                             Layer = BoardLayer.Copper;
                             break;
+
+                        case "soldermask_bottom":
                         case "bottommask":
                             Side = BoardSide.Bottom;
                             Layer = BoardLayer.SolderMask;
                             break;
+
+                        case "solderpaste_bottom":
                         case "bottompaste":
                             Side = BoardSide.Bottom;
                             Layer = BoardLayer.Paste;
                             break;
+
+                        case "silkscreen_bottom":
                         case "bottomsilk":
                             Side = BoardSide.Bottom;
                             Layer = BoardLayer.Silk;
                             break;
+
+                        case "copper_top":
                         case "top":
                             Side = BoardSide.Top;
                             Layer = BoardLayer.Copper;
                             break;
+                        
+                        case "soldermask_top":
                         case "topmask":
                             Side = BoardSide.Top;
                             Layer = BoardLayer.SolderMask;
                             break;
+
+                        case "solderpaste_top":
                         case "toppaste":
                             Side = BoardSide.Top;
                             Layer = BoardLayer.Paste;
                             break;
+                        
+                        case "silkscreen_top":
                         case "topsilk":
                             Side = BoardSide.Top;
                             Layer = BoardLayer.Silk;
                             break;
+
                         case "inner1":
                             Side = BoardSide.Internal1;
                             Layer = BoardLayer.Copper;
                             break;
+
                         case "inner2":
                             Side = BoardSide.Internal2;
                             Layer = BoardLayer.Copper;
                             break;
 
                         default:
-
                             {
                                 string lcase = gerberfile.ToLower();
                                 if (lcase.Contains("board outline")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; };
-
                                 if (lcase.Contains("copper bottom")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; };
                                 if (lcase.Contains("silkscreen bottom")) { Side = BoardSide.Bottom; Layer = BoardLayer.Silk; };
                                 if (lcase.Contains("copper top")) { Side = BoardSide.Top; Layer = BoardLayer.Copper; };
                                 if (lcase.Contains("silkscreen top")) { Side = BoardSide.Top; Layer = BoardLayer.Silk; };
-
                                 if (lcase.Contains("solder mask bottom")) { Side = BoardSide.Bottom; Layer = BoardLayer.SolderMask; };
                                 if (lcase.Contains("solder mask top")) { Side = BoardSide.Top; Layer = BoardLayer.SolderMask; };
-
                                 if (lcase.Contains("drill-copper top-copper bottom")) { Side = BoardSide.Both; Layer = BoardLayer.Drill; };
-
                                 if (lcase.Contains("outline")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; }
                                 if (lcase.Contains("-edge_cuts")) { Side = BoardSide.Both; Layer = BoardLayer.Outline; }
                                 if (lcase.Contains("-b_cu")) { Side = BoardSide.Bottom; Layer = BoardLayer.Copper; }
@@ -452,8 +467,6 @@ namespace GerberLibrary
                                 if (lcase.Contains("-f_paste")) { Side = BoardSide.Top; Layer = BoardLayer.Paste; }
                             }
                             break;
-
-
                     }
                     break;
 
@@ -471,7 +484,6 @@ namespace GerberLibrary
                         bs.Add(new boardset() { name = ".bottomsilkscreen", side = BoardSide.Bottom, layer = BoardLayer.Silk });
                         bs.Add(new boardset() { name = ".bottomlayer", side = BoardSide.Bottom, layer = BoardLayer.Copper });
                         bs.Add(new boardset() { name = ".bcream", side = BoardSide.Bottom, layer = BoardLayer.Paste });
-
                         bs.Add(new boardset() { name = ".internalplane1", side = BoardSide.Internal1, layer = BoardLayer.Copper });
                         bs.Add(new boardset() { name = ".internalplane2", side = BoardSide.Internal2, layer = BoardLayer.Copper });
 
@@ -490,6 +502,7 @@ namespace GerberLibrary
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Mill;
                     break;
+
                 case "fabrd":
                 case "oln":
                 case "gko":
@@ -497,25 +510,29 @@ namespace GerberLibrary
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Outline;
                     break;
+
                 case "l2":
                 case "gl1":
                     Side = BoardSide.Internal1;
                     Layer = BoardLayer.Copper;
                     break;
+
                 case "adtop":
                     Side = BoardSide.Top;
                     Layer = BoardLayer.Assembly;
                     break;
+
                 case "adbottom":
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Assembly;
                     break;
+
                 case "notes":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Notes;
                     break;
-                case "l3":
 
+                case "l3":
                 case "gl2":
                     Side = BoardSide.Internal2;
                     Layer = BoardLayer.Copper;
@@ -628,7 +645,8 @@ namespace GerberLibrary
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Paste;
                     break;
-                case "drill_TOP_BOTTOM":
+
+                case "drill_top_bottom":
                 case "drl":
                 case "drill":
                 case "drillnpt":
