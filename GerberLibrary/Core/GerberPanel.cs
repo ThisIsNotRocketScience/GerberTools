@@ -1600,6 +1600,8 @@ namespace GerberLibrary
 
             Dictionary<string, List<string>> FilesPerExt = new Dictionary<string, List<string>>();
             Dictionary<string, BoardFileType> FileTypePerExt = new Dictionary<string, BoardFileType>();
+            FilesPerExt[".gto"] = new List<string>();
+
             foreach (var s in GeneratedFiles)
             {
                 string ext = Path.GetExtension(s).ToLower(); ;
@@ -1621,6 +1623,9 @@ namespace GerberLibrary
                 {
                     FilesPerExt[ext] = new List<string>();
                 }
+
+                if (ext == ".gko")
+                    FilesPerExt[".gto"].Add(s);
 
                 FileTypePerExt[ext] = Gerber.FindFileType(s);
                 FilesPerExt[ext].Add(s);
