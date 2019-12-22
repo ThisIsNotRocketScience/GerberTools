@@ -78,12 +78,14 @@ namespace FitBitmapToOutlineAndMerge
             string BitmapFile = BitmapFileTopBox.Text;
             bool Flipped = FlipBox.Checked;
             bool Invert = InvertBox.Checked;
-            CreateStuff(DPI,  PLS, OutlineFile, SilkFile, BitmapFile, Flipped, Invert);
-            CreateStuff(DPI, PLS, OutlineFile, SilkFileBottomBox.Text, BitmapFileBottomBox.Text, FlipInputBottom.Checked, InvertBitmapBottom.Checked);
+            string CopperFile = copperfilebox.Text;
+            string soldermaskfile = soldermaskfilebox.Text;
+            CreateStuff(DPI,  PLS, OutlineFile, SilkFile, BitmapFile, Flipped, Invert, CopperFile, soldermaskfile);
+            ///CreateStuff(DPI, PLS, OutlineFile, SilkFileBottomBox.Text, BitmapFileBottomBox.Text, FlipInputBottom.Checked, InvertBitmapBottom.Checked);
 
         }
 
-        private void CreateStuff(double DPI,  ParsedGerber PLS, string OutlineFile, string SilkFile, string BitmapFile, bool Flipped, bool Invert)
+        private void CreateStuff(double DPI,  ParsedGerber PLS, string OutlineFile, string SilkFile, string BitmapFile, bool Flipped, bool Invert,string CopperFile, string SoldermaskFile )
         {
             if (BitmapFile.Length == 0) return;
            
@@ -102,6 +104,14 @@ namespace FitBitmapToOutlineAndMerge
             if (Flipped) B.RotateFlip(RotateFlipType.RotateNoneFlipX);
             B.RotateFlip(RotateFlipType.RotateNoneFlipY);
 
+            Bitmap B2 = (Bitmap)Image.FromFile(CopperFile);
+            if (Flipped) B2.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            B2.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
+            Bitmap B3 = (Bitmap)Image.FromFile(SoldermaskFile);
+            if (Flipped) B3.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            B3.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
             bool UseSilkFile = false;
 
             if (System.IO.File.Exists(SilkFile)) UseSilkFile = true;
@@ -110,7 +120,11 @@ namespace FitBitmapToOutlineAndMerge
             string output = OutputFolderBox.Text;
 
             string OutSilk = BitmapFile + ".SILK";
+            string OutCopper = BitmapFile + ".GTL";
+            string OutSoldermask= BitmapFile + ".GTS";
             GerberLibrary.ArtWork.Functions.WriteBitmapToGerber(OutSilk, PLS, DPI, B, Invert ? -128 : 128);
+            GerberLibrary.ArtWork.Functions.WriteBitmapToGerber(OutCopper, PLS, DPI, B2, Invert ? -128 : 128);
+            GerberLibrary.ArtWork.Functions.WriteBitmapToGerber(OutSoldermask, PLS, DPI, B3, Invert ? -128 : 128);
             if (UseSilkFile)
             {
                 // merge things!
@@ -120,6 +134,8 @@ namespace FitBitmapToOutlineAndMerge
             {
                 File.Copy(OutSilk, Path.Combine(output, Path.GetFileName(SilkFile)), true);
             }
+            
+
         }
 
         public void AddString(string text, float progress = -1F)
@@ -213,6 +229,20 @@ namespace FitBitmapToOutlineAndMerge
                     {
                         BitmapFileTopBox.Text = a;
                     }
+
+                    if (Path.GetFileName(a).ToLower().Contains("silkscreen.png"))
+                    {
+                        BitmapFileTopBox.Text = a;
+                    }
+                    if (Path.GetFileName(a).ToLower().Contains("copper.png"))
+                    {
+                        copperfilebox.Text = a;
+                    }
+                    if (Path.GetFileName(a).ToLower().Contains("soldermask.png"))
+                    {
+                        soldermaskfilebox.Text = a;
+                    }
+
                     if (Path.GetFileName(a).ToLower().Contains("bottom.png"))
                     {
                         BitmapFileBottomBox.Text = a;
