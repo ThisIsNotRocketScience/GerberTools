@@ -134,13 +134,13 @@ namespace SolderTool
             float R = 2;
             float cx = (float)r.x - R/S;
             float cy = (float)r.y - R/S;
-
-               if (current)
+            Color CurrentColor = soldered ? Color.Green : Color.Yellow;
+           if (current)
             {
                 float R2 = 5;
                 float cx2 = (float)r.x - R2 / S;
                 float cy2 = (float)r.y - R2 / S;
-                g.FillRectangle(Brushes.Yellow, cx2, cy2, R2 / S * 2, R2 / S * 2);
+                g.FillRectangle(new SolidBrush(CurrentColor), cx2, cy2, R2 / S * 2, R2 / S * 2);
             }
             g.FillRectangle(soldered ? Brushes.Green : Brushes.Red, cx, cy, R/S*2, R/S*2);
     
