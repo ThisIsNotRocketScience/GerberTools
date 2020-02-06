@@ -467,6 +467,8 @@ namespace GerberLibrary
                                         CurrentTool = null;
                                     }
                                     break;
+                                case 'M':
+
                                 default:
                                     {                                    
                                         GerberSplitter GS = new GerberSplitter();
@@ -483,6 +485,36 @@ namespace GerberLibrary
                                             if (GLS.HasBefore("G", "Y")) {y1 = GNF.ScaleFileToMM(GLS.GetBefore("G", "Y") * Scaler); LastY = y1; }
                                             
                                             
+                                            double x2 = LastX;
+                                            double y2 = LastY;
+
+                                            if (GLS.HasAfter("G", "X")) { x2 = GNF.ScaleFileToMM(GLS.GetAfter("G", "X") * Scaler); LastX = x2; }
+                                            if (GLS.HasAfter("G", "Y")) { y2 = GNF.ScaleFileToMM(GLS.GetAfter("G", "Y") * Scaler); LastY = y2; }
+
+                                            CurrentTool.Slots.Add(new ExcellonTool.SlotInfo() { Start = new PointD(x1 * drillscaler, y1 * drillscaler), End = new PointD(x2 * drillscaler, y2 * drillscaler) });
+
+                                            LastX = x2;
+                                            LastY = y2;
+                                        }
+                                        else if (GS.Has("G") && GS.Get("G") == 00 && (GS.Has("X") || GS.Has("Y")))
+                                        {
+                                            GerberListSplitter GLS = new GerberListSplitter();
+                                            GLS.Split(GCC.originalline, GNF, true);
+
+                                            double x1 = LastX;
+                                            double y1 = LastY;
+
+                                            if (GLS.HasAfter("G", "X")) { x1 = GNF.ScaleFileToMM(GLS.GetAfter("G", "X") * Scaler); LastX = x1; }
+                                            if (GLS.HasAfter("G", "Y")) { y1 = GNF.ScaleFileToMM(GLS.GetAfter("G", "Y") * Scaler); LastY = y1; }
+
+                                        }
+                                        else if (GS.Has("G") && GS.Get("G") == 01 && (GS.Has("X") || GS.Has("Y")))
+                                        {
+                                            GerberListSplitter GLS = new GerberListSplitter();
+                                            GLS.Split(GCC.originalline, GNF, true);
+
+                                            double x1 = LastX;
+                                            double y1 = LastY;
                                             double x2 = LastX;
                                             double y2 = LastY;
 
