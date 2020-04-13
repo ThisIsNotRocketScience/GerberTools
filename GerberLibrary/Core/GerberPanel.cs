@@ -1584,7 +1584,7 @@ namespace GerberLibrary
             return R;
         }
 
-        public List<String> SaveGerbersToFolder(string BaseName, string targetfolder, ProgressLog Logger, bool SaveOutline = true, bool GenerateImages = true, bool DeleteGenerated = true, string combinedfilename = "combined")
+        public List<String> SaveGerbersToFolder(string BaseName, string targetfolder, ProgressLog Logger, bool OutlineToTopSilkscreen = false, bool SaveOutline = true, bool GenerateImages = true, bool DeleteGenerated = true, string combinedfilename = "combined")
         {
             Logger.AddString("Starting export to " + targetfolder);
             List<string> GeneratedFiles = TheSet.SaveTo(targetfolder, GerberOutlines, Logger);
@@ -1600,7 +1600,10 @@ namespace GerberLibrary
 
             Dictionary<string, List<string>> FilesPerExt = new Dictionary<string, List<string>>();
             Dictionary<string, BoardFileType> FileTypePerExt = new Dictionary<string, BoardFileType>();
-            FilesPerExt[".gto"] = new List<string>();
+            if (OutlineToTopSilkscreen)
+            {
+                FilesPerExt[".gto"] = new List<string>();
+            }
 
             foreach (var s in GeneratedFiles)
             {
@@ -1624,8 +1627,11 @@ namespace GerberLibrary
                     FilesPerExt[ext] = new List<string>();
                 }
 
-                if (ext == ".gko")
-                    FilesPerExt[".gto"].Add(s);
+                if (OutlineToTopSilkscreen)
+                {
+                    if (ext == ".gko")
+                        FilesPerExt[".gto"].Add(s);
+                }
 
                 FileTypePerExt[ext] = Gerber.FindFileType(s);
                 FilesPerExt[ext].Add(s);
@@ -2127,6 +2133,7 @@ namespace GerberLibrary
 
         public bool DoNotGenerateMouseBites = false;
         public bool MergeFileTypes = false;
+        public bool CopyOutlineToTopSilkscreen = false;
 
         public GerberOutline GetOutline(Dictionary<string, GerberOutline> GerberOutlines, string gerberPath)
         {

@@ -191,6 +191,7 @@ namespace GerberCombinerBuilder
         private string BaseName = "Untitled";
         private bool ShapeMarkedForUpdate = true;
         private bool ForceShapeUpdate = false;
+
         internal void Redraw(bool refreshshape = true, bool force = false)
         {
             if (SuspendRedraw) return;
@@ -293,7 +294,7 @@ namespace GerberCombinerBuilder
 
         public void ExportThreadFunc()
         {
-            ThePanel.SaveGerbersToFolder(BaseName, ExportFolder, ProgressDialog);
+            ThePanel.SaveGerbersToFolder(BaseName, ExportFolder, ProgressDialog, ThePanel.TheSet.CopyOutlineToTopSilkscreen);
         }
 
 

@@ -30,6 +30,7 @@ namespace GerberCombinerBuilder
             FillEmpty.Checked = ParentPanel.TheSet.ConstructNegativePolygon;
             noMouseBites.Checked = ParentPanel.TheSet.DoNotGenerateMouseBites;
             mergebyfiletypebox.Checked = ParentPanel.TheSet.MergeFileTypes;
+            copyOutlineToTopSilkscreen.Checked = ParentPanel.TheSet.CopyOutlineToTopSilkscreen;
         }
 
         private void OkButton(object sender, EventArgs e)
@@ -44,6 +45,7 @@ namespace GerberCombinerBuilder
             ParentPanel.TheSet.DoNotGenerateMouseBites = noMouseBites.Checked;
             ParentPanel.TheSet.ClipToOutlines = ClipToOutlines.Checked;
             ParentPanel.TheSet.MergeFileTypes = mergebyfiletypebox.Checked;
+            ParentPanel.TheSet.CopyOutlineToTopSilkscreen = copyOutlineToTopSilkscreen.Checked;
             Close();
         }
 
