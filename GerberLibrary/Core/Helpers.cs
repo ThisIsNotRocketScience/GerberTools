@@ -800,13 +800,24 @@ namespace GerberLibrary.Core
                         PointD Dir2;
                         if (S.Side == SideEnum.Start)
                         {
-                            var S2 = Paths[S.PathID].Vertices[1];
-                            Dir2 = S2 - S.Point;
-                            Dir2.Normalize();
+                            if (Paths[S.PathID].Vertices.Count > 1)
+                            {
+                                var S2 = Paths[S.PathID].Vertices[1];
+                                Dir2 = S2 - S.Point;
+                                Dir2.Normalize();
+                            }
+                            else
+                            {
+                                var S2 = Paths[S.PathID].Vertices[0];
+                                Dir2 = S2 - S.Point;
+                                Dir2.Normalize();
+                            }
                         }
                         else
                         {
-                            var S2 = Paths[S.PathID].Vertices[Paths[S.PathID].Vertices.Count() - 2];
+                            int idx = Paths[S.PathID].Vertices.Count() - 2;
+                            while (idx < 0) idx++;
+                            var S2 = Paths[S.PathID].Vertices[idx];
                             Dir2 = S2 - S.Point;
                             Dir2.Normalize();
                         }

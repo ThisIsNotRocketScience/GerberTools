@@ -1176,5 +1176,101 @@ namespace GerberLibrary.Core
 
             }
         }
+
+        public void LoadJLC(string bOMFile, string pnPFile)
+        {
+
+            Dictionary<string, BOMEntry.RefDesc> positions = new Dictionary<string, BOMEntry.RefDesc>();
+
+
+            var bomlines = File.ReadAllLines(bOMFile);
+            var pnplines = File.ReadAllLines(pnPFile);
+
+            //outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #");
+            var regex = new Regex("(?<=^|,)(\"(?:[^\"]|\"\")*\"|[^,]*)");
+
+          
+            //outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
+            for (int i =1;i<pnplines.Count();i++)
+            {
+                var s = pnplines[i];
+                List<string> items = new List<string>();
+                foreach (Match m in regex.Matches(s))
+                {
+                    items.Add(m.Value);
+                }
+
+                var rd = items[0];
+                var X = ConvertDimension(items[1]);
+                var Y= ConvertDimension(items[2]);
+                var Side = items[3] == "T" ? BoardSide.Top : BoardSide.Bottom;
+                var Angle= Double.Parse(items[4]);
+
+                positions[rd] = new BOMEntry.RefDesc() { angle = Angle, x = X, y = Y, OriginalName = rd, NameOnBoard = rd, SourceBoard = bOMFile, Side = Side };
+            }
+
+            BOMNumberSet Set = new BOMNumberSet();
+
+            for (int i = 1; i < bomlines.Count(); i++)
+            {
+                var s = bomlines[i];
+                List<string> items = new List<string>();
+                foreach (Match m in regex.Matches(s))
+                {
+                    items.Add(m.Value.Trim());
+                }
+
+                var refdesc = items[1].Trim(); ;
+                if (refdesc.StartsWith("\""))
+                {
+                    refdesc = refdesc.Substring(1, refdesc.Length - 2);
+                }
+                var rd = refdesc.Split(',');
+
+                var value = items[0];
+                var package = items[2];
+
+
+                foreach (var rd_ in rd)
+                {
+                    var S = positions[rd_.Trim()];
+
+                    AddBOMItemExt(package, "", value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side);
+                }
+
+
+            }
+
+        }
+
+        private double ConvertDimension(string v)
+        {
+            v = v.Trim();
+            if (v.EndsWith("mm"))
+            {
+                v = v.Substring(0, v.Length - 2).Trim(); ;
+
+            }
+
+            return double.Parse(v.Replace('.',','));
+        }
+
+        public int GetSolderedPartCount(List<string> toIgnore)
+        {
+            int partcount = 0;
+            foreach (var a in DeviceTree)
+            {
+                //Console.WriteLine(a.Key);
+                foreach (var b in a.Value)
+                {
+                    if (toIgnore.Contains(b.Value.PackageName) == false )
+                    {
+                        if (b.Value.Soldered == true) partcount += b.Value.RefDes.Count;
+                    }
+                }
+            }
+
+            return partcount;
+        }
     }
 }
