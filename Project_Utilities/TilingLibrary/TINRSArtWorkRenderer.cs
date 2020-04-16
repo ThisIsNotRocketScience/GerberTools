@@ -379,8 +379,12 @@ namespace Artwork
         public static Color MakeColor(double H)
         {
             int r, g, b;
-            GerberLibrary.MathHelpers.HsvToRgb(H, 1.0, 0.5, out r, out g, out b);
-            return Color.FromArgb(r, g, b);
+
+
+//            GerberLibrary.MathHelpers.HsvToRgb(H, 1.0, 0.5, out r, out g, out b);
+            return Helpers.Refraction(((float)H / 360.0f)*0.3f + 0.2f);
+            
+//            return Color.FromArgb(r, g, b);
 
         }
         public static Color MakeHighlight(double H)
@@ -388,8 +392,12 @@ namespace Artwork
             int r, g, b;
             double DH = ((H + 60) % 120) - 60;
             H += DH * 0.4;
-            GerberLibrary.MathHelpers.HsvToRgb(H, 1.0, 0.7, out r, out g, out b);
-            return Color.FromArgb(r, g, b);
+
+            return Helpers.Refraction(((float)H / 360.0f) * 0.3f + 0.2f);
+
+
+//            GerberLibrary.MathHelpers.HsvToRgb(H, 1.0, 0.7, out r, out g, out b);
+  //          return Color.FromArgb(r, g, b);
         }
 
         private static double HashHue(string text)

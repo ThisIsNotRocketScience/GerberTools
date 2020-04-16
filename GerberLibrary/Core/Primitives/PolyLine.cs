@@ -41,6 +41,8 @@ namespace GerberLibrary.Core.Primitives
         {
             ID = nID;
         }
+        
+        
         public List<PointD> Vertices = new List<PointD>();
 
 

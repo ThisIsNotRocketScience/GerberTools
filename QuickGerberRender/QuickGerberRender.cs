@@ -40,6 +40,13 @@ namespace WindowsFormsApplication1
             
             CopperColor.Items.Add("Silver");
             CopperColor.Items.Add("Gold");
+
+            DPIBox.Items.Add("10");
+            DPIBox.Items.Add("25");
+            DPIBox.Items.Add("100");
+            DPIBox.Items.Add("200");
+            DPIBox.Items.Add("300");
+            DPIBox.Items.Add("400");
             ReDoColor();
         }
 
@@ -83,7 +90,7 @@ namespace WindowsFormsApplication1
 
         private void LoadGerberFolder(List<string> s)
         {
-            Progress P = new Progress(s, SolderMaskColor.Text, SilkScreenColor.Text, CopperColor.Text, TracesBox.Text);
+            Progress P = new Progress(s, SolderMaskColor.Text, SilkScreenColor.Text, CopperColor.Text, TracesBox.Text, DPIBox.Text);
             P.Show();
             P.StartThread();
         }
