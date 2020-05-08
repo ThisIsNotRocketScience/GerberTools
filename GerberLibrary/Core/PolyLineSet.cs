@@ -67,6 +67,7 @@ namespace GerberLibrary
         public double FlashRotation = 0;
         public double FlashScale = 1.0;
         public MirrorMode FlashMirror = MirrorMode.NoMirror;
+        public List<PointD> ZerosizePoints = new List<PointD>();
 
         public enum MirrorMode
         {
@@ -505,7 +506,7 @@ namespace GerberLibrary
 
                 }
             }
-
+            Gerb.ZerosizePoints.AddRange(State.ZerosizePoints);
             Gerb.CalcPathBounds();
             Gerb.State = State;
             return Gerb;
@@ -1719,6 +1720,9 @@ namespace GerberLibrary
                                                 if (Gerber.ShowProgress)
                                                 {
                                                     Console.WriteLine("ignoring moves with zero width or empty aperture");
+                                                    State.ZerosizePoints.Add(new PointD(X, Y));
+                                                    // adding to bounding box anyway!
+
                                                 }
                                             }
                                             else
