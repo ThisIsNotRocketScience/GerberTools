@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FitBitmapToOutlineAndMergeForm));
             this.BitmapFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.label1 = new System.Windows.Forms.Label();
@@ -66,6 +67,8 @@
             this.soldermaskselectbutton = new System.Windows.Forms.Button();
             this.soldermaskfilebox = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.statusbox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -158,7 +161,7 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(518, 672);
+            this.button4.Location = new System.Drawing.Point(244, 758);
             this.button4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(313, 60);
@@ -170,7 +173,7 @@
             // FlipBox
             // 
             this.FlipBox.AutoSize = true;
-            this.FlipBox.Location = new System.Drawing.Point(28, 547);
+            this.FlipBox.Location = new System.Drawing.Point(25, 324);
             this.FlipBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.FlipBox.Name = "FlipBox";
             this.FlipBox.Size = new System.Drawing.Size(133, 21);
@@ -181,7 +184,7 @@
             // InvertBox
             // 
             this.InvertBox.AutoSize = true;
-            this.InvertBox.Location = new System.Drawing.Point(222, 547);
+            this.InvertBox.Location = new System.Drawing.Point(219, 324);
             this.InvertBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.InvertBox.Name = "InvertBox";
             this.InvertBox.Size = new System.Drawing.Size(153, 21);
@@ -227,6 +230,7 @@
             this.InvertBitmapBottom.TabIndex = 16;
             this.InvertBitmapBottom.Text = "Invert bitmap colors";
             this.InvertBitmapBottom.UseVisualStyleBackColor = true;
+            this.InvertBitmapBottom.CheckedChanged += new System.EventHandler(this.InvertBitmapBottom_CheckedChanged);
             // 
             // FlipInputBottom
             // 
@@ -240,6 +244,7 @@
             this.FlipInputBottom.TabIndex = 15;
             this.FlipInputBottom.Text = "Flip input bitmap";
             this.FlipInputBottom.UseVisualStyleBackColor = true;
+            this.FlipInputBottom.CheckedChanged += new System.EventHandler(this.FlipInputBottom_CheckedChanged);
             // 
             // button5
             // 
@@ -404,6 +409,18 @@
             this.label10.Text = "Soldermask file top";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // statusbox
+            // 
+            this.statusbox.Location = new System.Drawing.Point(82, 718);
+            this.statusbox.Name = "statusbox";
+            this.statusbox.Size = new System.Drawing.Size(665, 22);
+            this.statusbox.TabIndex = 34;
+            // 
             // FitBitmapToOutlineAndMergeForm
             // 
             this.AllowDrop = true;
@@ -411,6 +428,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
             this.ClientSize = new System.Drawing.Size(851, 846);
+            this.Controls.Add(this.statusbox);
             this.Controls.Add(this.soldermaskselectbutton);
             this.Controls.Add(this.soldermaskfilebox);
             this.Controls.Add(this.label10);
@@ -495,6 +513,8 @@
         private System.Windows.Forms.Button soldermaskselectbutton;
         private System.Windows.Forms.TextBox soldermaskfilebox;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.TextBox statusbox;
     }
 }
 

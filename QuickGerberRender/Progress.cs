@@ -21,8 +21,15 @@ namespace WindowsFormsApplication1
         string SilkScreenColor;
         string CopperColor;
         string TracesColor;
-        public Progress(List<string> s, string _SolderMaskColor, string _SilkScreenColor, string _CopperColor, string  _tracescolor)
+        int idpi = 100;
+
+        public Progress(List<string> s, string _SolderMaskColor, string _SilkScreenColor, string _CopperColor, string  _tracescolor, string dpi)
         {
+
+            if (int.TryParse(dpi, out idpi))
+            {
+
+            }
             SolderMaskColor = _SolderMaskColor;
             SilkScreenColor = _SilkScreenColor;
             CopperColor = _CopperColor;
@@ -79,18 +86,18 @@ namespace WindowsFormsApplication1
                     if (Files.Count() == 1)
                     {
                         string justthefilename =Path.Combine( Path.GetDirectoryName(Files[0]) , Path.GetFileNameWithoutExtension(Files[0]));
-                        GIC.WriteImageFiles(justthefilename, 400, true, this);
+                        GIC.WriteImageFiles(justthefilename, idpi, true, this);
 
                     }
                     else
                     {
-                        GIC.WriteImageFiles(Path.GetDirectoryName(Files[0]) + ".png", 400, true, this);
+                        GIC.WriteImageFiles(Path.GetDirectoryName(Files[0]) + ".png", idpi, true, this);
                     }
                     //       GIC.DrawAllFiles(Path.GetDirectoryName(Files[0]) + "_Layer", 200, this);
                 }
                 else
                 {
-                    GIC.DrawAllFiles(Files[0] + "_Layer", 200, this);
+                    GIC.DrawAllFiles(Files[0] + "_Layer", idpi, this);
                 }
             }
             catch(Exception E)
