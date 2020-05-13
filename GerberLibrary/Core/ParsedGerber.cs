@@ -120,6 +120,7 @@ namespace GerberLibrary.Core
         public List<PolyLine> Shapes = new List<PolyLine>();
         public List<PolyLine> DisplayShapes = new List<PolyLine>();
         public List<PolyLine> OutlineShapes = new List<PolyLine>();
+        public List<PointD> ZerosizePoints = new List<PointD>();
 
         public Bounds BoundingBox = new Bounds();
         public BoardSide Side;
@@ -142,6 +143,7 @@ namespace GerberLibrary.Core
             BoundingBox.AddPolyLines(Shapes);
             BoundingBox.AddPolyLines(DisplayShapes);
             BoundingBox.AddPolyLines(OutlineShapes);
+            BoundingBox.FitPoint(ZerosizePoints);
         }
 
         public void FixPolygonWindings()
