@@ -267,7 +267,7 @@ namespace Artwork
             float w = x2 - x1;
             float h = y2 - y1;
 
-            for (float s = 0.6f; s < 2.0; s += 0.5f)
+            for (float s = 0.3f; s < .5; s += 0.05f)
             {
 
                 List<PointF> P = new List<PointF>();
@@ -275,11 +275,28 @@ namespace Artwork
                 P.Add(new PointF((T.B.x - M.x) * w * s + w / 2, (T.B.y - M.y) * h * s + h / 2));
                 P.Add(new PointF((T.C.x - M.x) * w * s + w / 2, (T.C.y - M.y) * h * s + h / 2));
 
-                Matrix Mm = new Matrix();
-                Mm.RotateAt(360.0f * (float)TheSettings.Rand.NextDouble(), new PointF(w / 2, h / 2));
-                var Pa = P.ToArray();
-                Mm.TransformPoints(Pa);
-                g.FillPolygon(new SolidBrush(C), Pa);
+                float ox = (float)TheSettings.Rand.NextDouble()* w/4;
+                float oy = (float)TheSettings.Rand.NextDouble()* h/4;
+                float baserotation = 360.0f * (float)TheSettings.Rand.NextDouble();
+                for (int i = 0; i < 5; i++)
+                {
+                    Matrix Mm = new Matrix();
+                    Mm.RotateAt(360.0f * baserotation + (360.0f*i)/5.0f, new PointF(w / 2, h / 2));
+                    Mm.Translate(ox, oy);
+                    var Pa = P.ToArray();
+                    Mm.TransformPoints(Pa);
+                    //g.FillPolygon(new SolidBrush(C), Pa);
+
+                    Matrix Mm2 = new Matrix();
+                    Mm2.RotateAt(360.0f * baserotation - (360.0f * i) / 5.0f, new PointF(w / 2, h / 2));
+                    Mm2.Translate(ox, oy);
+                    //Mm2.Scale(-1, 1);
+                    var Pa2 = P.ToArray();
+                    Mm2.TransformPoints(Pa2);
+                    g.FillPolygon(new SolidBrush(C), Pa2);
+
+
+                }
             }
 
             //            g.FillEllipse(new SolidBrush(C), new RectangleF(x1 + 7, y1 + 7 , x2 - x1, y2 - y1));
@@ -415,6 +432,8 @@ namespace Artwork
         public Settings GetHashSettings(string text, float huerange = -1)
         {
             Settings S = new Settings();
+            S.MarcelPlating = false;
+
             S.BackGroundColor = GetHashColor(text);
             S.BackgroundHighlight = GetHashHighlight(text);
             if (huerange > -1)
@@ -422,7 +441,7 @@ namespace Artwork
                 S.BackGroundColor = MakeColor(huerange * 360.0f);
                 S.BackgroundHighlight = MakeHighlight(huerange * 360.0f);
             }
-            S.TileType = Tiling.TilingType.Conway;
+            S.TileType = Tiling.TilingType.RegularTriangle;
             S.MaxSubDiv = 6;
             for (int i = 0; i < text.Length; i++)
             {
