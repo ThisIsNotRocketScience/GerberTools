@@ -40,10 +40,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.DPIBox = new System.Windows.Forms.ComboBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.splitter1 = new System.Windows.Forms.Splitter();
             this.XRayOut = new System.Windows.Forms.CheckBox();
             this.PCBOut = new System.Windows.Forms.CheckBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.splitter1 = new System.Windows.Forms.Splitter();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -86,7 +86,7 @@
             this.TracesBox.Items.AddRange(new object[] {
             "Auto"});
             this.TracesBox.Location = new System.Drawing.Point(9, 155);
-            this.TracesBox.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.TracesBox.Margin = new System.Windows.Forms.Padding(9);
             this.TracesBox.Name = "TracesBox";
             this.TracesBox.Size = new System.Drawing.Size(209, 28);
             this.TracesBox.TabIndex = 12;
@@ -98,7 +98,7 @@
             // 
             this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label1.Location = new System.Drawing.Point(9, 109);
-            this.label1.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.label1.Margin = new System.Windows.Forms.Padding(9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(209, 28);
             this.label1.TabIndex = 11;
@@ -109,7 +109,7 @@
             this.CopperColor.Dock = System.Windows.Forms.DockStyle.Fill;
             this.CopperColor.FormattingEnabled = true;
             this.CopperColor.Location = new System.Drawing.Point(463, 52);
-            this.CopperColor.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.CopperColor.Margin = new System.Windows.Forms.Padding(9);
             this.CopperColor.Name = "CopperColor";
             this.CopperColor.Size = new System.Drawing.Size(209, 28);
             this.CopperColor.TabIndex = 9;
@@ -122,7 +122,7 @@
             this.SilkScreenColor.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SilkScreenColor.FormattingEnabled = true;
             this.SilkScreenColor.Location = new System.Drawing.Point(236, 52);
-            this.SilkScreenColor.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.SilkScreenColor.Margin = new System.Windows.Forms.Padding(9);
             this.SilkScreenColor.Name = "SilkScreenColor";
             this.SilkScreenColor.Size = new System.Drawing.Size(209, 28);
             this.SilkScreenColor.TabIndex = 8;
@@ -135,7 +135,7 @@
             this.SolderMaskColor.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SolderMaskColor.FormattingEnabled = true;
             this.SolderMaskColor.Location = new System.Drawing.Point(9, 52);
-            this.SolderMaskColor.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.SolderMaskColor.Margin = new System.Windows.Forms.Padding(9);
             this.SolderMaskColor.Name = "SolderMaskColor";
             this.SolderMaskColor.Size = new System.Drawing.Size(209, 28);
             this.SolderMaskColor.TabIndex = 7;
@@ -147,7 +147,7 @@
             // 
             this.label4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label4.Location = new System.Drawing.Point(463, 9);
-            this.label4.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.label4.Margin = new System.Windows.Forms.Padding(9);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(209, 25);
             this.label4.TabIndex = 5;
@@ -158,7 +158,7 @@
             // 
             this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label3.Location = new System.Drawing.Point(236, 9);
-            this.label3.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.label3.Margin = new System.Windows.Forms.Padding(9);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(209, 25);
             this.label3.TabIndex = 4;
@@ -168,7 +168,7 @@
             // 
             this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label2.Location = new System.Drawing.Point(9, 9);
-            this.label2.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.label2.Margin = new System.Windows.Forms.Padding(9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(209, 25);
             this.label2.TabIndex = 3;
@@ -178,7 +178,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(236, 109);
-            this.label5.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.label5.Margin = new System.Windows.Forms.Padding(9);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(36, 20);
             this.label5.TabIndex = 13;
@@ -191,33 +191,11 @@
             this.DPIBox.Items.AddRange(new object[] {
             "100"});
             this.DPIBox.Location = new System.Drawing.Point(236, 155);
-            this.DPIBox.Margin = new System.Windows.Forms.Padding(9, 9, 9, 9);
+            this.DPIBox.Margin = new System.Windows.Forms.Padding(9);
             this.DPIBox.Name = "DPIBox";
             this.DPIBox.Size = new System.Drawing.Size(209, 28);
             this.DPIBox.TabIndex = 14;
             this.DPIBox.Text = "100";
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(681, 215);
-            this.pictureBox1.TabIndex = 6;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
-            this.pictureBox1.Resize += new System.EventHandler(this.pictureBox1_Resize);
-            // 
-            // splitter1
-            // 
-            this.splitter1.Cursor = System.Windows.Forms.Cursors.HSplit;
-            this.splitter1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.splitter1.Location = new System.Drawing.Point(0, 239);
-            this.splitter1.Name = "splitter1";
-            this.splitter1.Size = new System.Drawing.Size(681, 15);
-            this.splitter1.TabIndex = 7;
-            this.splitter1.TabStop = false;
             // 
             // XRayOut
             // 
@@ -240,6 +218,28 @@
             this.PCBOut.TabIndex = 16;
             this.PCBOut.Text = "PCB out";
             this.PCBOut.UseVisualStyleBackColor = true;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(681, 215);
+            this.pictureBox1.TabIndex = 6;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            this.pictureBox1.Resize += new System.EventHandler(this.pictureBox1_Resize);
+            // 
+            // splitter1
+            // 
+            this.splitter1.Cursor = System.Windows.Forms.Cursors.HSplit;
+            this.splitter1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.splitter1.Location = new System.Drawing.Point(0, 239);
+            this.splitter1.Name = "splitter1";
+            this.splitter1.Size = new System.Drawing.Size(681, 15);
+            this.splitter1.TabIndex = 7;
+            this.splitter1.TabStop = false;
             // 
             // QuickGerberRender
             // 
