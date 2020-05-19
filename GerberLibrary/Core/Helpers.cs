@@ -1346,6 +1346,11 @@ namespace GerberLibrary.Core
             float adjusted = (((float)Math.Floor(Inp * 6.0f) / 6.0f) * 0.3f) + 0.2f;
             return Refraction(adjusted);
         }
+        public static Color RefractionNormalized(float Space)
+        {
+            return Refraction(Space * 0.3f + 0.2f);
+        }
+
 
         public static Color Refraction(float Space)
         {
@@ -1372,6 +1377,14 @@ namespace GerberLibrary.Core
 
             return Color.FromArgb(RR, GG, BB);
 
+        }
+
+        public static int LayerOrdering(BoardSide side, BoardLayer layer)
+        {
+            int ID = 40 - (int)layer;
+            if (side == BoardSide.Both) return ID + 100;
+            if (side == BoardSide.Bottom) return -ID;
+            return ID;
         }
     }
 

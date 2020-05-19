@@ -47,6 +47,7 @@ namespace WindowsFormsApplication1
             DPIBox.Items.Add("200");
             DPIBox.Items.Add("300");
             DPIBox.Items.Add("400");
+            DPIBox.Items.Add("800");
             ReDoColor();
         }
 
@@ -90,7 +91,7 @@ namespace WindowsFormsApplication1
 
         private void LoadGerberFolder(List<string> s)
         {
-            Progress P = new Progress(s, SolderMaskColor.Text, SilkScreenColor.Text, CopperColor.Text, TracesBox.Text, DPIBox.Text);
+            Progress P = new Progress(s, SolderMaskColor.Text, SilkScreenColor.Text, CopperColor.Text, TracesBox.Text, DPIBox.Text, XRayOut.Checked, PCBOut.Checked);
             P.Show();
             P.StartThread();
         }
