@@ -1346,9 +1346,10 @@ namespace GerberLibrary.Core
             float adjusted = (((float)Math.Floor(Inp * 6.0f) / 6.0f) * 0.3f) + 0.2f;
             return Refraction(adjusted);
         }
-        public static Color RefractionNormalized(float Space)
+
+        public static Color RefractionNormalized(float Space)        
         {
-            return Refraction(Space * 0.3f + 0.2f);
+            return Refraction(Space * 0.25f + 0.3f);
         }
 
 

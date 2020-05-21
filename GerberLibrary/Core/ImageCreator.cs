@@ -1478,6 +1478,20 @@ namespace GerberLibrary
             return B2;
         }
 
+        public static int CountLayerShapes(ParsedGerber l)
+        {
+            int shapes = 0;
+            foreach (var Shape in l.DisplayShapes)
+            {
+                if (Shape.Vertices.Count > 1)
+                {
+                    //if (Shape.Thin == false)
+
+                    shapes++;
+                }
+            }
+            return shapes;
+        }
         private int DrawLayerToGraphics(Color color, bool fill, GraphicsInterface G2, Pen P, ParsedGerber l, bool forcefill = false)
         {
             int RenderedShapes = 0;
@@ -1731,7 +1745,7 @@ namespace GerberLibrary
 
             var L =( from i in PLSs where (i.Layer == boardLayer || boardLayer == BoardLayer.Any) && (i.Side == boardSide || boardSide == BoardSide.Either) orderby Helpers.LayerOrdering(i.Side, i.Layer) select i).ToList();
             if (!invertedorder) L.Reverse();
-            
+            L = (from i in L where CountLayerShapes(i) > 0 select i).ToList();
             //if (L.Count() == 0) return null;
             Bitmap B2 = new Bitmap(w + 3, h + 3, PixelFormat.Format32bppArgb);
             Graphics G2 = Graphics.FromImage(B2);
@@ -1760,7 +1774,7 @@ namespace GerberLibrary
                    new float[] {1, 0, 0, 0, 0},
                    new float[] {0, 1, 0, 0, 0},
                    new float[] {0, 0, 1, 0, 0},
-                   new float[] {0, 0, 0, 0.5f, 0},
+                   new float[] {0, 0, 0, 0.7f, 0},
                    new float[] {0, 0, 0, 0, 1}};
                 ColorMatrix colorMatrix = new ColorMatrix(matrixItems);
 
@@ -1783,12 +1797,12 @@ namespace GerberLibrary
                 if (NewShapes > 0)
                 {
                     Shapes += NewShapes;
-                    TB2.Save(String.Format("tcurrent{0}.png", current));
+      //              TB2.Save(String.Format("tcurrent{0}.png", current));
 
                     G2.DrawImage(TB2, new Rectangle(0, 0, TB2.Width, TB2.Height), 0.0f, 0.0f, (float)TB2.Width, (float)TB2.Height, GraphicsUnit.Pixel, imageAtt);
                     
                     
-                    B2.Save(String.Format("current{0}.png", current));
+        //            B2.Save(String.Format("current{0}.png", current));
                 }
 
             }
