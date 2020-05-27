@@ -134,6 +134,7 @@ namespace Artwork
         public QuadTreeNode MaskTree;
         public QuadTreeNode ArtTree;
         public Tiling.TilingDefinition TD = new Tiling.TilingDefinition();
+        
         public List<Tiling.Polygon> SubDivPoly = new List<Tiling.Polygon>();
 
         public static Font GetAdjustedFont(Graphics GraphicRef, string GraphicString, Font OriginalFont, float ContainerWidth, float MaxFontSize, float MinFontSize, bool SmallestOnFail)
@@ -366,7 +367,7 @@ namespace Artwork
                 Delaunay.Render(new GraphicsGraphicsInterface(G), FG, BG);
             }
 
-            if (S.Mode == Settings.ArtMode.Tiling)
+            if (S.Mode == Settings.ArtMode.Tiling )
             {
                 if (Clear) G.Clear(BG);
                 Pen P = new Pen(FG, linewidth);
@@ -754,6 +755,7 @@ namespace Artwork
                         return (int)Elapsed.TotalMilliseconds;
                     }
 
+          
             };
             return 0;
         }

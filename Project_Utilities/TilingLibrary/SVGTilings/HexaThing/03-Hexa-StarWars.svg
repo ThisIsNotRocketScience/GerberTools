@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 38 49" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-1376,-221)">
+        <g id="_03-Hexa-StarWars" serif:id="03-Hexa-StarWars" transform="matrix(0.61383,0,0,0.755219,510.984,80.247)">
+            <rect x="1410.66" y="186.822" width="60.107" height="63.928" style="fill:none;"/>
+            <g transform="matrix(-2.08372,-2.94013e-16,3.61736e-16,-1.69362,-632.797,-790.985)">
+                <path d="M-983.16,-596.522L-986.752,-580.782L-1002.88,-580.796L-1006.47,-596.523L-1002.88,-612.261L-986.742,-612.259L-983.16,-596.522Z" style="fill:rgb(153,153,153);fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -13,18 +13,62 @@ namespace GerberToImage
 {
     class GerberToImage: ProgressLog
     {
+        enum Arguments
+        {
+            dpi,
+            noxray,
+            nonormal,
+            silk,
+            mask,
+            None
+        }
+
         [STAThread]
         static void Main(string[] args)
         {
             if (args.Count() < 1)
             {
                 Console.WriteLine("need files to render...");
+                Console.WriteLine("GerberToImage <files> [--dpi N] [--noxray] [--nopcb] [--silk black:white] [--mask yellow:green:red:black:white:blue]");
                 return;
             }
+
+            int dpi = 400;
+            Arguments NextArg = Arguments.None;
+            bool xray = true;
+               bool normal = true;
+            string pcbcolor = "green";
+            string silkcolor = "";
+            List<string> RestList = new List<string>();
+            for (int i = 0; i < args.Count() ; i++)
+            {
+                switch (NextArg)
+                {
+
+                    case Arguments.dpi: dpi = Int32.Parse(args[i]); NextArg = Arguments.None; break;
+                    case Arguments.silk: silkcolor = args[i];NextArg = Arguments.None;break;
+                    case Arguments.mask: pcbcolor = args[i]; NextArg = Arguments.None; break;
+                    case Arguments.None:
+                        switch (args[i].ToLower())
+                        {
+                            case "--dpi": NextArg = Arguments.dpi; break;
+                            case "--silk": NextArg = Arguments.silk;break;
+                            case "--mask": NextArg = Arguments.mask; break;
+                            case "--noxray": xray = false; NextArg = Arguments.None; break;
+                            case "--nopcb": normal = false; NextArg = Arguments.None; break;
+
+                            default:
+                                RestList.Add(args[i]);break;
+                        }
+                        break;
+                }
+            }
+
+
             Gerber.SaveIntermediateImages = false;
             Gerber.ShowProgress = false;
 
-            if (args.Count() == 1 && File.Exists(args[0]) && Path.GetExtension(args[0]).ToLower()!= ".zip")
+            if (RestList.Count() == 1 && File.Exists(RestList[0]) && Path.GetExtension(RestList[0]).ToLower()!= ".zip")
             {
               //  Gerber.WriteSanitized = true;
                 Gerber.ExtremelyVerbose = false;
@@ -32,7 +76,7 @@ namespace GerberToImage
                 Gerber.WaitForKey = true;
                 Gerber.ShowProgress = true;
 
-               CreateImageForSingleFile(args[0], Color.Black, Color.White);
+               CreateImageForSingleFile(RestList[0], Color.Black, Color.White);
                 if (Gerber.WaitForKey)
                 {
                     Console.WriteLine("Press any key to continue");
@@ -43,11 +87,11 @@ namespace GerberToImage
             
             GerberImageCreator GIC = new GerberImageCreator();
             string TargetFileBaseName = "";
-            if (args.Count() >= 1) TargetFileBaseName = args[0];
+            if (RestList.Count() >= 1) TargetFileBaseName = RestList[0];
             
             List<String> FileList = new List<string>();
 
-            foreach(var a in args)
+            foreach(var a in RestList)
             { 
                 if (Directory.Exists(a))
                 {
@@ -72,7 +116,56 @@ namespace GerberToImage
             }
             var L = new GerberToImage( Path.GetFileNameWithoutExtension(TargetFileBaseName));
             GIC.AddBoardsToSet(FileList, true, L);
-            GIC.WriteImageFiles(TargetFileBaseName, 400, false, true, true, L);
+            BoardRenderColorSet colors = new BoardRenderColorSet();
+
+
+            switch(pcbcolor)
+            {
+                case "yellow": colors.BoardRenderColor = Gerber.ParseColor("yellow");
+                               colors.BoardRenderSilkColor = Gerber.ParseColor("white");
+                    break;
+                case "green":
+                    colors.BoardRenderColor = Gerber.ParseColor("green");
+                    colors.BoardRenderSilkColor = Gerber.ParseColor("white");
+                    break;
+                case "black":
+                    colors.BoardRenderColor = Gerber.ParseColor("black");
+                    colors.BoardRenderSilkColor = Gerber.ParseColor("white");
+                    break;
+                case "white":
+                    colors.BoardRenderColor = Gerber.ParseColor("white");
+                    colors.BoardRenderSilkColor = Gerber.ParseColor("black");
+                    break;
+                case "blue":
+                    colors.BoardRenderColor = Gerber.ParseColor("yellow");
+                    colors.BoardRenderSilkColor = Gerber.ParseColor("white");
+                    break;
+                case "red":
+                    colors.BoardRenderColor = Gerber.ParseColor("red");
+                    colors.BoardRenderSilkColor = Gerber.ParseColor("white");
+                    break;
+            }
+
+            colors.BoardRenderTraceColor = colors.BoardRenderColor;
+            if (silkcolor.Length > 0)
+            {
+                switch(silkcolor)
+                {
+                    case "white":
+                        colors.BoardRenderSilkColor = Gerber.ParseColor("white"); 
+                        break;
+
+                    case "black":
+                        colors.BoardRenderSilkColor = Gerber.ParseColor("black"); 
+                        break;
+
+
+                }
+            }
+            colors.BoardRenderPadColor = Gerber.ParseColor("silver");
+
+            GIC.SetColors(colors);
+            GIC.WriteImageFiles(TargetFileBaseName, dpi, false, xray, normal, L);
             Console.WriteLine("Done writing {0}", TargetFileBaseName);
        //    Console.ReadKey();
         }

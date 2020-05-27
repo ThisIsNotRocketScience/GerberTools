@@ -486,16 +486,16 @@ namespace GerberLibrary
         {
             if (normal)
             {
-                if (Logger != null) Logger.AddString("Build top layer image");
+                if (Logger != null) Logger.AddString(String.Format("Build top layer image at {0} dpi", dpi));
                 DrawToFile(TargetFileBaseName, BoardSide.Top, dpi, showimage, Logger);
-                if (Logger != null) Logger.AddString("Build bottom layer image");
+                if (Logger != null) Logger.AddString(String.Format("Build bottom layer image at {0} dpi", dpi));
                 DrawToFile(TargetFileBaseName, BoardSide.Bottom, dpi, showimage, Logger);
             }
 
             if (xray)
             {
             
-                if (Logger != null) Logger.AddString("Build top xray image");
+                if (Logger != null) Logger.AddString(String.Format("Build xray images at {0} dpi", dpi));
                 DrawXRayToFile(TargetFileBaseName, dpi, showimage, true, Logger);
             }
 

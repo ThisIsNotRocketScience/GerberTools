@@ -13,6 +13,7 @@ namespace GerberCombiner
     {
         static void Main(string[] args)
         {
+            
 
             GerberSplitter GS = new GerberSplitter();
             GS.Split("G03*", new GerberLibrary.Core.Primitives.GerberNumberFormat());
