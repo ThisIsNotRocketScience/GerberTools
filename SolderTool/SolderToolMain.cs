@@ -41,7 +41,7 @@ namespace SolderTool
         {
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-
+                //LoadDocument(fol)
             }
         }
 
