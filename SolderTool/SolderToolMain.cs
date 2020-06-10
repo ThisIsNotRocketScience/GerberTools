@@ -72,6 +72,7 @@ namespace SolderTool
 
                 {
                     CurrentDocument = i;
+                    Parts.UpdateCurrentPart();
                     Parts.InvalidatePicture();
                     return;
                 }

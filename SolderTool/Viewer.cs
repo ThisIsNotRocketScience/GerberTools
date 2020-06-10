@@ -44,8 +44,8 @@ namespace SolderTool
             string disp = String.Format("{0}/{1}", solderedcount, count);
             G.DrawString(disp, F, Brushes.White, 2, 2);
             G.DrawString(SolderTool.GetCurrentPartName(), F2, Brushes.White, 2, pictureBox1.Height - F2.Height);
-            
-            
+
+
             G.TranslateTransform(10, 10);
 
             float S = (float)Math.Min(pictureBox1.Width / (TheBox.Width() - 20), pictureBox1.Height / (TheBox.Height() - 20));
@@ -62,16 +62,16 @@ namespace SolderTool
 
             }
 
-            RenderLayerSets(G,S, BoardSide.Both, BoardLayer.Outline, Color.Gray);
+            RenderLayerSets(G, S, BoardSide.Both, BoardLayer.Outline, Color.Gray);
             if (TopView)
             {
-                RenderLayerSets(G, S, BoardSide.Top, BoardLayer.SolderMask, Color.FromArgb(20,255,255,50), false);
-                RenderLayerSets(G, S, BoardSide.Top, BoardLayer.Silk, Color.FromArgb(20, 255, 255, 255));
+                RenderLayerSets(G, S, BoardSide.Top, BoardLayer.SolderMask, Color.FromArgb(20, 255, 255, 50), false);
+                RenderLayerSets(G, S, BoardSide.Top, BoardLayer.Silk, Color.FromArgb(100, 255, 255, 255));
             }
             else
             {
-                RenderLayerSets(G,S,BoardSide.Bottom, BoardLayer.SolderMask, Color.FromArgb(20, 255, 255, 50), false);
-                RenderLayerSets(G, S, BoardSide.Bottom, BoardLayer.Silk, Color.FromArgb(20, 255, 255, 255));
+                RenderLayerSets(G, S, BoardSide.Bottom, BoardLayer.SolderMask, Color.FromArgb(20, 255, 255, 50), false);
+                RenderLayerSets(G, S, BoardSide.Bottom, BoardLayer.Silk, Color.FromArgb(100, 255, 255, 255));
 
             }
             int i = 0;
@@ -80,9 +80,9 @@ namespace SolderTool
                 foreach (var v in a.Value.Values)
                 {
                     bool Current = SolderTool.GetCurrentPart() == i;
-                    foreach(var r in v.RefDes)
+                    foreach (var r in v.RefDes)
                     {
-                        DrawMarker(G, r, v.Soldered,S,Current);
+                        DrawMarker(G, r, v.Soldered, S, Current);
                     }
                     i++;
                 }
@@ -92,7 +92,7 @@ namespace SolderTool
 
         private void RenderLayerSets(Graphics G, float S, BoardSide side, BoardLayer layer, Color C, bool lines = true)
         {
-            foreach(var l in LayerSets)
+            foreach (var l in LayerSets)
             {
                 if (l.Side == side && l.Layer == layer)
                 {
@@ -105,7 +105,7 @@ namespace SolderTool
         }
 
         bool TopView = false;
-        private static void RenderOutline(Graphics G, float S, ParsedGerber d,Color C, bool lines = true)
+        private static void RenderOutline(Graphics G, float S, ParsedGerber d, Color C, bool lines = true)
         {
             foreach (var ds in d.DisplayShapes)
             {
@@ -132,18 +132,18 @@ namespace SolderTool
         private void DrawMarker(Graphics g, BOMEntry.RefDesc r, bool soldered, float S, bool current)
         {
             float R = 2;
-            float cx = (float)r.x - R/S;
-            float cy = (float)r.y - R/S;
+            float cx = (float)r.x - R / S;
+            float cy = (float)r.y - R / S;
             Color CurrentColor = soldered ? Color.Green : Color.Yellow;
-           if (current)
+            if (current)
             {
                 float R2 = 5;
                 float cx2 = (float)r.x - R2 / S;
                 float cy2 = (float)r.y - R2 / S;
                 g.FillRectangle(new SolidBrush(CurrentColor), cx2, cy2, R2 / S * 2, R2 / S * 2);
             }
-            g.FillRectangle(soldered ? Brushes.Green : Brushes.Red, cx, cy, R/S*2, R/S*2);
-    
+            g.FillRectangle(soldered ? Brushes.Green : Brushes.Red, cx, cy, R / S * 2, R / S * 2);
+
 
         }
 
@@ -165,7 +165,7 @@ namespace SolderTool
             string BOMFile = "";
             string PnPFile = "";
             string gerberFile = "";
-            var L = Directory.GetFiles(basefolder, name+"_*.*");
+            var L = Directory.GetFiles(basefolder, name + "_*.*");
             SolderFile = "";
             foreach (var file in L)
             {
@@ -177,22 +177,22 @@ namespace SolderTool
 
             LayerSets.Add(new LayerSet() { Side = BoardSide.Both, Layer = BoardLayer.Outline });
             LayerSets.Add(new LayerSet() { Side = BoardSide.Top, Layer = BoardLayer.SolderMask });
-            LayerSets.Add(new LayerSet() { Side = BoardSide.Top, Layer = BoardLayer.Silk});
-            LayerSets.Add(new LayerSet() { Side = BoardSide.Bottom, Layer = BoardLayer.SolderMask});
-            LayerSets.Add(new LayerSet() { Side = BoardSide.Bottom, Layer = BoardLayer.Silk});
+            LayerSets.Add(new LayerSet() { Side = BoardSide.Top, Layer = BoardLayer.Silk });
+            LayerSets.Add(new LayerSet() { Side = BoardSide.Bottom, Layer = BoardLayer.SolderMask });
+            LayerSets.Add(new LayerSet() { Side = BoardSide.Bottom, Layer = BoardLayer.Silk });
             if (BOMFile.Length > 0 && PnPFile.Length > 0 && gerberFile.Length > 0)
             {
                 BOM B = new BOM();
                 B.LoadJLC(BOMFile, PnPFile);
                 TheBOM = B;
 
-                if (SolderFile.Length >0)
+                if (SolderFile.Length > 0)
                 {
                     solderedlist = File.ReadAllLines(SolderFile).ToList();
 
-                    foreach(var a in B.DeviceTree)
+                    foreach (var a in B.DeviceTree)
                     {
-                        foreach(var v in a.Value.Values)
+                        foreach (var v in a.Value.Values)
                         {
                             if (solderedlist.Contains(v.Combined()))
                             {
@@ -240,7 +240,7 @@ namespace SolderTool
                     if (Gerber.FindFileTypeFromStream(new StreamReader(Files[F]), F) == BoardFileType.Gerber)
                     {
                         Gerber.DetermineBoardSideAndLayer(F, out BS, out BL);
-                        foreach(var l in LayerSets)
+                        foreach (var l in LayerSets)
                         {
                             if (l.Side == BS && l.Layer == BL)
                             {
@@ -253,7 +253,7 @@ namespace SolderTool
                     }
                 }
                 TheBox.Reset();
-               
+
                 foreach (var a in LayerSets[0].Gerbs)
                 {
                     TheBox.AddBox(a.BoundingBox);
@@ -275,7 +275,7 @@ namespace SolderTool
 
 
         Bounds TheBox = new Bounds();
-                
+
         public void UnSolder(string name)
         {
             if (solderedlist.Contains(name) == true)
@@ -301,14 +301,16 @@ namespace SolderTool
             if (SolderFile.Length > 0)
             {
                 File.WriteAllLines(SolderFile, solderedlist);
-            }            
+            }
         }
 
         List<string> solderedlist = new List<string>();
 
         private void Viewer_Activated(object sender, EventArgs e)
         {
+            
             SolderTool.SetCurrent(this);
+            InvalidatePicture();
         }
 
         private void Viewer_FormClosing(object sender, FormClosingEventArgs e)
@@ -319,6 +321,18 @@ namespace SolderTool
         internal void InvalidatePicture()
         {
             pictureBox1.Invalidate();
+        }
+
+        private void Viewer_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            switch (e.KeyChar)
+            {
+                case 't':
+                case 'T':
+                    TopView = !TopView;
+                    InvalidatePicture();
+                    break;
+            }
         }
     }
 }
