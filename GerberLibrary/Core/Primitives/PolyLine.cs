@@ -377,6 +377,18 @@ namespace GerberLibrary.Core.Primitives
             Close();
         }
 
+        public bool EntirelyInside(PolyLine b)
+        {
+            foreach(var v in Vertices)
+            {
+                if (b.PointInPoly(v) == false)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public PointF[] ToPointsArray()
         {
 

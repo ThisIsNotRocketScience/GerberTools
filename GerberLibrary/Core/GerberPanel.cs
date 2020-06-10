@@ -1691,7 +1691,7 @@ namespace GerberLibrary
                     GerberImageCreator GIC = new GerberImageCreator();
                     GIC.AddBoardsToSet(FinalFiles);
 
-                    GIC.WriteImageFiles(Path.Combine(targetfolder, BaseName), 400, Gerber.DirectlyShowGeneratedBoardImages, Logger);
+                    GIC.WriteImageFiles(Path.Combine(targetfolder, BaseName), 400, Gerber.DirectlyShowGeneratedBoardImages,false,true, Logger);
                 }
                 catch (Exception E)
                 {

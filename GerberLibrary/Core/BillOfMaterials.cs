@@ -102,7 +102,8 @@ namespace GerberLibrary.Core
         Ohm,
         Farad,
         Henry,
-        None
+        None,
+        Volt
     }
 
     public class PartLibrary
