@@ -75,17 +75,16 @@ namespace SolderTool
 
             }
             int i = 0;
-            foreach (var a in TheBOM.DeviceTree)
+
+            var PL = SolderTool.GetPartList();
+            foreach (var v in PL)
             {
-                foreach (var v in a.Value.Values)
+                bool Current = SolderTool.GetCurrentPart() == i;
+                foreach(var r in v.RefDes)
                 {
-                    bool Current = SolderTool.GetCurrentPart() == i;
-                    foreach(var r in v.RefDes)
-                    {
-                        DrawMarker(G, r, v.Soldered,S,Current);
-                    }
-                    i++;
+                    DrawMarker(G, r, v.soldered,S,Current);
                 }
+                i++;
             }
 
         }
