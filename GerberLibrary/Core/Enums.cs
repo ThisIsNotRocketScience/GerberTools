@@ -8,18 +8,19 @@ namespace GerberLibrary.Core
 {
     public enum BoardLayer
     {
+        Notes,
+        Assembly,
+        Utility,
+        Carbon,
         Silk,
-        Copper,
         Paste,
         SolderMask,
-        Carbon,
+        Copper,
         Drill,
         Outline,
         Mill,
         Unknown,
-        Notes,
-        Assembly,
-        Utility
+        Any
     }
 
     public enum BoardSide
@@ -30,7 +31,8 @@ namespace GerberLibrary.Core
         Both,
         Unknown,
         Internal1,
-        Internal2
+        Internal2,
+        Either
     }
 
     public enum InterpolationMode

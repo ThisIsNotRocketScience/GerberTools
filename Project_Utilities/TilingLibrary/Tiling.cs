@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using GlmNet;
 using System.Drawing;
+using System.IO;
+using System.Security.Policy;
 
 namespace Artwork
 {
@@ -46,7 +48,7 @@ namespace Artwork
         public TriangleScaleMode scalingMode = TriangleScaleMode.Balanced;
         public float distanceToMaskScale;
         public float distanceToMaskRange;
-        public bool MarcelPlating = true;
+        public bool MarcelPlating = false;
         public float BallRadius = 2000;
         public float Gap = 6000;
         public float Rounding = 8000;
@@ -64,7 +66,9 @@ namespace Artwork
             Penrose,
             RegularTriangle,
             SameSameDifferent,
-            TriangleMultiscale
+            TriangleMultiscale,            
+            SVG14Fold,
+            HexaTest
         }
 
         public class Polygon
@@ -336,6 +340,23 @@ namespace Artwork
 
                 return r;
             }
+
+            public void NormalizeToCenter()
+            {
+                if (Vertices.Count() == 0) return;
+                vec2 center = new vec2();
+                foreach(var r in Vertices)
+                {
+                    center += r;
+                }
+
+                center /= (float)Vertices.Count();
+
+                for(int i =0;i<Vertices.Count();i++)
+                {
+                    Vertices[i] -= center;
+                }
+            }
         }
 
 
@@ -366,6 +387,77 @@ namespace Artwork
         {
             public List<int> VertexIndices = new List<int>();
             public int Type = 0;
+        }
+        public class RealPolygonMapping
+        {
+            public vec2 Center = new vec2(0,0);
+            public float Rotation = 0;
+            public float Scale = 1;
+            int PolygonID;
+        }
+
+        public class SVGMapping
+        {
+            public void LoadFolder(string basefolder)            
+            {
+
+                var SVGfiles = Directory.GetFiles(basefolder, "*.svg");
+                foreach (var a in SVGfiles.OrderBy(x => x))
+                {
+
+                    var R = TINRSART.SVG.SVGThings.LoadSVGToPolies(a, 0, 0);
+                    if (R.Count() > 0 && R[0].Count() > 0)
+                    {
+                        InstanceSet IS = new InstanceSet();
+                        IS.Name = Path.GetFileNameWithoutExtension(a);
+                        var FirstPoly = R[0][0];
+
+                        Polygon pp = new Polygon();
+                        foreach (var v in FirstPoly.Vertices)
+                        {
+                            pp.Vertices.Add(new vec2(v.x, v.y));
+                        };
+                        pp.NormalizeToCenter();
+                        IS.Polygon = pp;
+                        Subdivisions.Add(IS);
+                    }
+                }
+            }
+            RealPolygonMapping SetupFrom2VerticesAndPolygon(Polygon A, Polygon B, int va1, int va2, int vb1, int vb2)
+            {
+                return null;
+            }
+            List<InstanceSet> Subdivisions = new List<InstanceSet>();
+        }
+
+        public class InstanceSet
+        {
+            public string Name;
+            public Polygon Polygon;
+            public List<RealPolygonMapping> Subset = new List<RealPolygonMapping>();
+          
+
+            void Add(float x, float y, int polygon, float angle, float xscale, float yscale)
+            {
+
+            }
+            void AddXSymmetric(float x, float y, int polygon, float angle)
+            {
+                Add(x, y, polygon, angle, 1,1);
+                Add(-x, y, polygon, -angle,-1,1);
+            }
+            void AddYSymmetric(float x, float y, int polygon, float angle)
+            {
+                Add(x, y, polygon, angle, 1, 1);
+                Add(x, -y, polygon, -angle, 1, -1);
+            }
+            void AddXYSymmetric(float x, float y, int polygon, float angle)
+            {
+                Add(x, y, polygon, angle, 1, 1);
+                Add(x, -y, polygon, -angle, 1, -1);
+                Add(-x, y, polygon, -angle, -1, 1);
+                Add(-x, -y, polygon, angle, -1, -1);
+            }
         }
 
         public class PolygonMapping
@@ -1130,11 +1222,21 @@ namespace Artwork
                     case TilingType.SameSameDifferent: CreateSameSameDifferent(); break;
                     case TilingType.TriangleMultiscale: CreateMultiscale();break;
 
+
+                    case TilingType.SVG14Fold: CreateSVGTiling("SVGTilings/14Fold");break;
+                    case TilingType.HexaTest: CreateSVGTiling("SVGTilings/HexaThing"); break;
+
                 }
                 return NormalizeSize();
 
             }
-
+    
+            public void CreateSVGTiling(string basefolder)
+            {
+                SVGMapping svm = new SVGMapping();
+                svm.LoadFolder(basefolder);
+                
+            }
             private void CreateMultiscale()
             {
                 InflationFactor = 1.0 + Math.Sin((2.0 * Math.PI) / 7.0) / Math.Sin(Math.PI / 7.0);

@@ -1155,7 +1155,7 @@ namespace GerberLibrary
                                         case 'S':
                                             if (GCC.charcommands[2] == 'R')
                                             {
-                                                if (Gerber.ShowProgress) Console.Write("Setting up step and repeat ");
+                                                if (Gerber.ShowProgress) Console.WriteLine("Setting up step and repeat ");
                                                 GerberSplitter GS2 = new GerberSplitter();
                                                 GS2.Split(GCC.originalline, State.CoordinateFormat);
                                                 if (GCC.numbercommands.Count == 0)
@@ -1170,8 +1170,10 @@ namespace GerberLibrary
                                                     int Ycount = (int)GCC.numbercommands[1];
                                                     double Xoff = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[2]);
                                                     double Yoff = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[3]);
-
-                                                    SetupRepeater(State, Xcount, Ycount, Xoff, Yoff);
+                                                    if (Xcount > 1 || Ycount > 1)
+                                                    {
+                                                        SetupRepeater(State, Xcount, Ycount, Xoff, Yoff);
+                                                    }
                                                 }
                                             }
                                             break;
