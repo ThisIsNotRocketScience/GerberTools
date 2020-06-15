@@ -48,7 +48,7 @@ namespace SolderTool
                     L.Add(new ListItem() { soldered = v.Soldered, DispName = v.Combined(), useagecount = v.RefDes.Count(), RefDes = v.RefDes });
                 }
             }
-            return L.OrderByDescending(x => x.useagecount).ToList();
+            return L.OrderBy(x =>x.soldered).ThenByDescending(x => x.useagecount).ToList();
         }
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
