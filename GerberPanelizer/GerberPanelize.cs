@@ -21,6 +21,7 @@ using System.Xml.Serialization;
 
 namespace GerberCombinerBuilder
 {
+    
     public partial class GerberPanelize  : Form
     {
         GerberPanelizerParent ParentFrame;
@@ -291,9 +292,22 @@ namespace GerberCombinerBuilder
             }
         }
 
+        public class ProgressForward : GerberLibrary.ProgressLog
+        {
+            public Progress parent;
+            public ProgressForward(Progress p)
+            {
+                parent = p;
+            }
+            public override void AddString(string text, float progress = -1)
+            {
+                parent.AddString(text, progress);
+            }
+        }
+
         public void ExportThreadFunc()
         {
-            ThePanel.SaveGerbersToFolder(BaseName, ExportFolder, ProgressDialog);
+            ThePanel.SaveGerbersToFolder(BaseName, ExportFolder,new ProgressForward( ProgressDialog));
         }
 
 
@@ -702,7 +716,7 @@ namespace GerberCombinerBuilder
 
                     foreach (var a in Directory.GetFiles(path, "*.*"))
                     {
-                        GIC.AddBoardToSet(a);
+                        GIC.AddBoardToSet(a, new StandardConsoleLog());
                     }
 
                     GIC.WriteImageFiles(OFD.FileName);

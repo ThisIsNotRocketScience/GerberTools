@@ -83,6 +83,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolderTool", "..\SolderTool
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpampCalculator", "OpampCalculator\OpampCalculator.csproj", "{16EF10F9-DAC3-4496-98C8-0BFB5E1698E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameCreatorTest", "FrameCreatorTest\FrameCreatorTest.csproj", "{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -363,6 +365,14 @@ Global
 		{16EF10F9-DAC3-4496-98C8-0BFB5E1698E7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{16EF10F9-DAC3-4496-98C8-0BFB5E1698E7}.Release|x86.ActiveCfg = Release|Any CPU
 		{16EF10F9-DAC3-4496-98C8-0BFB5E1698E7}.Release|x86.Build.0 = Release|Any CPU
+		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521}.Debug|x86.Build.0 = Debug|Any CPU
+		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521}.Release|x86.ActiveCfg = Release|Any CPU
+		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -402,6 +412,7 @@ Global
 		{6DE1B712-F0D4-4FE4-8E6F-50704FAC9EA7} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{8DDC4C62-0407-48CC-9261-C1DA33040C93} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{16EF10F9-DAC3-4496-98C8-0BFB5E1698E7} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
+		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521} = {F705564A-6956-4675-A941-6ED916ADC0AD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FF204A88-D467-4D27-816B-E8B2C30CA74F}

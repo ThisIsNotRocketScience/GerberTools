@@ -619,6 +619,58 @@ namespace GerberLibrary
             Gerber.WriteAllLines(output, PolyLineSet.SanitizeInputLines(OutputLines));
         }
 
+        internal static void MergeAllByFileType(List<string> allFiles, string targetfolder,string combinedfilename, ProgressLog Logger)
+        {
+            Dictionary<string, List<string>> FilesPerExt = new Dictionary<string, List<string>>();
+            Dictionary<string, BoardFileType> FileTypePerExt = new Dictionary<string, BoardFileType>();
+            foreach (var s in allFiles)
+            {
+                string ext = Path.GetExtension(s).ToLower(); ;
+                if (ext == "xln") ext = "txt";
+                if (ext == "drl") ext = "txt";                
+                BoardLayer layer;
+                BoardSide Side;
+
+                Gerber.DetermineBoardSideAndLayer(s, out Side, out layer);
+                ext = String.Format(".{0}_{1}", layer, Side);                
+
+                if (FilesPerExt.ContainsKey(ext) == false)
+                {
+                    FilesPerExt[ext] = new List<string>();
+                }
+
+                FileTypePerExt[ext] = Gerber.FindFileType(s);
+                FilesPerExt[ext].Add(s);
+            }
+            int count = 0;
+            foreach (var a in FilesPerExt)
+            {
+                count++;
+                Logger.AddString("merging *" + a.Key.ToLower(), ((float)count / (float)FilesPerExt.Keys.Count) * 0.5f + 0.3f);
+                switch (FileTypePerExt[a.Key])
+                {
+                    case BoardFileType.Drill:
+                        {
+                            string Filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            //FinalFiles.Add(Filename);
+                            ExcellonFile.MergeAll(a.Value, Filename, Logger);
+                        }
+                        break;
+                    case BoardFileType.Gerber:
+                        {
+                            if (a.Key.ToLower() != ".gko")
+                            {
+                                string Filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            //    FinalFiles.Add(Filename);
+                                GerberMerger.MergeAll(a.Value, Filename, Logger);
+                            }
+                        }
+                        break;
+                }
+            }
+
+        }
+
         private static void CheckAllApertures(ParsedGerber file1Parsed, List<string> File1Lines, ProgressLog Log)
         {
             

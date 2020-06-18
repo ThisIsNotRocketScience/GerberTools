@@ -76,7 +76,7 @@ namespace SickOfBeige
             }
         }
 
-        public void AddString(string text, float progress = -1F)
+        public override void AddString(string text, float progress = -1F)
         {
 
         }

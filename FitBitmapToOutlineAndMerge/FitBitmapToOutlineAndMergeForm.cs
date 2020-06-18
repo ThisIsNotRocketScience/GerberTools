@@ -15,7 +15,7 @@ using System.Globalization;
 
 namespace FitBitmapToOutlineAndMerge
 {
-    public partial class FitBitmapToOutlineAndMergeForm : Form, ProgressLog
+    public partial class FitBitmapToOutlineAndMergeForm : Form
     {
         public FitBitmapToOutlineAndMergeForm()
         {
@@ -162,7 +162,7 @@ namespace FitBitmapToOutlineAndMerge
             if (UseSilkFile)
             {
                 // merge things!
-                GerberLibrary.GerberMerger.Merge(OutSilk, SilkFile, Path.Combine(output, Path.GetFileName(SilkFile )), this);
+                GerberLibrary.GerberMerger.Merge(OutSilk, SilkFile, Path.Combine(output, Path.GetFileName(SilkFile )), new StandardConsoleLog());
             }
             else
             {

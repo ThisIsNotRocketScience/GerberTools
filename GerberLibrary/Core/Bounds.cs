@@ -41,11 +41,22 @@ namespace GerberLibrary
             }
         }
 
-        public void AddPolyLine(PolyLine a)
+        public void AddPolyLine(PolyLine a, double expansion = 0)
         {
-            foreach (var r in a.Vertices)
+            if (expansion == 0)
             {
-                FitPoint(new PointD(r.X, r.Y));
+                foreach (var r in a.Vertices)
+                {
+                    FitPoint(new PointD(r.X, r.Y));
+                }
+            }
+            else
+            {
+                foreach (var r in a.Vertices)
+                {
+                    FitPoint(new PointD(r.X+expansion, r.Y + expansion));
+                    FitPoint(new PointD(r.X-expansion, r.Y- expansion));
+                }
             }
         }
 

@@ -65,7 +65,7 @@ namespace GerberLibrary
             // Declare an object variable of the type to be deserialized.
             FontSet i;
 
-            using (Stream reader = new FileStream(p, FileMode.Open))
+            using (Stream reader = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 // Call the Deserialize method to restore the object's state.
                 i = (FontSet)serializer.Deserialize(reader);

@@ -88,7 +88,7 @@ namespace GerberViewer
 
             foreach (var a in list)
             {
-                Document.AddFile(a);
+                Document.AddFile(new StandardConsoleLog(), a);
             }
             UpdateAll();
 

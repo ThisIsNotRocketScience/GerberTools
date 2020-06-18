@@ -35,7 +35,7 @@ namespace GerberLibrary
         /// <param name="DX">MM</param>
         /// <param name="DY">MM</param>
         /// <param name="Angle">Degrees</param>
-        public static void Transform(string sourcefile, string destfile, double DX, double DY, double DXp, double DYp, double AngleInDeg = 0) 
+        public static void Transform(ProgressLog log,   string sourcefile, string destfile, double DX, double DY, double DXp, double DYp, double AngleInDeg = 0) 
         {
             List<String> lines = new List<string>();
             List<String> outlines = new List<string>();

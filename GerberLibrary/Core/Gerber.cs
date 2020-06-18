@@ -127,7 +127,7 @@ namespace GerberLibrary
                     else
                     {
                         string TargetGerb = Path.Combine(BoardFactoryFolder, Name + "_" + "MergedOutlines.gko");
-                        GerberMerger.MergeAll(OutlineMerge, TargetGerb, new MergeLog());
+                        GerberMerger.MergeAll(OutlineMerge, TargetGerb, new StandardConsoleLog());
                         Z.AddFile(TargetGerb,".");
                     }
                 }
@@ -136,13 +136,7 @@ namespace GerberLibrary
 
             }
         }
-        public class MergeLog : ProgressLog
-        {
-            public void AddString(string text, float progress = -1)
-            {
-                Console.WriteLine(text);
-            }
-        }
+       
         public static int GetDefaultSortOrder(BoardSide side, BoardLayer layer)
         {
             int R = 0;
@@ -791,8 +785,9 @@ namespace GerberLibrary
             return inp * 360.0 / (Math.PI * 2.0);
         }
 
-        public static bool SaveDebugImage(string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background)
+        public static bool SaveDebugImage(string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background, ProgressLog log)
         {
+            log.PushActivity("debug image");
             ParsedGerber PLS;
             GerberParserState State = new GerberParserState()
             {
@@ -811,7 +806,7 @@ namespace GerberLibrary
             }
             if (FileType == BoardFileType.Drill)
             {
-                PLS = PolyLineSet.LoadExcellonDrillFile(GerberFilename);
+                PLS = PolyLineSet.LoadExcellonDrillFile(log, GerberFilename);
             }
             else
             {
@@ -823,7 +818,7 @@ namespace GerberLibrary
             int Width = (int)(Math.Ceiling((WidthInMM) * (dpi / 25.4)));
             int Height = (int)(Math.Ceiling((HeightInMM) * (dpi / 25.4)));
 
-            Console.WriteLine("Progress: Exporting {0} ({2},{3}mm) to {1} ({4},{5})", GerberFilename, BitmapFilename, WidthInMM, HeightInMM, Width, Height);
+            log.AddString(String.Format("Exporting {0} ({2},{3}mm) to {1} ({4},{5})", GerberFilename, BitmapFilename, WidthInMM, HeightInMM, Width, Height));
             GerberImageCreator GIC = new GerberImageCreator();
             GIC.scale = dpi / 25.4f; // dpi
             GIC.BoundingBox.AddBox(PLS.BoundingBox);
@@ -881,14 +876,15 @@ namespace GerberLibrary
 
 
             B2.Save(BitmapFilename);
+            log.PopActivity();
             return true;
         }
 
-        public static bool SaveGerberFileToImage(string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background)
+        public static bool SaveGerberFileToImage(ProgressLog log, string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background)
         {
             try
             {
-                return SaveGerberFileToImageUnsafe(GerberFilename, BitmapFilename, dpi, Foreground, Background);
+                return SaveGerberFileToImageUnsafe(log, GerberFilename, BitmapFilename, dpi, Foreground, Background);
             }
             catch (Exception E)
             {
@@ -903,7 +899,7 @@ namespace GerberLibrary
 
         }
 
-        public static bool SaveGerberFileToImageUnsafe(string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background)
+        public static bool SaveGerberFileToImageUnsafe(ProgressLog log, string GerberFilename, string BitmapFilename, float dpi, Color Foreground, Color Background)
         {
             ParsedGerber PLS;
             GerberParserState State = new GerberParserState()
@@ -922,7 +918,7 @@ namespace GerberLibrary
             }
             if (FileType == BoardFileType.Drill)
             {
-                PLS = PolyLineSet.LoadExcellonDrillFile(GerberFilename);
+                PLS = PolyLineSet.LoadExcellonDrillFile(log, GerberFilename); ;
             }
             else
             {
@@ -992,10 +988,7 @@ namespace GerberLibrary
 
         public static void WriteAllLines(string filename, List<string> lines)
         {
-
             File.WriteAllText(filename, string.Join(Gerber.LineEnding, lines));
-
-
         }
 
         internal static double ParseDouble(string inp)

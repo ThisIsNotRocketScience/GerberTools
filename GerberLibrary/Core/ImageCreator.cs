@@ -158,7 +158,7 @@ namespace GerberLibrary
             return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
         }
 
-        public void AddBoardsToSet(List<string> FileList, bool fixgroup = true, ProgressLog Logger = null)
+        public void AddBoardsToSet(List<string> FileList, ProgressLog Logger , bool fixgroup = true)
         {
             foreach (var a in FileList)
             {
@@ -243,18 +243,19 @@ namespace GerberLibrary
             }
         }
 
-        public ParsedGerber AddBoardToSet(string _originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
+        public ParsedGerber AddBoardToSet(string _originalfilename, ProgressLog log, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
         {
             if (Streams.ContainsKey(_originalfilename))
             {
-                return AddBoardToSet(Streams[_originalfilename], _originalfilename, forcezerowidth, precombinepolygons, drillscaler);
+                return AddBoardToSet(Streams[_originalfilename], _originalfilename, log, forcezerowidth, precombinepolygons, drillscaler);
             }
             return null;
         }
 
 
-        public ParsedGerber AddBoardToSet(MemoryStream MS, string _originalfilename, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
+        public ParsedGerber AddBoardToSet(MemoryStream MS, string _originalfilename, ProgressLog log, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
         {
+            log.PushActivity("AddboardToSet");
             Streams[_originalfilename] = MS;
             try
             {
@@ -266,7 +267,7 @@ namespace GerberLibrary
 
                 if (FileType == BoardFileType.Unsupported)
                 {
-                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Warning: {1}: files with extension {0} are not supported!", Path.GetExtension(_originalfilename), Path.GetFileName(_originalfilename));
+                    if (Gerber.ExtremelyVerbose) log.AddString(String.Format("Warning: {1}: files with extension {0} are not supported!", Path.GetExtension(_originalfilename), Path.GetFileName(_originalfilename)));
                     return null;
                 }
 
@@ -276,8 +277,8 @@ namespace GerberLibrary
 
                 if (FileType == BoardFileType.Drill)
                 {
-                    if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", _originalfilename);
-                    PLS = PolyLineSet.LoadExcellonDrillFileFromStream(new StreamReader(MS), _originalfilename, false, drillscaler);
+                    if (Gerber.ExtremelyVerbose) log.AddString(String.Format("Drill file: {0}", _originalfilename));
+                    PLS = PolyLineSet.LoadExcellonDrillFileFromStream(log, new StreamReader(MS), _originalfilename, false, drillscaler);
                     MS.Seek(0, SeekOrigin.Begin);
                     PLS.Side = BoardSide.Both;
                     PLS.Layer = BoardLayer.Drill;
@@ -315,13 +316,13 @@ namespace GerberLibrary
                 PLS.CalcPathBounds();
                 BoundingBox.AddBox(PLS.BoundingBox);
 
-                Console.WriteLine("Progress: Loaded {0}: {1:N1} x {2:N1} mm", Path.GetFileName(_originalfilename), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y);
+                log.AddString(String.Format ("Loaded {0}: {1:N1} x {2:N1} mm", Path.GetFileName(_originalfilename), PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X, PLS.BoundingBox.BottomRight.Y - PLS.BoundingBox.TopLeft.Y));
                 PLSs.Add(PLS);
                 //     }
                 //     catch (Exception)
                 //    {
                 //   }
-
+                log.PopActivity();
                 return PLS;
             }
             catch (Exception E)
@@ -332,6 +333,7 @@ namespace GerberLibrary
                     E = E.InnerException;
                 }
             }
+            log.PopActivity();
             return null;
         }
 
@@ -534,7 +536,7 @@ namespace GerberLibrary
                 precombine = true;
             }
             MS.Seek(0, SeekOrigin.Begin);
-            AddBoardToSet(MS, aname, zerowidth, precombine, drillscaler);
+            AddBoardToSet(MS, aname, Logger, zerowidth, precombine, drillscaler);
         }
 
         private void ApplyBumpMapping(Bitmap _Target, Bitmap _Bump, int w, int h)
@@ -1627,7 +1629,7 @@ namespace GerberLibrary
             if (i == 0) return BoundingBox;
             return B;
         }
-        private bool InventOutline()
+        private bool InventOutline(ProgressLog log)
         {
             double largest = 0;
             ParsedGerber Largest = null;
@@ -1659,7 +1661,7 @@ namespace GerberLibrary
                 Largest.Shapes.Remove(Outline);
             }
 
-            var b = AddBoardToSet(Largest.Name, zerowidth, precombine, 1.0);
+            var b = AddBoardToSet(Largest.Name,log,  zerowidth, precombine, 1.0);
             b.Layer = BoardLayer.Outline;
             b.Side = BoardSide.Both;
             b.DisplayShapes.Clear();
@@ -1676,8 +1678,9 @@ namespace GerberLibrary
             return true;
         }
 
-        private bool InventOutlineFromMill()
+        private bool InventOutlineFromMill(ProgressLog log)
         {
+            log.PushActivity("InventOutlineFromMill");
             double largest = 0;
             ParsedGerber Largest = null;
             PolyLine Outline = null;
@@ -1696,14 +1699,18 @@ namespace GerberLibrary
                 }
 
             }
-            if (Largest == null) return false;
+            if (Largest == null)
+            {
+                log.PopActivity();
+                return false;
+            }
             // if (largest < BoundingBox.Area() / 3.0) return false;
             bool zerowidth = true;
             bool precombine = true;
 
             Console.WriteLine("Note: Using {0} to extract outline file", Path.GetFileName(Largest.Name));
 
-            var b = AddBoardToSet(Largest.Name, zerowidth, precombine, 1.0);
+            var b = AddBoardToSet(Largest.Name,log, zerowidth, precombine, 1.0);
             b.Layer = BoardLayer.Outline;
             b.Side = BoardSide.Both;
             //b.DisplayShapes.Clear();
@@ -1716,7 +1723,7 @@ namespace GerberLibrary
             //b.BuildBoundary();
             // b.FixPolygonWindings();
             // b.CalcPathBounds();
-
+            log.PopActivity();
             return true;
         }
 
@@ -1793,7 +1800,10 @@ namespace GerberLibrary
                 var color =  Helpers.RefractionNormalized(current / (float)(total - 1));
                 Pen P = new Pen(color, 1.0f / (float)(scale));
                 current++;
-                int NewShapes = DrawLayerToGraphics(color, fill, TG3, P, l, forcefill);
+                bool localfill = forcefill;
+                if (l.Layer == BoardLayer.Outline) localfill = false;
+
+                int NewShapes = DrawLayerToGraphics(color, fill, TG3, P, l, localfill);
                 if (NewShapes > 0)
                 {
                     Shapes += NewShapes;

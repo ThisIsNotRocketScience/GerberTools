@@ -17,9 +17,47 @@ using TriangleNet.Geometry;
 
 namespace GerberLibrary
 {
-    public interface ProgressLog
+    public abstract class ProgressLog
     {
-        void AddString(string text, float progress = -1);
+        public abstract void AddString(string text, float progress = -1);
+        public void PushActivity(string activitiy)
+        {
+            ActivityStack.Add(activitiy);
+        }
+        public void PopActivity()
+        {
+            ActivityStack.Remove(ActivityStack.Last());
+        }
+
+        public List<string> ActivityStack = new List<string>();
+    }
+    public class SilentLog : ProgressLog
+    {
+        public override void AddString(string text, float progress = -1)
+        {
+        }
+    }
+    public class StandardConsoleLog : ProgressLog
+    {
+
+        public override void AddString(string text, float progress = -1)
+        {
+            string output = "";
+            foreach (var a in ActivityStack)
+            {
+                output += a + " -> ";
+            }
+
+            if (progress > -1)
+            {
+                Console.WriteLine(output + text + String.Format("({0}%)", (int)(progress * 100.0f))); ;
+            }
+            else
+            {
+                Console.WriteLine(output + text);
+            }
+
+        }
     }
 
 
@@ -1557,8 +1595,8 @@ namespace GerberLibrary
         public List<string> SaveOutlineTo(string p, string combinedfilename)
         {
             List<string> R = new List<string>();
-            string DrillFile = Path.Combine(p, "tabdrills.TXT");
-            string OutlineFile = Path.Combine(p, combinedfilename + ".GKO");
+            string DrillFile = Path.Combine(p, combinedfilename + "_tabdrills.TXT");
+            string OutlineFile = Path.Combine(p, combinedfilename + "_blended_outline.GKO");
             R.Add(DrillFile);
             //  R.Add(OutlineFile);
             ExcellonFile EF = new ExcellonFile();
@@ -1593,7 +1631,7 @@ namespace GerberLibrary
             if (SaveOutline)
             {
                 GeneratedFiles.AddRange(SaveOutlineTo(targetfolder, combinedfilename));
-                FinalFiles.Add(Path.Combine(targetfolder, combinedfilename + ".gko"));
+                FinalFiles.Add(Path.Combine(targetfolder, combinedfilename + "_blended_outline.gko"));
             }
 
             // TODO: use the new Gerber.DetermineFile to actually group based on layer/type instead of extentions only!
@@ -1689,9 +1727,9 @@ namespace GerberLibrary
                 {
                     Logger.AddString("Writing board bitmaps", 0.95f);
                     GerberImageCreator GIC = new GerberImageCreator();
-                    GIC.AddBoardsToSet(FinalFiles);
+                    GIC.AddBoardsToSet(FinalFiles, new SilentLog());
 
-                    GIC.WriteImageFiles(Path.Combine(targetfolder, BaseName), 400, Gerber.DirectlyShowGeneratedBoardImages,false,true, Logger);
+                    GIC.WriteImageFiles(Path.Combine(targetfolder, BaseName), 100, Gerber.DirectlyShowGeneratedBoardImages, false, true, Logger);
                 }
                 catch (Exception E)
                 {
@@ -2018,7 +2056,7 @@ namespace GerberLibrary
         public float Angle;
 
 
-        
+
     }
 
     public class GerberInstance : AngledThing
@@ -2168,8 +2206,8 @@ namespace GerberLibrary
                 Logger.AddString("writing " + a.GerberPath, ((float)current / (float)Instances.Count) * 0.3f);
                 if (a.GerberPath.Contains("???_negative") == false)
                 {
-                    
-                    var outline = GetOutline(GerberOutlines,a.GerberPath);
+
+                    var outline = GetOutline(GerberOutlines, a.GerberPath);
                     if (outline != null)
                     {
                         List<String> FileList = new List<string>();
@@ -2243,12 +2281,12 @@ namespace GerberLibrary
             return GeneratedFiles;
         }
 
-        
+
         private int AddFilesForInstance(string p, double x, double y, double angle, List<string> FileList, int isntid, List<string> GeneratedFiles, GerberOutline outline, ProgressLog Logger)
         {
 
             GerberImageCreator GIC = new GerberImageCreator();
-            GIC.AddBoardsToSet(FileList);
+            GIC.AddBoardsToSet(FileList, new SilentLog());
 
 
 
@@ -2264,7 +2302,7 @@ namespace GerberLibrary
                         {
                             double scaler = GIC.GetDrillScaler(f);
                             ExcellonFile EF = new ExcellonFile();
-                            EF.Load(f, scaler);
+                            EF.Load(Logger, f, scaler);
                             string Filename = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
                             EF.Write(Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
                             GeneratedFiles.Add(Filename);
@@ -2295,12 +2333,12 @@ namespace GerberLibrary
                                 {
                                     tempfile = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
                                     GerberImageCreator GIC2 = new GerberImageCreator();
-                                    GIC2.AddBoardsToSet(FileList);
+                                    GIC2.AddBoardsToSet(FileList, new SilentLog());
                                     GIC2.ClipBoard(f, tempfile, Logger);
                                     sourcefile = tempfile;
                                 }
                             }
-                            GerberTransposer.Transform(sourcefile, Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
+                            GerberTransposer.Transform(Logger, sourcefile, Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
                             GeneratedFiles.Add(Filename);
                             if (tempfile.Length > 0) File.Delete(tempfile);
                         }

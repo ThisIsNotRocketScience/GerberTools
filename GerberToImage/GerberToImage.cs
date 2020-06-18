@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace GerberToImage
 {
-    class GerberToImage: ProgressLog
+    class GerberToImage
     {
         enum Arguments
         {
@@ -76,7 +76,7 @@ namespace GerberToImage
                 Gerber.WaitForKey = true;
                 Gerber.ShowProgress = true;
 
-               CreateImageForSingleFile(RestList[0], Color.Black, Color.White);
+               CreateImageForSingleFile(new StandardConsoleLog(),RestList[0], Color.Black, Color.White);
                 if (Gerber.WaitForKey)
                 {
                     Console.WriteLine("Press any key to continue");
@@ -115,7 +115,7 @@ namespace GerberToImage
                 }
             }
             var L = new GerberToImage( Path.GetFileNameWithoutExtension(TargetFileBaseName));
-            GIC.AddBoardsToSet(FileList, true, L);
+            GIC.AddBoardsToSet(FileList,new StandardConsoleLog(),  true);
             BoardRenderColorSet colors = new BoardRenderColorSet();
 
 
@@ -165,12 +165,12 @@ namespace GerberToImage
             colors.BoardRenderPadColor = Gerber.ParseColor("silver");
 
             GIC.SetColors(colors);
-            GIC.WriteImageFiles(TargetFileBaseName, dpi, false, xray, normal, L);
+            GIC.WriteImageFiles(TargetFileBaseName, dpi, false, xray, normal, new StandardConsoleLog());
             Console.WriteLine("Done writing {0}", TargetFileBaseName);
        //    Console.ReadKey();
         }
 
-        private static void CreateImageForSingleFile(string arg, Color Foreground, Color Background)
+        private static void CreateImageForSingleFile(ProgressLog log, string arg, Color Foreground, Color Background)
         {
             
             if (arg.ToLower().EndsWith(".png") == true) return;
@@ -178,23 +178,19 @@ namespace GerberToImage
             //Gerber.Verbose = true;
             if (Gerber.ThrowExceptions)
             {
-                Gerber.SaveGerberFileToImageUnsafe(arg, arg + "_render.png", 1000, Foreground, Background);
+                Gerber.SaveGerberFileToImageUnsafe(log, arg, arg + "_render.png", 1000, Foreground, Background);
             }
             else
             {
-                Gerber.SaveGerberFileToImage(arg, arg + "_render.png", 1000, Foreground, Background);
+                Gerber.SaveGerberFileToImage(log, arg, arg + "_render.png", 1000, Foreground, Background);
             }
 
             if (Gerber.SaveDebugImageOutput)
             {
-                Gerber.SaveDebugImage(arg, arg + "_debugviz.png", 1000, Foreground, Background);
+                Gerber.SaveDebugImage(arg, arg + "_debugviz.png", 1000, Foreground, Background, new StandardConsoleLog());
             }
         }
 
-        public void AddString(string text, float progress = -1)
-        {
-            Console.WriteLine(TheName + " - " + text);
-        }
         public string TheName;
         GerberToImage(string name)
         {

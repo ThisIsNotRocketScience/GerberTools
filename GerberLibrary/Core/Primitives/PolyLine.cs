@@ -96,6 +96,22 @@ namespace GerberLibrary.Core.Primitives
             }
         }
 
+        internal bool ClockWise()
+        {
+
+
+            bool isClockwise = false;
+            double sum = 0;
+            for (int i = 0; i < Vertices.Count ; i++)
+            {
+                sum += (Vertices[(i + 1)%Vertices.Count].X - Vertices[i].X) * (Vertices[(i + 1) % Vertices.Count].Y + Vertices[i].Y);
+            }
+            isClockwise = (sum > 0) ? true : false;
+            return isClockwise;
+            
+
+        }
+
         public bool Draw = true;
         public PointD start() { return Vertices[0]; }
         public PointD end() { return Vertices[Vertices.Count - 1]; }
@@ -208,24 +224,24 @@ namespace GerberLibrary.Core.Primitives
             }
         }
 
-        internal void MakeRectangle(double w, double h)
+        internal void MakeRectangle(double w, double h, double ox =0 , double oy =0 )
         {
             Vertices.Clear();
-            Vertices.Add(new PointD(-w / 2, -h / 2));
-            Vertices.Add(new PointD(w / 2, -h / 2));
-            Vertices.Add(new PointD(w / 2, h / 2));
-            Vertices.Add(new PointD(-w / 2, h / 2));
-            Vertices.Add(new PointD(-w / 2, -h / 2));
+            Vertices.Add(new PointD(ox + -w / 2, oy + -h / 2));
+            Vertices.Add(new PointD(ox + w / 2, oy + -h / 2));
+            Vertices.Add(new PointD(ox + w / 2, oy + h / 2));
+            Vertices.Add(new PointD(ox + -w / 2, oy + h / 2));
+            Vertices.Add(new PointD(ox + -w / 2, oy + -h / 2));
         }
 
-        internal void MakePRectangle(double w, double h)
+        internal void MakePRectangle(double w, double h, double ox = 0, double oy = 0)
         {
             Vertices.Clear();
-            Vertices.Add(new PointD(0,0));
-            Vertices.Add(new PointD(w , 0));
-            Vertices.Add(new PointD(w , h));
-            Vertices.Add(new PointD(0, h));
-            Vertices.Add(new PointD(0,0));
+            Vertices.Add(new PointD(ox + 0,oy + 0));
+            Vertices.Add(new PointD(ox +w , oy + 0));
+            Vertices.Add(new PointD(ox +w , oy + h));
+            Vertices.Add(new PointD(ox +0, oy + h));
+            Vertices.Add(new PointD(ox +0, oy + 0));
         }
 
 
@@ -261,6 +277,13 @@ namespace GerberLibrary.Core.Primitives
             }
             return B;
         }
+
+
+        internal bool ContainsPoint(double x, double y)
+        {
+            return Helpers.IsInPolygon(Vertices, new PointD(x, y));
+        }
+
         public PointD GetCentroid()
         {
             double accumulatedArea = 0.0f;

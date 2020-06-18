@@ -13,13 +13,7 @@ namespace GerberSplitter
     class Program
     {
 
-        internal class log : ProgressLog
-        {
-            public void AddString(string text, float progress = -1F)
-            {
-                Console.WriteLine("   ***** {0}", text);
-            }
-        }
+     
 
         static void Main(string[] args)
         {
@@ -69,7 +63,7 @@ namespace GerberSplitter
                             BoardLayer L;
                             GerberLibrary.Gerber.DetermineBoardSideAndLayer(a, out bs, out L);
 
-                            GerberMerger.WriteContainedOnly(a, S, Path.Combine(SliceOutputFolder + "\\", Path.GetFileName(a)), new log());
+                            GerberMerger.WriteContainedOnly(a, S, Path.Combine(SliceOutputFolder + "\\", Path.GetFileName(a)), new StandardConsoleLog());
                         }
                     }
                     catch (Exception) { };

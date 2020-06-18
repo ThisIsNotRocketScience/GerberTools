@@ -1625,7 +1625,7 @@ namespace GerberLibrary
 
                 }
 
-                GOW.Write(target, .50 / ResX, 1.0 / ResY);
+                GOW.Write(target,null, .50 / ResX, 1.0 / ResY);
             }
 
 
@@ -2146,8 +2146,13 @@ namespace GerberLibrary
             PolyLines[width].Add(PL);
         }
 
-        public void Write(string p, double rectx = -1, double recty = -1)
+        public static PointD DoOffs(PointD inp, PointD offs)
         {
+            return new PointD(inp.X + offs.X, inp.Y + offs.Y);
+        }
+        public void Write(string p, PointD pd  = null, double rectx = -1, double recty = -1)
+        {
+            if (pd == null) pd = new PointD(0, 0);
             List<string> lines = new List<string>();
 
             GerberNumberFormat GNF = new GerberNumberFormat();
@@ -2190,14 +2195,14 @@ namespace GerberLibrary
                 {
                     if (b.Vertices.Count == 1)
                     {
-                        lines.Add(Gerber.Flash(b.Vertices[0], GNF));
+                        lines.Add(Gerber.Flash(DoOffs(b.Vertices[0],pd), GNF));
                     }
                     else
                     {
-                        lines.Add(Gerber.MoveTo(b.Vertices[0], GNF));
+                        lines.Add(Gerber.MoveTo(DoOffs(b.Vertices[0],pd), GNF));
                         for (int i = 1; i < b.Vertices.Count; i++)
                         {
-                            lines.Add(Gerber.LineTo(b.Vertices[i], GNF));
+                            lines.Add(Gerber.LineTo(DoOffs(b.Vertices[i],pd), GNF));
                         }
                     }
                 }
@@ -2208,11 +2213,11 @@ namespace GerberLibrary
                 if (a.Vertices.Count > 2)
                 {
                     lines.Add(Gerber.StartRegion);
-                    lines.Add(Gerber.MoveTo(a.Vertices[0], GNF));
+                    lines.Add(Gerber.MoveTo(DoOffs(a.Vertices[0],pd), GNF));
                     lines.Add(Gerber.LinearInterpolation);
                     for (int i = 1; i < a.Vertices.Count; i++)
                     {
-                        lines.Add(Gerber.LineTo(a.Vertices[i], GNF));
+                        lines.Add(Gerber.LineTo(DoOffs(a.Vertices[i],pd), GNF));
                     }
                     lines.Add(Gerber.StopRegion);
                 }
@@ -2375,6 +2380,164 @@ namespace GerberLibrary
             }
         }
 
+        public Bounds MeasureString(PointD Start, FontSet FS, string text, double size, double strokewidth, StringAlign SA, bool Reverse = false, double rotation = 0, bool Polygonized = false)
+        {
+            Bounds B = new Bounds();
+
+            //text = "Test1'1234'0+!@\"#$@%#&*(";
+
+            if (FS == null)
+            {
+                Console.WriteLine("DrawString called with no active fontset (\"{0}\")! Ignoring!", text);
+                return B;
+            }
+            //double x = Start.X;
+            //double y = Start.Y;
+            double x = 0;
+            double y = -size;
+            List<PolyLine> PreRotateTranslate = new List<PolyLine>();
+
+
+            double Scaler = size / FS.CapsHeight;
+            //  y += size;
+
+
+            double W = 0;
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                char t = text[i];
+                var R = FS.GetChar(t);
+                if (R != null)
+                {
+                    W += R.Advance * Scaler;
+                }
+                else
+                {
+                    W += size;
+                }
+            }
+            if (Reverse)
+            {
+                //x += W;
+                //W = -W;
+            }
+
+            switch (SA)
+            {
+                case StringAlign.BottomCenter:
+                    if (Reverse) { x += W / 2; } else { x -= W / 2; };
+
+                    break;
+                case StringAlign.TopCenter:
+                    y -= size;
+
+                    if (Reverse) { x += W / 2; } else { x -= W / 2; };
+                    break;
+                case StringAlign.CenterCenter:
+                    y -= size / 2;
+                    if (Reverse) { x += W / 2; } else { x -= W / 2; };
+                    break;
+
+                case StringAlign.BottomRight:
+                    y += size;
+                    if (Reverse) { x += W; } else { x -= W; };
+                    break;
+                case StringAlign.TopRight:
+                    if (Reverse) { x += W; } else { x -= W; };
+                    break;
+                case StringAlign.CenterRight:
+                    y -= size / 2;
+                    if (Reverse) { x += W; } else { x -= W; };
+                    break;
+                case StringAlign.BottomLeft:
+                    y += size;
+                    break;
+                case StringAlign.TopLeft:
+                    break;
+                case StringAlign.CenterLeft:
+                    y -= size / 2;
+                    break;
+            }
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                char t = text[i];
+                var R = FS.GetChar(t);
+                if (R != null)
+                {
+                    foreach (var l in R.lines)
+                    {
+                        PolyLine PL = new PolyLine(LastID++);
+                        foreach (var v in l)
+                        {
+                            if (Reverse)
+                            {
+                                PL.Add(-v.X * Scaler + x, -(v.Y * Scaler) + y);
+                            }
+                            else
+                            {
+                                PL.Add(v.X * Scaler + x, -(v.Y * Scaler) + y);
+                            }
+                        }
+                        PL.Close();
+                        PreRotateTranslate.Add(PL);
+
+                    }
+                    if (Reverse)
+                    {
+
+                        x -= Scaler * R.Advance;
+                    }
+                    else
+                    {
+                        x += Scaler * R.Advance;
+
+                    }
+                }
+                else
+                {
+                    if (Reverse)
+                    {
+                        x -= size;
+                    }
+                    else
+                    {
+                        x += size;
+                    }
+                }
+            }
+
+
+            double SX = Math.Sin(rotation * (Math.PI / 180.0));
+            double CX = Math.Cos(rotation * (Math.PI / 180.0));
+
+            foreach (var a in PreRotateTranslate)
+            {
+                PolyLine PL = new PolyLine(LastID++);
+                foreach (var v in a.Vertices)
+                {
+
+
+                    double xx = CX * v.X - SX * v.Y;
+                    double yy = SX * v.X + CX * v.Y;
+                    PL.Add(xx + Start.X, yy + Start.Y);
+                }
+                if (Polygonized)
+                {
+                  B.AddPolyLine(PL);
+                }
+                else
+                {
+                    B.AddPolyLine(PL);
+                }
+            }
+            return B;
+        }
+
+
+        
+
         public static PointD AttachPoint(PointD inp, PointD boxtopleft, PointD boxbottomright, GerberLibrary.ArtWork.BoxAttachment attachment)
         {
             PointD ret = new PointD(inp.X, inp.Y);
@@ -2470,6 +2633,24 @@ namespace GerberLibrary
         public void AddPolygon(PolyLine PLA)
         {
             Polygons.Add(PLA);
+        }
+
+        public Bounds GetBounds()
+        {
+            Bounds B = new Bounds();
+            foreach(var p in Polygons)
+            {
+                B.AddPolyLine(p);
+            }
+            foreach (var l in PolyLines)
+            {
+                foreach (var p in l.Value)
+                {
+                    B.AddPolyLine(p, l.Key);
+                }
+            }
+
+            return B;
         }
     }
 }
