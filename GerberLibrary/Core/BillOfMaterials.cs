@@ -348,7 +348,27 @@ namespace GerberLibrary.Core
             }
 
             return partcount;
+
         }
+
+        public int GetUniquePartCount(List<String> ToIgnore)
+        {
+            int partcount = 0;
+            foreach (var a in DeviceTree)
+            {
+                //Console.WriteLine(a.Key);
+                foreach (var b in a.Value)
+                {
+                    if (ToIgnore.Contains(b.Value.PackageName) == false)
+                    {
+                        partcount++;
+                    }
+                }
+            }
+
+            return partcount;
+        }
+
         public List<string> PrintBOM(List<String> IgnoreList, bool AddDefaultIgnoreList = true)
         {
             List<string> ToIgnore;
