@@ -214,13 +214,13 @@ namespace GerberLibrary.Core.Primitives
             Vertices.Add(new PointD(-p, -p));
         }
 
-        public void MakeCircle(double p, int C = 20)
+        public void MakeCircle(double radius, int C = 20, double ox = 0, double oy=0)
         {
             Vertices.Clear();
             for (int i = 0; i < C + 1; i++)
             {
                 double P = ((double)i / (double)(C)) * (double)Math.PI * 2;
-                Vertices.Add(new PointD(Math.Sin(P) * p, Math.Cos(P) * p));
+                Vertices.Add(new PointD(Math.Sin(P) * radius + ox, Math.Cos(P) * radius +oy));
             }
         }
 
@@ -279,7 +279,7 @@ namespace GerberLibrary.Core.Primitives
         }
 
 
-        internal bool ContainsPoint(double x, double y)
+        public bool ContainsPoint(double x, double y)
         {
             return Helpers.IsInPolygon(Vertices, new PointD(x, y));
         }

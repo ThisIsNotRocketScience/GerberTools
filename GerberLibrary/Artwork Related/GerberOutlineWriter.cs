@@ -13,6 +13,180 @@ using System.Windows.Forms;
 
 namespace GerberLibrary
 {
+    public class PCBWriterSet
+    {
+        public GerberArtWriter Outline = new GerberArtWriter();
+        public GerberArtWriter TopSilk = new GerberArtWriter();
+        public GerberArtWriter TopCopper = new GerberArtWriter();
+        public GerberArtWriter TopSolderMask = new GerberArtWriter();
+
+        public GerberArtWriter BottomSilk = new GerberArtWriter();
+        public GerberArtWriter BottomCopper = new GerberArtWriter();
+        public GerberArtWriter BottomSolderMask = new GerberArtWriter();
+
+        public List<RectangleD> ArtExclusions = new List<RectangleD>();
+        public List<PolyLine> ArtInclusions = new List<PolyLine>();
+
+        public void AddBoardHole(PointD pos, double diameter)
+        {
+            PolyLine PL = new PolyLine();
+            PL.MakeCircle(diameter/2.0, 20,pos.X, pos.Y);
+            Outline.AddPolyLine(PL, 0);
+        }
+
+        public void CellularArt()
+        {
+            Bounds B = Outline.GetBounds();
+
+            for (int y = 0; y < B.Height(); y += 1)
+            {
+                for (int x = 0; x < B.Width(); x += 1)
+                {
+                    if (InArt(x + B.TopLeft.X, y + B.TopLeft.Y, 0.5))
+                    {
+                        if (((x + y) % 2) == 0)
+                        {
+                            PolyLine P = new PolyLine();
+                            P.MakeRectangle(0.7, 0.7, x + B.TopLeft.X, y + B.TopLeft.Y);
+                            TopSilk.AddPolygon(P);
+                        }
+
+
+                    }
+                }
+            }
+        }
+
+        private bool InArt(double x, double y, double surrounds = 0)
+        {
+            if (surrounds > 0)
+            {
+                if (InArt(x - surrounds, y - surrounds) == false) return false;
+                if (InArt(x + surrounds, y - surrounds) == false) return false;
+                if (InArt(x - surrounds, y + surrounds) == false) return false;
+                if (InArt(x + surrounds, y + surrounds) == false) return false;
+
+
+            }
+
+            foreach (var r in ArtExclusions)
+            {
+                if (r.ContainsPoint(x, y)) return false;
+            }
+            bool contained = false;
+            foreach (var a in ArtInclusions)
+            {
+                if (a.ContainsPoint(x, y))
+                {
+                    contained = true;
+                }
+            }
+            return contained;
+        }
+
+        public Dictionary<double, List<PointD>> DrillHoles = new Dictionary<double, List<PointD>>();
+
+        public void Drill(PointD pos, double Diameter, double soldermaskclearance = 0)
+        {
+            if (DrillHoles.ContainsKey(Diameter) == false)
+            {
+                DrillHoles[Diameter] = new List<PointD>();
+            }
+            DrillHoles[Diameter].Add(pos);
+
+
+            if (soldermaskclearance > 0)
+            {
+                TopSolderMask.AddFlash(pos, Diameter / 2.0 + soldermaskclearance);
+                BottomSolderMask.AddFlash(pos, Diameter / 2.0 + soldermaskclearance);
+            }
+
+
+        }
+        public List<string> Write(string targetfolder, string basename, PointD offset = null)
+        {
+            if (offset == null)
+            {
+                offset = new PointD(0, 0);
+            }
+
+            List<string> Files = new List<string>();
+            ExcellonFile EF = new ExcellonFile();
+            int drillcount = 0;
+            foreach (var h in DrillHoles)
+            {
+
+
+                ExcellonTool DrillBit = new ExcellonTool();
+                DrillBit.Radius = h.Key / 2.0f;
+
+                foreach (var a in h.Value)
+                {
+                    DrillBit.Drills.Add(a);
+                }
+                EF.Tools[10 + drillcount] = DrillBit;
+                drillcount++;
+
+            }
+            string DrillFile = Path.Combine(targetfolder, basename + ".txt");
+
+            EF.Write(DrillFile, offset.X, offset.Y, 0, 0);
+            Files.Add(DrillFile);
+
+            string OutName = Path.Combine(targetfolder, basename);
+
+            Outline.Write(OutName + ".gko", offset); Files.Add(OutName + ".gko");
+            TopSilk.Write(OutName + ".gto", offset); Files.Add(OutName + ".gto");
+            TopCopper.Write(OutName + ".gtl", offset); Files.Add(OutName + ".gtl");
+
+            TopSolderMask.Write(OutName + ".gts", offset); Files.Add(OutName + ".gts");
+
+            BottomSilk.Write(OutName + ".gbo", offset); Files.Add(OutName + ".gbo");
+            BottomCopper.Write(OutName + ".gbl", offset); Files.Add(OutName + ".gbl");
+            BottomSolderMask.Write(OutName + ".gbs", offset); Files.Add(OutName + ".gbs");
+
+
+            return Files;
+
+        }
+
+        public void AddOutline(PolyLine pL)
+        {
+            Outline.AddPolyLine(pL, 0);
+        }
+
+        public void Fiducial(PointD pos, double copperdiameter = 1.0, double maskdiameter = 2.0, bool top = true)
+        {
+            if (top)
+            {
+                TopCopper.AddFlash(pos, copperdiameter / 2.0);
+                TopSolderMask.AddFlash(pos, maskdiameter / 2.0);
+            }
+            else
+            {
+                BottomCopper.AddFlash(pos, copperdiameter / 2.0);
+                BottomSolderMask.AddFlash(pos, maskdiameter / 2.0);
+            }
+
+        }
+
+        public void Label(FontSet fnt, PointD pos, string txt, double size, StringAlign alignment = StringAlign.CenterCenter, double strokewidth = 0.1, bool silk = true, bool copper = false, double angle = 0, bool backside = false)
+        {
+
+            if (!backside)
+            {
+                ArtExclusions.Add(new RectangleD(TopSilk.MeasureString(pos, fnt, txt, size, strokewidth, alignment, backside, angle)));
+                if (silk) TopSilk.DrawString(pos, fnt, txt, size, strokewidth, alignment, backside, angle);
+                if (copper) TopCopper.DrawString(pos, fnt, txt, size, strokewidth, alignment, backside, angle);
+            }
+            else
+            {
+                ArtExclusions.Add(new RectangleD(BottomSilk.MeasureString(pos, fnt, txt, size, strokewidth, alignment, backside, angle)));
+                if (silk) BottomSilk.DrawString(pos, fnt, txt, size, strokewidth, alignment, backside, angle);
+                if (copper) BottomCopper.DrawString(pos, fnt, txt, size, strokewidth, alignment, backside, angle);
+            }
+        }
+    }
 
     public class GerberFrameWriter
     {
@@ -157,173 +331,6 @@ namespace GerberLibrary
 
         }
 
-        public class PCBWriterSet
-        {
-            public GerberArtWriter Outline = new GerberArtWriter();
-            public GerberArtWriter TopSilk = new GerberArtWriter();
-            public GerberArtWriter TopCopper = new GerberArtWriter();
-            public GerberArtWriter TopSolderMask = new GerberArtWriter();
-
-            public GerberArtWriter BottomSilk = new GerberArtWriter();
-            public GerberArtWriter BottomCopper = new GerberArtWriter();
-            public GerberArtWriter BottomSolderMask = new GerberArtWriter();
-
-            public List<RectangleD> ArtExclusions = new List<RectangleD>();
-            public List<PolyLine> ArtInclusions= new List<PolyLine>();
-
-            public void CellularArt()
-            {
-                Bounds B = Outline.GetBounds();
-
-                for(int y =0;y<B.Height();y+=1)
-                {
-                    for(int x = 0;x<B.Width();x+=1)
-                    {
-                        if (InArt(x + B.TopLeft.X, y + B.TopLeft.Y,0.5))
-                        {
-                            if (((x + y) % 2 )  == 0)
-                            {
-                                PolyLine P = new PolyLine();
-                                P.MakeRectangle(0.7,0.7,x + B.TopLeft.X, y + B.TopLeft.Y);
-                                TopSilk.AddPolygon(P);
-                            }
-
-                
-                        }
-                    }
-                }
-            }
-
-            private bool InArt(double x, double y, double surrounds = 0)
-            {
-                if (surrounds >0)
-                {
-                    if (InArt(x - surrounds, y - surrounds) == false) return false;
-                    if (InArt(x + surrounds, y - surrounds) == false) return false;
-                    if (InArt(x - surrounds, y + surrounds) == false) return false;
-                    if (InArt(x + surrounds, y + surrounds) == false) return false;
-
-
-                }
-
-                foreach (var r in ArtExclusions)
-                {
-                    if (r.ContainsPoint(x, y)) return false;
-                }
-                bool contained = false;
-                foreach(var a in ArtInclusions)
-                {
-                   if (a.ContainsPoint(x,y))
-                    {
-                        contained = true;
-                    }
-                }
-                return contained;
-            }
-
-            public Dictionary<double, List<PointD>> DrillHoles = new Dictionary<double, List<PointD>>();
-
-            public void Drill(PointD pos, double Diameter, double soldermaskclearance =0 )
-            {
-                if (DrillHoles.ContainsKey(Diameter) == false)
-                {
-                    DrillHoles[Diameter] = new List<PointD>();
-                }
-                DrillHoles[Diameter].Add(pos);
-
-
-                if (soldermaskclearance > 0)
-                {
-                    TopSolderMask.AddFlash(pos, Diameter / 2.0 + soldermaskclearance);
-                    BottomSolderMask.AddFlash(pos, Diameter / 2.0 + soldermaskclearance);
-                }
-            
-
-            }
-            public List<string> Write(string targetfolder, string basename, PointD offset = null)
-            {
-                if (offset == null)
-                {
-                    offset = new PointD(0, 0);
-                }
-
-                List<string> Files = new List<string>();
-                ExcellonFile EF = new ExcellonFile();
-                int drillcount = 0;
-                foreach(var h in DrillHoles)
-                {
-
-
-                    ExcellonTool DrillBit = new ExcellonTool();
-                    DrillBit.Radius = h.Key/2.0f;
-
-                    foreach (var a in h.Value)
-                    {
-                        DrillBit.Drills.Add(a);
-                    }
-                    EF.Tools[10+drillcount] = DrillBit;
-                    drillcount++;
-
-                }
-                string DrillFile = Path.Combine(targetfolder, basename + ".txt");
-                
-                EF.Write(DrillFile, offset.X, offset.Y, 0, 0);
-                Files.Add(DrillFile);
-
-                string OutName = Path.Combine(targetfolder, basename);
-              
-                Outline.Write(OutName + ".gko", offset); Files.Add(OutName + ".gko");
-                TopSilk.Write(OutName + ".gto", offset); Files.Add(OutName + ".gto");
-                TopCopper.Write(OutName + ".gtl", offset); Files.Add(OutName + ".gtl");
-
-                TopSolderMask.Write(OutName + ".gts", offset); Files.Add(OutName + ".gts");
-
-                BottomSilk.Write(OutName + ".gbo", offset); Files.Add(OutName + ".gbo");
-                BottomCopper.Write(OutName + ".gbl",offset); Files.Add(OutName + ".gbl");
-                BottomSolderMask.Write(OutName + ".gbs", offset); Files.Add(OutName + ".gbs");
-
-
-                return Files;
-
-            }
-
-            public void AddOutline(PolyLine pL)
-            {
-                Outline.AddPolyLine(pL, 0);                
-            }
-
-            public void Fiducial(PointD pos, double copperdiameter = 1.0, double maskdiameter = 2.0, bool top = true)
-            {
-                if (top)
-                {
-                    TopCopper.AddFlash(pos, copperdiameter / 2.0);
-                    TopSolderMask.AddFlash(pos, maskdiameter / 2.0);
-                }
-                else
-                {
-                    BottomCopper.AddFlash(pos, copperdiameter / 2.0);
-                    BottomSolderMask.AddFlash(pos, maskdiameter / 2.0);
-                }
-
-            }
-
-            public void Label(FontSet fnt, PointD pos, string txt, double size, StringAlign alignment = StringAlign.CenterCenter, double strokewidth = 0.1,  bool silk = true, bool copper = false, double angle = 0,bool backside = false)
-            {
-
-                if (!backside)
-                {
-                    ArtExclusions.Add(new RectangleD( TopSilk.MeasureString(pos, fnt, txt, size, strokewidth, alignment, backside, angle)));
-                    if (silk) TopSilk.DrawString(pos, fnt, txt, size, strokewidth, alignment,backside, angle);
-                    if (copper) TopCopper.DrawString(pos, fnt, txt, size, strokewidth, alignment, backside, angle);                    
-                }
-                else
-                {
-                    ArtExclusions.Add(new RectangleD(BottomSilk.MeasureString(pos, fnt, txt, size, strokewidth, alignment, backside, angle)));
-                    if (silk) BottomSilk.DrawString(pos, fnt, txt, size, strokewidth, alignment, backside, angle);
-                    if (copper) BottomCopper.DrawString(pos, fnt, txt, size, strokewidth, alignment, backside, angle);
-                }                
-            }
-        }
 
         public static List<string> WriteSideEdgeFrame(PolyLine pl, FrameSettings FS, string basefile, bool insideedge = true)
         {

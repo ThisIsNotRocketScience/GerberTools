@@ -29,6 +29,24 @@ namespace GerberLibrary
             ActivityStack.Remove(ActivityStack.Last());
         }
 
+        public string GetDefaultText(string text, float progress)
+        {
+            string output = "";
+            foreach (var a in ActivityStack)
+            {
+                output += a + " -> ";
+            }
+
+            if (progress > -1)
+            {
+                return (output + text + String.Format("({0}%)", (int)(progress * 100.0f))); ;
+            }
+            else
+            {
+                return (output + text);
+            }
+        }
+
         public List<string> ActivityStack = new List<string>();
     }
     public class SilentLog : ProgressLog
@@ -42,20 +60,7 @@ namespace GerberLibrary
 
         public override void AddString(string text, float progress = -1)
         {
-            string output = "";
-            foreach (var a in ActivityStack)
-            {
-                output += a + " -> ";
-            }
-
-            if (progress > -1)
-            {
-                Console.WriteLine(output + text + String.Format("({0}%)", (int)(progress * 100.0f))); ;
-            }
-            else
-            {
-                Console.WriteLine(output + text);
-            }
+            Console.WriteLine(GetDefaultText(text, progress));
 
         }
     }
@@ -1728,8 +1733,7 @@ namespace GerberLibrary
                     Logger.AddString("Writing board bitmaps", 0.95f);
                     GerberImageCreator GIC = new GerberImageCreator();
                     GIC.AddBoardsToSet(FinalFiles, new SilentLog());
-
-                    GIC.WriteImageFiles(Path.Combine(targetfolder, BaseName), 100, Gerber.DirectlyShowGeneratedBoardImages, false, true, Logger);
+                    GIC.WriteImageFiles(Path.Combine(targetfolder, BaseName), 200, Gerber.DirectlyShowGeneratedBoardImages, false, true, Logger);
                 }
                 catch (Exception E)
                 {
