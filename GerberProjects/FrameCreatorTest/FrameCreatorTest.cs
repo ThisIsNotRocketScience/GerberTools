@@ -36,10 +36,10 @@ namespace FrameCreatorTest
 
 
             GerberFrameWriter.WriteSideEdgeFrame(PL, FS, "frame/outtest");
-            GerberFrameWriter.MergeFrameIntoGerberSet(Path.Combine(basepath, "frame"), Path.Combine(basepath, "outline"), Path.Combine(basepath, "mergedoutput"),FS, new FrameCreatorTest());
+            GerberFrameWriter.MergeFrameIntoGerberSet(Path.Combine(basepath, "frame"), Path.Combine(basepath, "outline"), Path.Combine(basepath, "mergedoutput"),FS, new FrameCreatorTest(),"testframe");
 
 
-            GerberFrameWriter.MergeFrameIntoGerberSet(Path.Combine(basepath, "SliceFrameOutline6"), Path.Combine(basepath, "Slice6"), Path.Combine(basepath, "slice6inframe"), FS, new FrameCreatorTest());
+            GerberFrameWriter.MergeFrameIntoGerberSet(Path.Combine(basepath, "SliceFrameOutline6"), Path.Combine(basepath, "Slice6"), Path.Combine(basepath, "slice6inframe"), FS, new FrameCreatorTest(),"slice6framed" );
 
 
 

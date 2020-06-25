@@ -42,12 +42,12 @@ namespace GerberLibrary
             {
                 for (int x = 0; x < B.Width(); x += 1)
                 {
-                    if (InArt(x + B.TopLeft.X, y + B.TopLeft.Y, 0.5))
+                    if (InArt(x + B.TopLeft.X + 0.5, y + B.TopLeft.Y + 0.5, 0.5))
                     {
                         if (((x + y) % 2) == 0)
                         {
                             PolyLine P = new PolyLine();
-                            P.MakeRectangle(0.7, 0.7, x + B.TopLeft.X, y + B.TopLeft.Y);
+                            P.MakeRectangle(0.7, 0.7, x + B.TopLeft.X + 0.5, y + B.TopLeft.Y+0.5);
                             TopSilk.AddPolygon(P);
                         }
 
@@ -229,7 +229,7 @@ namespace GerberLibrary
             public double mmbetweentabs = 40;
         }
 
-        public static void MergeFrameIntoGerberSet(string FrameFolder, string OutlineFolder, string OutputFolder, FrameSettings FS, ProgressLog log)
+        public static void MergeFrameIntoGerberSet(string FrameFolder, string OutlineFolder, string OutputFolder, FrameSettings FS, ProgressLog log, string basename)
         {
             log.PushActivity("MergeFrame");
             GerberPanel PNL = new GerberPanel();
@@ -299,7 +299,7 @@ namespace GerberLibrary
             PNL.UpdateShape();
 
             Directory.CreateDirectory(OutputFolder);
-            PNL.SaveGerbersToFolder("MergedFrame", OutputFolder, log, true, false);
+            PNL.SaveGerbersToFolder("MergedFrame", OutputFolder, log, true, false, true, basename);
 
             log.PopActivity();
 
@@ -425,9 +425,9 @@ namespace GerberLibrary
                 PolyLine Bottom = new PolyLine();
 
 
-                Top.MakePRectangle(OuterWidth, FS.topEdge, 0, 0);
+                Top.MakePRectangle(OuterWidth+1, FS.topEdge+1, -1, -1);
                 Bottom.MakePRectangle(OuterWidth, FS.topEdge, 0, OuterHeight-FS.topEdge);
-                Left.MakePRectangle(FS.leftEdge, OuterHeight, 0, 0);
+                Left.MakePRectangle(FS.leftEdge+1, OuterHeight+1, -1, -1);
                 Right.MakePRectangle(FS.leftEdge, OuterHeight, OuterWidth-FS.leftEdge, 0);
                 PCB.ArtInclusions.Add(Left);
                 PCB.ArtInclusions.Add(Right);
