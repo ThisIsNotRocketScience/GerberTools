@@ -224,8 +224,8 @@ namespace GerberCombinerBuilder
         public void LoadFile(string filename)
         {
             LoadedFile = filename;
-            ThePanel.LoadFile(filename);
-            ThePanel.UpdateShape(); 
+            ThePanel.LoadFile(new StandardConsoleLog(), filename);
+            ThePanel.UpdateShape(new StandardConsoleLog()); 
             TV.BuildTree(this, ThePanel.TheSet);
             ZoomToFit();
 
@@ -647,7 +647,7 @@ namespace GerberCombinerBuilder
             if (ShapeMarkedForUpdate && (AutoUpdate || ForceShapeUpdate))
             {
                 //Console.WriteLine("updating shape..");
-                ThePanel.UpdateShape(); // check if needed?
+                ThePanel.UpdateShape(new StandardConsoleLog()); // check if needed?
                 ShapeMarkedForUpdate = false;
                 ForceShapeUpdate = false;
             }
@@ -742,7 +742,7 @@ namespace GerberCombinerBuilder
                     if (Directory.Exists(S) || (File.Exists(S) && (Path.GetExtension(S).ToLower() == ".zip" || Path.GetExtension(S).ToLower() == "zip")))
                     {
                         Console.WriteLine("Adding dropped folder: {0}", S);
-                        var R = ThePanel.AddGerberFolder(S);
+                        var R = ThePanel.AddGerberFolder(new StandardConsoleLog(), S);
                         foreach (var s in R)
                         {
                             GerberInstance GI = new GerberInstance() { GerberPath = s };
@@ -809,7 +809,7 @@ namespace GerberCombinerBuilder
 
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            ThePanel.BuildAutoTabs();// GenerateTabLocations();
+            ThePanel.BuildAutoTabs(new StandardConsoleLog());// GenerateTabLocations();
             Redraw(true);
         }
 
@@ -829,7 +829,7 @@ namespace GerberCombinerBuilder
         {
             if (folderBrowserDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                var R = ThePanel.AddGerberFolder(folderBrowserDialog1.SelectedPath);
+                var R = ThePanel.AddGerberFolder(new StandardConsoleLog(),folderBrowserDialog1.SelectedPath);
                 foreach (var s in R)
                 {
                     GerberInstance GI = new GerberInstance() { GerberPath = s };
@@ -911,7 +911,7 @@ namespace GerberCombinerBuilder
             if (SelectedInstance.GetType() == typeof(GerberInstance))
             {
                 string path = (SelectedInstance as GerberInstance).GerberPath;
-                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(path, GerberLibrary.ArtWork.ArtLayerStyle.CheckerField);
+                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(new StandardConsoleLog(), path, GerberLibrary.ArtWork.ArtLayerStyle.CheckerField);
             }
         }
 
@@ -978,7 +978,7 @@ namespace GerberCombinerBuilder
             if (SelectedInstance.GetType() == typeof(GerberInstance))
             {
                 string path = (SelectedInstance as GerberInstance).GerberPath;
-                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(path, GerberLibrary.ArtWork.ArtLayerStyle.OffsetCurves_GoldfishBoard);
+                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(new StandardConsoleLog(), path, GerberLibrary.ArtWork.ArtLayerStyle.OffsetCurves_GoldfishBoard);
             }
         }
 
@@ -988,7 +988,7 @@ namespace GerberCombinerBuilder
             if (SelectedInstance.GetType() == typeof(GerberInstance))
             {
                 string path = (SelectedInstance as GerberInstance).GerberPath;
-                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(path, GerberLibrary.ArtWork.ArtLayerStyle.FlowField);
+                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(new StandardConsoleLog(), path, GerberLibrary.ArtWork.ArtLayerStyle.FlowField);
             }
 
         }
@@ -1004,7 +1004,7 @@ namespace GerberCombinerBuilder
             if (SelectedInstance.GetType() == typeof(GerberInstance))
             {
                 string path = (SelectedInstance as GerberInstance).GerberPath;
-                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(path, GerberLibrary.ArtWork.ArtLayerStyle.ReactDiffuse);
+                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(new StandardConsoleLog(), path, GerberLibrary.ArtWork.ArtLayerStyle.ReactDiffuse);
             }
         }
 
@@ -1014,7 +1014,7 @@ namespace GerberCombinerBuilder
             if (SelectedInstance.GetType() == typeof(GerberInstance))
             {
                 string path = (SelectedInstance as GerberInstance).GerberPath;
-                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(path, GerberLibrary.ArtWork.ArtLayerStyle.PrototypeEdge);
+                GerberLibrary.ArtWork.Functions.CreateArtLayersForFolder(new StandardConsoleLog(), path, GerberLibrary.ArtWork.ArtLayerStyle.PrototypeEdge);
             }
         }
 
@@ -1024,7 +1024,7 @@ namespace GerberCombinerBuilder
         {
             if (ShapeMarkedForUpdate)
             {
-                ThePanel.UpdateShape(); ShapeMarkedForUpdate = false;
+                ThePanel.UpdateShape(new StandardConsoleLog()); ShapeMarkedForUpdate = false;
                 Redraw(false);
                 ProcessButton.Enabled = false;
             }
@@ -1052,7 +1052,7 @@ namespace GerberCombinerBuilder
                 AutoUpdate = true;
                 if (ShapeMarkedForUpdate)
                 {
-                    ThePanel.UpdateShape(); ShapeMarkedForUpdate = false;
+                    ThePanel.UpdateShape(new StandardConsoleLog()); ShapeMarkedForUpdate = false;
                     Redraw(false);
 
 

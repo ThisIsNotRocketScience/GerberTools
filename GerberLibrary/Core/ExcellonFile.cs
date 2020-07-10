@@ -42,9 +42,11 @@ namespace GerberLibrary
 
         public static void MergeAll(List<string> Files, string output, ProgressLog Log)
         {
+            Log.PushActivity("Excellon MergeAll");
             if (Files.Count >= 2)
             {
                 MultiMerge(Files[0], Files.Skip(1).ToList(), output, Log);
+                Log.PopActivity();
                 return;
 
             }
@@ -52,14 +54,15 @@ namespace GerberLibrary
             {
                 if (Files.Count == 1)
                 {
-                    Console.WriteLine("Merging 1 file is copying... doing so...");
+                    Log.AddString("Merging 1 file is copying... doing so...");
                     if (File.Exists(output)) File.Delete(output);
                     File.Copy(Files[0], output);
                 }
                 else
                 {
-                    Console.WriteLine("Need files to do anything??");
+                    Log.AddString("Need files to do anything??");
                 }
+                Log.PopActivity();
                 return;
             }
 
@@ -80,32 +83,36 @@ namespace GerberLibrary
             {
                 File.Delete(s);
             }
+            Log.PopActivity();
         }
 
         private static void MultiMerge(string file1, List<string> otherfiles, string output, ProgressLog Log)
         {
+            Log.PushActivity("Excellon MultiMerge");
             if (File.Exists(file1) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", file1);
+                Log.AddString(String.Format("{0} not found! stopping process!", file1));
+                Log.PopActivity();
                 return;
             }
             foreach (var otherfile in otherfiles)
             {
                 if (File.Exists(otherfile) == false)
                 {
-                    Console.WriteLine("{0} not found! stopping process!", otherfile);
+                    Log.AddString(String.Format("{0} not found! stopping process!", otherfile));
+                    Log.PopActivity();
                     return;
                 }
             }
 
-            Console.WriteLine("*** Reading {0}:", file1);
+            Log.AddString(String.Format("Reading {0}:", file1));
             ExcellonFile File1Parsed = new ExcellonFile();
             File1Parsed.Load(Log, file1);
             List<ExcellonFile> OtherFilesParsed = new List<ExcellonFile>();
             foreach (var otherfile in otherfiles)
             {
 
-                Console.WriteLine("*** Reading {0}:", otherfile);
+                Log.AddString(String.Format("Reading {0}:", otherfile));
                 ExcellonFile OtherFileParsed = new ExcellonFile();
                 OtherFileParsed.Load(Log, otherfile);
                 OtherFilesParsed.Add(OtherFileParsed);
@@ -125,6 +132,8 @@ namespace GerberLibrary
                 }
             }
             File1Parsed.Write(output, 0, 0, 0, 0);
+
+            Log.PopActivity();
         }
 
         private void AddToolWithHoles(ExcellonTool d)
@@ -165,20 +174,22 @@ namespace GerberLibrary
                 Log.PopActivity();
                 return;
             }
+
             if (File.Exists(file2) == false)
             {
                 Log.AddString(String.Format("{0} not found! stopping process!", file2));
                 Log.PopActivity();
                 return;
             }
-            Log.AddString(String.Format("*** Merging {0} with {1}", file1, file2));
 
-            Log.AddString(String.Format("*** Reading {0}:", file1));
+            Log.AddString(String.Format("Reading {0}:", file1));
             ExcellonFile File1Parsed = new ExcellonFile();
             File1Parsed.Load(Log, file1);
-            Log.AddString(String.Format("*** Reading {0}:", file2));
+            Log.AddString(String.Format("Reading {0}:", file2));
             ExcellonFile File2Parsed = new ExcellonFile();
             File2Parsed.Load(Log, file2);
+
+            Log.AddString(String.Format("Merging {0} with {1}", file1, file2));
 
             int MaxID = 0;
             foreach (var D in File1Parsed.Tools)
@@ -561,9 +572,11 @@ namespace GerberLibrary
 
         public static void WriteContainedOnly(string inputfile, PolyLine Boundary, string outputfilename, ProgressLog Log)
         {
+            Log.PushActivity("Excellon Clipper");
             if (File.Exists(inputfile) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(inputfile));
+                Log.AddString(String.Format("{0} not found! stopping process!", Path.GetFileName(inputfile)));
+                Log.PopActivity();
                 return;
             }
             Log.AddString(String.Format("Clipping {0} to {1}", Path.GetFileName(inputfile), Path.GetFileName(outputfilename)));
@@ -571,7 +584,7 @@ namespace GerberLibrary
             ExcellonFile EF = new ExcellonFile();
             EF.Load(Log, inputfile);
             EF.WriteContained(Boundary, outputfilename, Log);
-
+            Log.PopActivity();
         }
 
         private void WriteContained(PolyLine boundary, string outputfilename, ProgressLog log)

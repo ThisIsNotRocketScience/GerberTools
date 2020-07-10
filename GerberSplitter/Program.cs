@@ -32,7 +32,7 @@ namespace GerberSplitter
             
             var OutputFolder = Path.GetDirectoryName(slicefile) + @"\Output\" + Path.GetFileNameWithoutExtension(slicefile);
 
-            ParsedGerber P = PolyLineSet.LoadGerberFile(slicefile);
+            ParsedGerber P = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), slicefile);
 
             foreach (var l in P.Shapes)
             {

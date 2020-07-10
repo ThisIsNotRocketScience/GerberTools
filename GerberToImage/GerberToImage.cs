@@ -20,6 +20,8 @@ namespace GerberToImage
             nonormal,
             silk,
             mask,
+            trace,
+            copper, 
             None
         }
 
@@ -29,7 +31,7 @@ namespace GerberToImage
             if (args.Count() < 1)
             {
                 Console.WriteLine("need files to render...");
-                Console.WriteLine("GerberToImage <files> [--dpi N] [--noxray] [--nopcb] [--silk black:white] [--mask yellow:green:red:black:white:blue]");
+                Console.WriteLine("GerberToImage <files> [--dpi N] [--noxray] [--nopcb] [--silk color] [--trace color] [--copper color] [--mask color]");
                 return;
             }
 
@@ -38,7 +40,9 @@ namespace GerberToImage
             bool xray = true;
                bool normal = true;
             string pcbcolor = "green";
-            string silkcolor = "";
+            string silkcolor = "white";
+            string tracecolor = "auto";
+            string coppercolor = "gold";
             List<string> RestList = new List<string>();
             for (int i = 0; i < args.Count() ; i++)
             {
@@ -48,11 +52,15 @@ namespace GerberToImage
                     case Arguments.dpi: dpi = Int32.Parse(args[i]); NextArg = Arguments.None; break;
                     case Arguments.silk: silkcolor = args[i];NextArg = Arguments.None;break;
                     case Arguments.mask: pcbcolor = args[i]; NextArg = Arguments.None; break;
+                    case Arguments.trace: tracecolor = args[i]; NextArg = Arguments.None; break;
+                    case Arguments.copper: coppercolor= args[i]; NextArg = Arguments.None; break;
                     case Arguments.None:
                         switch (args[i].ToLower())
                         {
                             case "--dpi": NextArg = Arguments.dpi; break;
                             case "--silk": NextArg = Arguments.silk;break;
+                            case "--trace": NextArg = Arguments.trace; break;
+                            case "--copper": NextArg = Arguments.copper; break;
                             case "--mask": NextArg = Arguments.mask; break;
                             case "--noxray": xray = false; NextArg = Arguments.None; break;
                             case "--nopcb": normal = false; NextArg = Arguments.None; break;
@@ -118,51 +126,9 @@ namespace GerberToImage
             GIC.AddBoardsToSet(FileList,new StandardConsoleLog(),  true);
             BoardRenderColorSet colors = new BoardRenderColorSet();
 
+            if (pcbcolor == "") pcbcolor = "black";
+            colors.SetupColors(pcbcolor, silkcolor, tracecolor, coppercolor);
 
-            switch(pcbcolor)
-            {
-                case "yellow": colors.BoardRenderColor = Gerber.ParseColor("yellow");
-                               colors.BoardRenderSilkColor = Gerber.ParseColor("white");
-                    break;
-                case "green":
-                    colors.BoardRenderColor = Gerber.ParseColor("green");
-                    colors.BoardRenderSilkColor = Gerber.ParseColor("white");
-                    break;
-                case "black":
-                    colors.BoardRenderColor = Gerber.ParseColor("black");
-                    colors.BoardRenderSilkColor = Gerber.ParseColor("white");
-                    break;
-                case "white":
-                    colors.BoardRenderColor = Gerber.ParseColor("white");
-                    colors.BoardRenderSilkColor = Gerber.ParseColor("black");
-                    break;
-                case "blue":
-                    colors.BoardRenderColor = Gerber.ParseColor("yellow");
-                    colors.BoardRenderSilkColor = Gerber.ParseColor("white");
-                    break;
-                case "red":
-                    colors.BoardRenderColor = Gerber.ParseColor("red");
-                    colors.BoardRenderSilkColor = Gerber.ParseColor("white");
-                    break;
-            }
-
-            colors.BoardRenderTraceColor = colors.BoardRenderColor;
-            if (silkcolor.Length > 0)
-            {
-                switch(silkcolor)
-                {
-                    case "white":
-                        colors.BoardRenderSilkColor = Gerber.ParseColor("white"); 
-                        break;
-
-                    case "black":
-                        colors.BoardRenderSilkColor = Gerber.ParseColor("black"); 
-                        break;
-
-
-                }
-            }
-            colors.BoardRenderPadColor = Gerber.ParseColor("silver");
 
             GIC.SetColors(colors);
             GIC.WriteImageFiles(TargetFileBaseName, dpi, false, xray, normal, new StandardConsoleLog());

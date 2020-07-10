@@ -69,7 +69,7 @@ namespace GerberViewer
                 State.PreCombinePolygons = precombinepolygons;
                
 
-                PLS = PolyLineSet.LoadGerberFileFromStream(new StreamReader(S),origfilename, forcezerowidth, false, State);
+                PLS = PolyLineSet.LoadGerberFileFromStream(log, new StreamReader(S),origfilename, forcezerowidth, false, State);
                 S.Seek(0, SeekOrigin.Begin);
 
                 PLS.Side = Side;

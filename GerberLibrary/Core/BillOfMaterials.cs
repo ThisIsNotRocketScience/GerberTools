@@ -56,7 +56,7 @@ namespace GerberLibrary.Core
                 return CombinedName;
             }
             // else
-            return (Name + "_" + PackageName + "_" + Value).Replace(' ', '_');
+            return (Name + "_" + PackageName + "_" + Value).Replace(' ', '_').Replace(',','.');
         }
 
         public string DisplayLine()
@@ -242,12 +242,17 @@ namespace GerberLibrary.Core
                         {
                             if (p.PointInPoly(new Primitives.PointD(n.x, n.y)))
                             {
-                                Res[i].AddBOMItemInt(devicevalue.Value.PackageName, devicevalue.Value.Name, devicevalue.Value.Value, n.NameOnBoard, Ns[i], n.SourceBoard, n.x, n.y, n.angle, n.Side);
+
+                                OptionalOut<BOMEntry> bom = new OptionalOut<BOMEntry>();
+
+                                Res[i].AddBOMItemInt(devicevalue.Value.PackageName, devicevalue.Value.Name, devicevalue.Value.Value, n.NameOnBoard, Ns[i], n.SourceBoard, n.x, n.y, n.angle, n.Side, bom);
+                                bom.Result.SetCombined(devicevalue.Value.Combined());
+
                                 added++;
                             }
                             i++;
                         }
-                        if (added ==0 )
+                        if (added == 0)
                         {
                             Console.WriteLine("part skipped for some reason: {0}", n.NameOnBoard);
                         }
@@ -290,18 +295,26 @@ namespace GerberLibrary.Core
         public string AddBOMItemExt(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle, BoardSide side = BoardSide.Top)
         {
             string ID = GetID(package, device, refdes);
-            return AddBOMItemInt(package, device, value, refdes, set, SourceBoard, x, y, angle , side);
+            return AddBOMItemInt(package, device, value, refdes, set, SourceBoard, x, y, angle, side);
         }
 
-        string AddBOMItemInt(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle, BoardSide side = BoardSide.Top)
+        public class OptionalOut<Type>
+        {
+            public Type Result { get; set; }
+        }
+
+        string AddBOMItemInt(string package, string device, string value, string refdes, BOMNumberSet set, string SourceBoard, double x, double y, double angle, BoardSide side = BoardSide.Top, OptionalOut<BOMEntry> bom = null)
         {
 
             string ID = GetID(package, device, refdes);
 
-            
+
             if (DeviceTree.ContainsKey(ID) == false) DeviceTree[ID] = new Dictionary<string, BOMEntry>();
             if (DeviceTree[ID].ContainsKey(value) == false) DeviceTree[ID][value] = new BOMEntry() { Name = device, Value = value, PackageName = package };
             BOMEntry BE = DeviceTree[ID][value];
+
+            if (bom != null) { bom.Result = BE; };
+
             return BE.AddRef(refdes, SourceBoard, set, x, y, angle, side);
 
 
@@ -327,7 +340,9 @@ namespace GerberLibrary.Core
                         double X = c.x;
                         double Y = c.y;
                         Helpers.Transform(dx, dy, cx, cy, angle, ref X, ref Y);
-                        AddBOMItemInt(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle + angle) % 360, c.Side);
+                        OptionalOut<BOMEntry> bom = new OptionalOut<BOMEntry>();
+                        AddBOMItemInt(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle + angle) % 360, c.Side, bom);
+                        bom.Result.SetCombined(b.Value.Combined());
                     }
                 }
             }
@@ -369,6 +384,46 @@ namespace GerberLibrary.Core
             return partcount;
         }
 
+        public void LoadPrinted(string filename)
+        {
+            BOMNumberSet BS = new BOMNumberSet();
+            try
+            {
+                var L = File.ReadAllLines(filename);
+
+                //string Header = "Count,Name,Type,Package,Value,MfgPartNumber,RefDes";
+
+                int idxcount = 0;
+                int idxname = 1;
+                int idxtype = 2;
+                int idxpackage = 3;
+                int idxvalue = 4;
+                int idxmfg = 5;
+                int idxrefdes = 6;
+                var Hsplit = L[0].Split(',');
+
+
+
+                for (int l = 1; l < L.Count(); l++)
+                {
+                    var lsplit = L[l].Split(',');
+                    var refsplit = lsplit[idxrefdes].Split(' ');
+                    foreach (var refdes in refsplit)
+                    {
+                        AddBOMItemInt(lsplit[idxpackage], lsplit[idxname], lsplit[idxvalue], refdes, BS, filename, 0, 0, 0);
+                    }
+                }
+
+
+            }
+            catch (Exception)
+            {
+
+            }
+
+
+        }
+
         public List<string> PrintBOM(List<String> IgnoreList, bool AddDefaultIgnoreList = true)
         {
             List<string> ToIgnore;
@@ -405,6 +460,7 @@ namespace GerberLibrary.Core
                         {
                             L = L + String.Format("{0} ", c.NameOnBoard);
                         }
+
                         Lines.Add(new Tuple<string, string, string>(b.Value.Name, b.Value.Value, L));
                     }
 
@@ -683,6 +739,7 @@ namespace GerberLibrary.Core
 
         private static string MulticompThickFilmResistorPartno(string value)
         {
+            value = value.Replace(',', '.');
             var r = new Regex("RES_0603_1%_RES_0603_([^_]*)$");
             Match m = r.Match(value);
             if (m.Groups.Count != 2) return "";
@@ -735,38 +792,48 @@ namespace GerberLibrary.Core
             }
         }
 
-        public void Remap(string basefolder)
+        public void Remap(ProgressLog log, string basefolder)
         {
+            log.PushActivity("Remap");
+
             var D = PartLibrary.CreatePassivesMapping();
             File.WriteAllLines(Path.Combine(basefolder, "genmapping.txt"), (from i in D select i.Key + " " + i.Value).ToList());
             var map = File.ReadAllLines(Path.Combine(basefolder, "bommapping.txt"));
-
+            log.AddString("Loaded bommapping!");
             foreach (var l in map)
             {
                 var A = l.Split(' ');
-                if (A.Count() == 2)
+                if (A.Count() >= 2)
                 {
                     string from = A[0];
                     string to = A[1];
 
-                    RemapPair(from, to);
+                    bool dooverride = false;
+                    if (A.Count()> 2)
+                        {
+                            if (A[2] == "override" ){ dooverride = true; };
+                        }
+                        RemapPair(log, from, to, dooverride);
+                    //Console.WriteLine("remapped {0} to {1}", from, to);
 
                 }
             }
             foreach (var l in D)
             {
-                RemapPair(l.Key, l.Value);
-            }
 
+                RemapPair(log, l.Key, l.Value, false);
+            }
+            log.PopActivity();
         }
 
-        private void RemapPair(string from, string to)
+        private void RemapPair(ProgressLog log, string from, string to, bool overridevalue )
         {
+            log.PushActivity("RemapPair");
             if (from != to)
             {
 
-                var F = FindEntry(from);
-                var T = FindEntry(to);
+                var F = FindEntry(from, overridevalue);
+                var T = FindEntry(to, overridevalue);
                 if (F != null)
                 {
                     if (T != null)
@@ -781,11 +848,12 @@ namespace GerberLibrary.Core
                     }
                     else
                     {
-                        Console.WriteLine("From found, but no To: {0}", from);
+                        log.AddString(String.Format("From found, but no To: {0}", from));
                         F.SetCombined(to);
                     }
                 }
             }
+            log.PopActivity();
         }
 
         private void RemoveEntry(BOMEntry f)
@@ -799,7 +867,7 @@ namespace GerberLibrary.Core
             }
         }
 
-        private BOMEntry FindEntry(string q)
+        private BOMEntry FindEntry(string q, bool overridevalue = false)
         {
             foreach (var a in DeviceTree)
             {
@@ -1094,14 +1162,14 @@ namespace GerberLibrary.Core
 
         }
         */
-        public void WriteJLCCSV(string BaseFolder, string Name)
+        public void WriteJLCCSV(string BaseFolder, string Name, bool ellagetoo = false)
         {
 
             List<string> outlinesBOM = new List<string>();
             List<string> OutlinesRotations = new List<string>();
 
 
-            outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #");
+            outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #,combinedname,name");
             foreach (var ds in DeviceTree)
             {
 
@@ -1120,7 +1188,13 @@ namespace GerberLibrary.Core
                     {
                         V = v.MfgPartNumber;
                     }
-                    string line = String.Format("{0},{1},{2},{3}",V,refdescs,v.PackageName,v.MfgPartNumber);
+
+                    string mfg = "";
+                    if (v.MfgPartNumber != null)
+                    {
+                        mfg = v.MfgPartNumber.Replace(',', '.');
+                    }
+                    string line = String.Format("{0},{1},{2},{3},{4},{5}",V,refdescs,v.PackageName,mfg,v.Combined(), v.Name);
                     outlinesBOM.Add(line);
 
                 }
@@ -1149,7 +1223,33 @@ namespace GerberLibrary.Core
             }
 
             File.WriteAllLines(BaseFolder + "\\" + Name + "_PNP.csv", outlinesPNP);
-            foreach(var a in RotationOffsets)
+
+            List<string> EllageoutlinesPNP = new List<string>();
+            EllageoutlinesPNP.Add("Designator,Mid X mm,Mid Y mm,Layer,Rotation deg");
+            foreach (var ds in DeviceTree)
+            {
+
+                foreach (var v in ds.Value.Values)
+                {
+                    foreach (var p in v.RefDes)
+                    {
+                        int angle = (int)((p.angle + 179 + 360 + GetRotationOffset(v.Combined())) % 360) -179;
+                        string line = String.Format("{0},{1},{2},{3},{4}",
+                        p.NameOnBoard,
+                        p.x.ToString("F2").Replace(",", "."),
+                        p.y.ToString("F2").Replace(",", "."),
+                        p.Side == BoardSide.Top ? "T" : "B",
+                           angle);
+                        EllageoutlinesPNP.Add(line);
+
+                    }
+                }
+            }
+
+            File.WriteAllLines(BaseFolder + "\\" + Name + "_Ellage_PNP.csv", EllageoutlinesPNP);
+
+
+            foreach (var a in RotationOffsets)
             {
                 OutlinesRotations.Add(String.Format("{0} {1}", a.Key, a.Value));
             }
@@ -1231,7 +1331,8 @@ namespace GerberLibrary.Core
             }
 
             BOMNumberSet Set = new BOMNumberSet();
-
+            var headers = bomlines[0].Split(',');
+            
             for (int i = 1; i < bomlines.Count(); i++)
             {
                 var s = bomlines[i];
@@ -1255,8 +1356,21 @@ namespace GerberLibrary.Core
                 foreach (var rd_ in rd)
                 {
                     var S = positions[rd_.Trim()];
+                    if (headers.Count() > 5)
+                    {
+                        OptionalOut<BOMEntry> Entr = new OptionalOut<BOMEntry>(); ;
+                        string name = items[5];
+                        string combined = items[4];
+                        AddBOMItemInt(package, name, value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side, Entr);
+                        Entr.Result.SetCombined(combined);
+                        //AddBOMItemExt(package, name, value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side);
 
-                    AddBOMItemExt(package, "", value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side);
+                    }
+                    else
+                    {
+                        AddBOMItemExt(package, "", value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side);
+                    }
+                        
                 }
 
 

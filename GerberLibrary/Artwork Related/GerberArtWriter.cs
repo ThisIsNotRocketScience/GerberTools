@@ -43,7 +43,7 @@ namespace GerberLibrary
 
         public class Functions
         {
-            public static void CreateArtLayersForFolder(string foldername, ArtLayerStyle Style)
+            public static void CreateArtLayersForFolder(ProgressLog log, string foldername, ArtLayerStyle Style)
             {
                 if (Directory.Exists(foldername) == false) return;
 
@@ -91,53 +91,53 @@ namespace GerberLibrary
 
                 if (outlinefile.Length > 0)
                 {
-                    if (bottomfile.Length > 0) WriteArtLayerFiles(outlinefile, bottomfile, bottomsilkfile, Style);
-                    if (topfile.Length > 0 && Style != ArtLayerStyle.PrototypeEdge) WriteArtLayerFiles(outlinefile, topfile, topsilkfile, Style);
+                    if (bottomfile.Length > 0) WriteArtLayerFiles(log, outlinefile, bottomfile, bottomsilkfile, Style);
+                    if (topfile.Length > 0 && Style != ArtLayerStyle.PrototypeEdge) WriteArtLayerFiles(log, outlinefile, topfile, topsilkfile, Style);
                 }
             }
 
-            public static void WriteArtLayerFiles(string outline, string paste, string silk, ArtLayerStyle Style)
+            public static void WriteArtLayerFiles(ProgressLog log, string outline, string paste, string silk, ArtLayerStyle Style)
             {
                 BoardSide Side;
                 BoardLayer Layer;
                 Gerber.DetermineBoardSideAndLayer(paste, out Side, out Layer);
-                DoArtLayer(outline, paste, Path.Combine(Path.GetDirectoryName(outline), Path.GetFileNameWithoutExtension(outline) + "_artlayer" + ((Side == BoardSide.Top) ? ".gto" : ".gbo")), Style, silk);
+                DoArtLayer(log, outline, paste, Path.Combine(Path.GetDirectoryName(outline), Path.GetFileNameWithoutExtension(outline) + "_artlayer" + ((Side == BoardSide.Top) ? ".gto" : ".gbo")), Style, silk);
             }
 
-            static void DoArtLayer(string outline, string soldermask, string target, ArtLayerStyle Style, string silk = "")
+            static void DoArtLayer(ProgressLog log, string outline, string soldermask, string target, ArtLayerStyle Style, string silk = "")
             {
 
                 switch (Style)
                 {
                     case ArtLayerStyle.PrototypeEdge:
-                        ArtGenerator_ProtoEdge(outline, soldermask, target, silk);
+                        ArtGenerator_ProtoEdge(log, outline, soldermask, target, silk);
                         break;
                     case ArtLayerStyle.OffsetCurves_GoldfishBoard:
-                        ArtGenerator_OffsetCurves(outline, soldermask, target, silk);
+                        ArtGenerator_OffsetCurves(log, outline, soldermask, target, silk);
                         break;
                     case ArtLayerStyle.FlowField:
-                        ArtGenerator_FlowField(outline, soldermask, target, silk);
+                        ArtGenerator_FlowField(log, outline, soldermask, target, silk);
                         break;
                     case ArtLayerStyle.CheckerField:
-                        ArtGenerator_CheckerField(outline, soldermask, target, silk);
+                        ArtGenerator_CheckerField(log, outline, soldermask, target, silk);
                         break;
                     case ArtLayerStyle.Flower:
-                        ArtGenerator_Flower(outline, soldermask, target, silk);
+                        ArtGenerator_Flower(log, outline, soldermask, target, silk);
                         break;
                     case ArtLayerStyle.ReactDiffuse:
-                        ArtGenerator_ReactDiffuse(outline, soldermask, target, silk);
+                        ArtGenerator_ReactDiffuse(log, outline, soldermask, target, silk);
                         break;
 
                 }
 
             }
 
-            private static void ArtGenerator_ProtoEdge(string outline, string soldermask, string target, string silk)
+            private static void ArtGenerator_ProtoEdge(ProgressLog log,   string outline, string soldermask, string target, string silk)
             {
                 Polygons CombinedSoldermask = new Polygons();
-                Console.WriteLine("combining outlines..");
+                log.AddString(String.Format("combining outlines.."));
 
-                ParsedGerber Outline = PolyLineSet.LoadGerberFile(outline);
+                ParsedGerber Outline = PolyLineSet.LoadGerberFile(log, outline);
                 //Outline.FixPolygonWindings();
 
 
@@ -275,22 +275,22 @@ namespace GerberLibrary
                 public float G;
             }
 
-            private static void ArtGenerator_ReactDiffuse(string outline, string soldermask, string target, string silk)
+            private static void ArtGenerator_ReactDiffuse(ProgressLog log, string outline, string soldermask, string target, string silk)
             {
                 if (TheBounceInterface == null) TheBounceInterface = new BasicBounce();
-                Console.WriteLine("Artlayer {0} started: CheckerField", target);
+                log.AddString(String.Format("Artlayer {0} started: CheckerField", target));
                 ParsedGerber Outline ;
                 ParsedGerber SolderMask; 
-                Outline = PolyLineSet.LoadGerberFile(outline, true, false, new GerberParserState() {  PreCombinePolygons = true});
+                Outline = PolyLineSet.LoadGerberFile(log, outline, true, false, new GerberParserState() {  PreCombinePolygons = true});
                 Outline.FixPolygonWindings();
 
-                SolderMask = PolyLineSet.LoadGerberFile(soldermask, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1});
+                SolderMask = PolyLineSet.LoadGerberFile(log, soldermask, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1});
                 SolderMask.FixPolygonWindings();
 
                 
                 Polygons CombinedOutline = new Polygons();
                 Polygons CombinedSoldermask = new Polygons();
-                Console.WriteLine("combining outlines..");
+                log.AddString(String.Format("combining outlines.."));
 
                 for (int i = 0; i < Outline.OutlineShapes.Count; i++)
                 {
@@ -303,7 +303,7 @@ namespace GerberLibrary
 
                     cp.Execute(ClipType.ctXor, CombinedOutline, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
                 }
-                Console.WriteLine("removing paste curves..");
+                log.AddString(String.Format("removing paste curves.."));
                 if (true)
                     for (int i = 0; i < SolderMask.OutlineShapes.Count; i++)
                     {
@@ -325,15 +325,15 @@ namespace GerberLibrary
 
                 if (silk.Length > 0)
                 {
-                    Console.WriteLine("removing silk curves..");
+                    log.AddString(String.Format("removing silk curves.."));
                     
-                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(silk, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
+                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(log, silk, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
 
                     //Silk.FixPolygonWindings();
 
 
 
-                    Console.WriteLine("building big polygon..");
+                    log.AddString(String.Format("building big polygon.."));
                     {
 
                         Polygons clips = new Polygons();
@@ -349,7 +349,7 @@ namespace GerberLibrary
 
                         cp.Execute(ClipType.ctUnion, OriginalCombinedSilk, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
                     }
-                    Console.WriteLine("offsetting big polygon..");
+                    log.AddString(String.Format("offsetting big polygon.."));
 
                     CombinedSilk = Clipper.OffsetPolygons(OriginalCombinedSilk, 1.0 * 100000.0f, JoinType.jtRound, 0.1 * 100000.0f);
                     {
@@ -383,7 +383,7 @@ namespace GerberLibrary
                 for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
                 Graphics G = Graphics.FromImage(B);
                 G.Clear(Color.Black);
-                Console.WriteLine("Rendering Base Bitmap");
+                log.AddString(String.Format("Rendering Base Bitmap"));
                 G.SmoothingMode = SmoothingMode.AntiAlias;
 
                 foreach (var a in CombinedOutline)
@@ -437,7 +437,7 @@ namespace GerberLibrary
                 B.Save(target + "_renderbase.png");
 
 
-                Console.WriteLine("Calculating Distance Field");
+                log.AddString(String.Format("Calculating Distance Field"));
 
                 {
 
@@ -474,7 +474,7 @@ namespace GerberLibrary
                         }
                     }
                 }
-                Console.WriteLine("Blurring Distance Field");
+                log.AddString(String.Format("Blurring Distance Field"));
 
                 double maxblurval = 0;
                 double minblurval = 100000000000;
@@ -534,7 +534,7 @@ namespace GerberLibrary
                 B.Save(target + "_renderbase_afterdistance.png");
 
 
-                Console.WriteLine("Calculating DiffusePasses");
+                log.AddString(String.Format("Calculating DiffusePasses"));
 
                 {
                     int img = 0;
@@ -579,7 +579,7 @@ namespace GerberLibrary
                     for (int i = 0; i < 1; i++)
                     {
 
-                        Console.WriteLine("bounce {0}/{1}", i, totalbounce);
+                        log.AddString(String.Format("bounce {0}/{1}", i, totalbounce));
 
                         TheBounceInterface.BounceN(1000, FieldA, FieldB, iW, iH, feedrate, killrate, DistanceFieldBlur);
 
@@ -690,9 +690,9 @@ namespace GerberLibrary
 
                 }
 
-                Console.WriteLine("Converting to gerber..");
+                log.AddString(String.Format("Converting to gerber.."));
                 WriteBitmapToGerber(target, Outline, Res, B2, 128);
-                Console.WriteLine("Done");
+                log.AddString(String.Format("Done"));
             }
 
             private static void SetF(RD_Elem[] FieldB, int x, int y, int iW, int iH, float p1, float p2)
@@ -711,22 +711,22 @@ namespace GerberLibrary
 
             }
 
-            private static void ArtGenerator_Flower(string outline, string soldermask, string target, string silk)
+            private static void ArtGenerator_Flower(ProgressLog log, string outline, string soldermask, string target, string silk)
             {
-                Console.WriteLine("Artlayer {0} started: CheckerField", target);
+                log.AddString(String.Format("Artlayer {0} started: CheckerField", target));
                 
 
-                ParsedGerber Outline = PolyLineSet.LoadGerberFile(outline, true, false, new GerberParserState() { PreCombinePolygons = true});
+                ParsedGerber Outline = PolyLineSet.LoadGerberFile(log, outline, true, false, new GerberParserState() { PreCombinePolygons = true});
                 Outline.FixPolygonWindings();
 
-                ParsedGerber SolderMask = PolyLineSet.LoadGerberFile(soldermask, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
+                ParsedGerber SolderMask = PolyLineSet.LoadGerberFile(log, soldermask, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
                 SolderMask.FixPolygonWindings();
 
                 //Silk.FixPolygonWindings();
 
                 Polygons CombinedOutline = new Polygons();
                 Polygons CombinedSoldermask = new Polygons();
-                Console.WriteLine("combining outlines..");
+                log.AddString(String.Format("combining outlines.."));
 
                 for (int i = 0; i < Outline.OutlineShapes.Count; i++)
                 {
@@ -739,7 +739,7 @@ namespace GerberLibrary
 
                     cp.Execute(ClipType.ctXor, CombinedOutline, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
                 }
-                Console.WriteLine("removing paste curves..");
+                log.AddString(String.Format("removing paste curves.."));
                 if (true)
                     for (int i = 0; i < SolderMask.OutlineShapes.Count; i++)
                     {
@@ -758,15 +758,15 @@ namespace GerberLibrary
 
                 if (silk.Length > 0)
                 {
-                    Console.WriteLine("removing silk curves..");
+                    log.AddString(String.Format("removing silk curves.."));
                     
-                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(silk, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
+                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(log, silk, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
                     //Silk.FixPolygonWindings();
 
 
                     Polygons CombinedSilk = new Polygons();
 
-                    Console.WriteLine("building big polygon..");
+                    log.AddString(String.Format("building big polygon.."));
                     {
 
                         Polygons clips = new Polygons();
@@ -782,7 +782,7 @@ namespace GerberLibrary
 
                         cp.Execute(ClipType.ctUnion, CombinedSilk, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
                     }
-                    Console.WriteLine("offsetting big polygon..");
+                    log.AddString(String.Format("offsetting big polygon.."));
 
                     CombinedSilk = Clipper.OffsetPolygons(CombinedSilk, 1.0 * 100000.0f, JoinType.jtRound, 0.1 * 100000.0f);
                     {
@@ -816,7 +816,7 @@ namespace GerberLibrary
                 for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
                 Graphics G = Graphics.FromImage(B);
                 G.Clear(Color.Black);
-                Console.WriteLine("Rendering Base Bitmap");
+                log.AddString(String.Format("Rendering Base Bitmap"));
                 // G.SmoothingMode = SmoothingMode.AntiAlias;
                 foreach (var a in CombinedOutline)
                 {
@@ -843,7 +843,7 @@ namespace GerberLibrary
 
                 }
                 B.Save(target + "_renderbase.png");
-                Console.WriteLine("Calculating Distance Field");
+                log.AddString(String.Format("Calculating Distance Field"));
 
                 {
                     for (int x = 0; x < iW; x++)
@@ -880,7 +880,7 @@ namespace GerberLibrary
                         }
                     }
                 }
-                Console.WriteLine("Blurring Distance Field");
+                log.AddString(String.Format("Blurring Distance Field"));
 
                 double maxblurval = 0;
                 double minblurval = 100000000000;
@@ -936,7 +936,7 @@ namespace GerberLibrary
                     B.Save(target + "_renderDistance.png");
                 }
 
-                Console.WriteLine("Calculating Flower Field and Artwork");
+                log.AddString(String.Format("Calculating Flower Field and Artwork"));
                 GerberArtWriter GOW = new GerberArtWriter();
                 {
 
@@ -983,7 +983,7 @@ namespace GerberLibrary
                 }
 
                 GOW.Write(target);
-                Console.WriteLine("Done");
+                log.AddString(String.Format("Done"));
             }
 
             public class FlowerThing
@@ -1270,21 +1270,21 @@ namespace GerberLibrary
 
             }
 
-            private static void ArtGenerator_CheckerField(string outline, string soldermask, string target, string silk)
+            private static void ArtGenerator_CheckerField(ProgressLog log, string outline, string soldermask, string target, string silk)
             {
-                Console.WriteLine("Artlayer {0} started: CheckerField", target);                
+                log.AddString(String.Format("Artlayer {0} started: CheckerField", target));                
                 
-                ParsedGerber Outline = PolyLineSet.LoadGerberFile(outline, true, false, new GerberParserState() { PreCombinePolygons = true });
+                ParsedGerber Outline = PolyLineSet.LoadGerberFile(log, outline, true, false, new GerberParserState() { PreCombinePolygons = true });
                 Outline.FixPolygonWindings();
 
-                ParsedGerber SolderMask = PolyLineSet.LoadGerberFile(soldermask, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1});
+                ParsedGerber SolderMask = PolyLineSet.LoadGerberFile(log, soldermask, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1});
                 SolderMask.FixPolygonWindings();
 
                 //Silk.FixPolygonWindings();
 
                 Polygons CombinedOutline = new Polygons();
                 Polygons CombinedSoldermask = new Polygons();
-                Console.WriteLine("combining outlines..");
+                log.AddString(String.Format("combining outlines.."));
 
                 for (int i = 0; i < Outline.OutlineShapes.Count; i++)
                 {
@@ -1297,7 +1297,7 @@ namespace GerberLibrary
 
                     cp.Execute(ClipType.ctXor, CombinedOutline, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
                 }
-                Console.WriteLine("removing paste curves..");
+                log.AddString(String.Format("removing paste curves.."));
                 if (true)
                     for (int i = 0; i < SolderMask.OutlineShapes.Count; i++)
                     {
@@ -1316,15 +1316,15 @@ namespace GerberLibrary
 
                 if (silk.Length > 0)
                 {
-                    Console.WriteLine("removing silk curves..");
+                    log.AddString(String.Format("removing silk curves.."));
                     
-                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(silk, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
+                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(log, silk, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
                     //Silk.FixPolygonWindings();
 
 
                     Polygons CombinedSilk = new Polygons();
 
-                    Console.WriteLine("building big polygon..");
+                    log.AddString(String.Format("building big polygon.."));
                     {
 
                         Polygons clips = new Polygons();
@@ -1340,7 +1340,7 @@ namespace GerberLibrary
 
                         cp.Execute(ClipType.ctUnion, CombinedSilk, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
                     }
-                    Console.WriteLine("offsetting big polygon..");
+                    log.AddString(String.Format("offsetting big polygon.."));
 
                     CombinedSilk = Clipper.OffsetPolygons(CombinedSilk, 1.0 * 100000.0f, JoinType.jtRound, 0.1 * 100000.0f);
                     {
@@ -1374,7 +1374,7 @@ namespace GerberLibrary
                 for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
                 Graphics G = Graphics.FromImage(B);
                 G.Clear(Color.Black);
-                Console.WriteLine("Rendering Base Bitmap");
+                log.AddString(String.Format("Rendering Base Bitmap"));
                 // G.SmoothingMode = SmoothingMode.AntiAlias;
                 foreach (var a in CombinedOutline)
                 {
@@ -1401,7 +1401,7 @@ namespace GerberLibrary
 
                 }
                 B.Save(target + "_renderbase.png");
-                Console.WriteLine("Calculating Distance Field");
+                log.AddString(String.Format("Calculating Distance Field"));
 
                 {
                     for (int x = 0; x < iW; x++)
@@ -1438,7 +1438,7 @@ namespace GerberLibrary
                         }
                     }
                 }
-                Console.WriteLine("Blurring Distance Field");
+                log.AddString(String.Format("Blurring Distance Field"));
 
                 double maxblurval = 0;
                 double minblurval = 100000000000;
@@ -1490,7 +1490,7 @@ namespace GerberLibrary
                     }
                     B.Save(target + "_renderDistance.png");
                 }
-                Console.WriteLine("Calculating Angle Field and Artwork");
+                log.AddString(String.Format("Calculating Angle Field and Artwork"));
 
                 {
                     G.Clear(Color.Black);
@@ -1537,9 +1537,9 @@ namespace GerberLibrary
                     B2.Save(target + "_artwork.png");
                 }
 
-                Console.WriteLine("Converting to gerber..");
+                log.AddString(String.Format("Converting to gerber.."));
                 WriteBitmapToGerber(target, Outline, Res, B2);
-                Console.WriteLine("Done");
+                log.AddString(String.Format("Done"));
 
 
             }
@@ -1599,6 +1599,12 @@ namespace GerberLibrary
 
                                 double offL = ((startlevel - Math.Abs(threshold)) / 128.0) * 1.0 / ResX;
                                 double offR = ((endlevel - Math.Abs(threshold)) / 128.0) * 1.0 / ResX;
+
+                                if (invert == false)
+                                {
+                                    offL = -offL;
+                                    offR = -offR;
+                                }
                                 //  offL *= -1;
                                 //     offR *= -1;
                                 pL.Add(sx / ResX + offL, ((double)y) / ResY);
@@ -1629,21 +1635,21 @@ namespace GerberLibrary
             }
 
 
-            private static void ArtGenerator_FlowField(string outline, string soldermask, string target, string silk)
+            private static void ArtGenerator_FlowField(ProgressLog log, string outline, string soldermask, string target, string silk)
             {
-                Console.WriteLine("Artlayer {0} started: CheckerField", target);
+                log.AddString(String.Format("Artlayer {0} started: CheckerField", target));
                 
-                ParsedGerber Outline = PolyLineSet.LoadGerberFile(outline, true, false, new GerberParserState() { PreCombinePolygons = true});
+                ParsedGerber Outline = PolyLineSet.LoadGerberFile(log, outline, true, false, new GerberParserState() { PreCombinePolygons = true});
                 Outline.FixPolygonWindings();
 
-                ParsedGerber SolderMask = PolyLineSet.LoadGerberFile(soldermask, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
+                ParsedGerber SolderMask = PolyLineSet.LoadGerberFile(log, soldermask, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
                 SolderMask.FixPolygonWindings();
 
                 //Silk.FixPolygonWindings();
 
                 Polygons CombinedOutline = new Polygons();
                 Polygons CombinedSoldermask = new Polygons();
-                Console.WriteLine("combining outlines..");
+                log.AddString(String.Format("combining outlines.."));
 
                 for (int i = 0; i < Outline.OutlineShapes.Count; i++)
                 {
@@ -1656,7 +1662,7 @@ namespace GerberLibrary
 
                     cp.Execute(ClipType.ctXor, CombinedOutline, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
                 }
-                Console.WriteLine("removing paste curves..");
+                log.AddString(String.Format("removing paste curves.."));
                 if (true)
                     for (int i = 0; i < SolderMask.OutlineShapes.Count; i++)
                     {
@@ -1675,15 +1681,15 @@ namespace GerberLibrary
 
                 if (silk.Length > 0)
                 {
-                    Console.WriteLine("removing silk curves..");
+                    log.AddString(String.Format("removing silk curves.."));
                     
-                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(silk, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
+                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(log, silk, false, false, new GerberParserState() { PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
                     //Silk.FixPolygonWindings();
 
 
                     Polygons CombinedSilk = new Polygons();
 
-                    Console.WriteLine("building big polygon..");
+                    log.AddString(String.Format("building big polygon.."));
                     {
 
                         Polygons clips = new Polygons();
@@ -1699,7 +1705,7 @@ namespace GerberLibrary
 
                         cp.Execute(ClipType.ctUnion, CombinedSilk, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
                     }
-                    Console.WriteLine("offsetting big polygon..");
+                    log.AddString(String.Format("offsetting big polygon.."));
 
                     CombinedSilk = Clipper.OffsetPolygons(CombinedSilk, 1.0 * 100000.0f, JoinType.jtRound, 0.1 * 100000.0f);
                     {
@@ -1733,7 +1739,7 @@ namespace GerberLibrary
                 for (int i = 0; i < iW * iH; i++) { DistanceField[i] = DistMode ? 0 : 100000; AngleField[i] = 0; };
                 Graphics G = Graphics.FromImage(B);
                 G.Clear(Color.Black);
-                Console.WriteLine("Rendering Base Bitmap");
+                log.AddString(String.Format("Rendering Base Bitmap"));
                 // G.SmoothingMode = SmoothingMode.AntiAlias;
                 foreach (var a in CombinedOutline)
                 {
@@ -1760,7 +1766,7 @@ namespace GerberLibrary
 
                 }
                 B.Save(target + "_renderbase.png");
-                Console.WriteLine("Calculating Distance Field");
+                log.AddString(String.Format("Calculating Distance Field"));
 
                 {
                     for (int x = 0; x < iW; x++)
@@ -1797,7 +1803,7 @@ namespace GerberLibrary
                         }
                     }
                 }
-                Console.WriteLine("Blurring Distance Field");
+                log.AddString(String.Format("Blurring Distance Field"));
 
                 double maxblurval = 0;
                 double minblurval = 100000000000;
@@ -1850,7 +1856,7 @@ namespace GerberLibrary
                     }
                     B.Save(target + "_renderDistance.png");
                 }
-                Console.WriteLine("Calculating Angle Field and Artwork");
+                log.AddString(String.Format("Calculating Angle Field and Artwork"));
                 GerberArtWriter GOW = new GerberArtWriter();
 
                 {
@@ -1908,26 +1914,27 @@ namespace GerberLibrary
 
 
                 GOW.Write(target);
-                Console.WriteLine("Done");
+                log.AddString(String.Format("Done"));
 
 
             }
 
-            private static void ArtGenerator_OffsetCurves(string outline, string soldermask, string target, string silk)
+            private static void ArtGenerator_OffsetCurves(ProgressLog log, string outline, string soldermask, string target, string silk)
             {
-                Console.WriteLine("Artlayer {0} started: OffsetCurves", target);
+                log.PushActivity("ArtGenerator_OffsetCurves");
+                log.AddString(String.Format("Artlayer {0} started: OffsetCurves", target));
                 
-                ParsedGerber Outline = PolyLineSet.LoadGerberFile(outline, true, false, new GerberParserState() { PreCombinePolygons = true });
+                ParsedGerber Outline = PolyLineSet.LoadGerberFile(log, outline, true, false, new GerberParserState() { PreCombinePolygons = true });
                 Outline.FixPolygonWindings();
 
-                ParsedGerber SolderMask = PolyLineSet.LoadGerberFile(soldermask, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
+                ParsedGerber SolderMask = PolyLineSet.LoadGerberFile(log, soldermask, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius = 0.1 });
                 SolderMask.FixPolygonWindings();
 
                 //Silk.FixPolygonWindings();
 
                 Polygons CombinedOutline = new Polygons();
                 Polygons CombinedSoldermask = new Polygons();
-                Console.WriteLine("combining outlines..");
+                log.AddString(String.Format("combining outlines.."));
 
                 for (int i = 0; i < Outline.OutlineShapes.Count; i++)
                 {
@@ -1940,7 +1947,7 @@ namespace GerberLibrary
 
                     cp.Execute(ClipType.ctXor, CombinedOutline, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
                 }
-                Console.WriteLine("removing paste curves..");
+                log.AddString(String.Format("removing paste curves.."));
                 if (true)
                 {
                     Polygons clips = new Polygons();
@@ -1958,15 +1965,15 @@ namespace GerberLibrary
 
                 if (silk.Length > 0)
                 {
-                    Console.WriteLine("removing silk curves..");
+                    log.AddString(String.Format("removing silk curves.."));
                     
-                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(silk, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius =0.1 });
+                    ParsedGerber Silk = PolyLineSet.LoadGerberFile(log, silk, false, false, new GerberParserState() {PreCombinePolygons = false, MinimumApertureRadius =0.1 });
                     //Silk.FixPolygonWindings();
 
 
                     Polygons CombinedSilk = new Polygons();
 
-                    Console.WriteLine("building big polygon..");
+                    log.AddString(String.Format("building big polygon.."));
                     {
 
                         Polygons clips = new Polygons();
@@ -1982,7 +1989,7 @@ namespace GerberLibrary
 
                         cp.Execute(ClipType.ctUnion, CombinedSilk, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
                     }
-                    Console.WriteLine("offsetting big polygon..");
+                    log.AddString(String.Format("offsetting big polygon.."));
 
                     CombinedSilk = Clipper.OffsetPolygons(CombinedSilk, 0.5 * 100000.0f, JoinType.jtRound, 0.1 * 100000.0f);
                     {
@@ -1996,14 +2003,14 @@ namespace GerberLibrary
 
                 }
 
-                Console.WriteLine("starting offsetcurves..");
+                log.AddString(String.Format("starting offsetcurves.."));
                 GerberArtWriter GOW = new GerberArtWriter();
                 double add = 0.5;
                 for (double i = 0.5; i < 15; i += add)
                 {
 
                     //    if (add < (0.25)) add = (0.25 );
-                    Console.WriteLine("offset {0}", i);
+                    log.AddString(String.Format("offset {0}", i));
 
                     CombinedOutline = Clipper.OffsetPolygons(CombinedOutline, -add * 100000.0f, JoinType.jtRound, 0.1 * 100000.0f);
                     foreach (var p in CombinedOutline)
@@ -2016,6 +2023,7 @@ namespace GerberLibrary
 
                 }
                 GOW.Write(target);
+                log.PopActivity();
             }
 
         }
@@ -2088,7 +2096,7 @@ namespace GerberLibrary
                 return new ArtSet();
             }
 
-            public Dictionary<string, FontSet> LoadFonts()
+            public Dictionary<string, FontSet> LoadFonts(ProgressLog log)
             {
                 Dictionary<string, FontSet> R = new Dictionary<string, FontSet>();
                 foreach (var a in Fonts)
@@ -2101,7 +2109,7 @@ namespace GerberLibrary
                     }
                     catch (Exception E)
                     {
-                        Console.WriteLine("Font file failed to load: {0} {1}: {2}", a.Name, a.FontFile, E.Message);
+                        log.AddString(String.Format("Font file failed to load: {0} {1}: {2}", a.Name, a.FontFile, E.Message));
                     }
                 }
                 return R;
@@ -2121,6 +2129,88 @@ namespace GerberLibrary
 
     public class GerberArtWriter
     {
+        public void WriteImageToBounds(Bitmap B, Bounds sizeofbitmap, Bounds rectangletobindto)
+        {
+            RectangleF bmpr = new RectangleF((float)sizeofbitmap.TopLeft.X, (float)sizeofbitmap.TopLeft.Y, (float)sizeofbitmap.Width(), (float)sizeofbitmap.Height());
+            RectangleF contain = new RectangleF((float)rectangletobindto.TopLeft.X, (float)rectangletobindto.TopLeft.Y, (float)rectangletobindto.Width(), (float)rectangletobindto.Height());
+            RectangleF section = new RectangleF((float)sizeofbitmap.TopLeft.X, (float)sizeofbitmap.TopLeft.Y, (float)sizeofbitmap.Width(), (float)sizeofbitmap.Height());
+
+            int threshold = 128;
+            if (bmpr.IntersectsWith(contain) == false) return;
+
+
+            section.Intersect(contain);
+
+            float dpiscaler = bmpr.Width / B.Width;
+
+            int YPIXELS = (int)Math.Ceiling(contain.Height / dpiscaler);
+            int XPIXELS = (int)Math.Ceiling(contain.Width / dpiscaler);
+            Console.WriteLine("ART LAYER {0} {1} {2}", YPIXELS, XPIXELS, dpiscaler);
+            int ssx = (int)Math.Floor((contain.X - bmpr.X) / dpiscaler);
+            int ssy = (int)Math.Floor((contain.Y - bmpr.Y) / dpiscaler);
+
+            bool invert = false;
+
+            if (threshold < 0)
+            {
+                threshold = -threshold;
+                invert = true;
+            }
+            int startlevel = 0;
+            int endlevel;
+            for (int y = 0; y < YPIXELS; y++)
+            {
+                double sx = -1;
+                bool active = false;
+                for (int x = 0; x < XPIXELS; x++)
+                {
+                    Color C = B.GetPixel(x + ssx, B.Height - 1 - (y + ssy));
+                    if ((invert == false && C.R > threshold) || (invert == true && C.R < threshold))
+                    {
+                        if (active == false)
+                        {
+                            sx = x;
+                            startlevel = C.R;
+                            active = true;
+                        }
+                    }
+                    else
+                    {
+                        if (active)
+                        {
+                            endlevel = C.R;
+                            active = false;
+                            PolyLine pL = new PolyLine(PolyLine.PolyIDs.Bitmap);
+
+                            double offL = ((startlevel - Math.Abs(threshold)) / 128.0) * dpiscaler;
+                            double offR = ((endlevel - Math.Abs(threshold)) / 128.0) * dpiscaler;
+                            //  offL *= -1;
+                            //     offR *= -1;
+                            pL.Add(contain.X + sx * dpiscaler - offL, contain.Y + ((double)y) * dpiscaler);
+                            pL.Add(contain.X + ((double)x) * dpiscaler+ offR, contain.Y + ((double)y) * dpiscaler);
+                            //                            if (Outline != null) pL.Translate(Outline.BoundingBox.TopLeft.X, Outline.BoundingBox.TopLeft.Y);
+
+                            pL.Translate(0, .50 * dpiscaler);
+
+                            AddPolyLine(pL, 1.0 * dpiscaler);
+                        }
+                    }
+                }
+                if (active)
+                {
+                    PolyLine pL = new PolyLine(PolyLine.PolyIDs.Bitmap);
+                    double offL = ((startlevel - Math.Abs(threshold)) / 128.0) * .50 * dpiscaler;
+
+                    pL.Add(contain.X + sx * dpiscaler + offL, contain.Y + ((double)y) * dpiscaler);
+                    pL.Add(contain.X + (XPIXELS) * dpiscaler, contain.Y + ((double)y) * dpiscaler);
+
+                    pL.Translate(0, .50 * dpiscaler);
+                    AddPolyLine(pL, 1.0 * dpiscaler);
+                }
+
+            }
+        }
+
         Dictionary<double, List<PolyLine>> PolyLines = new Dictionary<double, List<PolyLine>>();
         Dictionary<double, int> ApertureLookup = new Dictionary<double, int>();
         List<PolyLine> Polygons = new List<PolyLine>();

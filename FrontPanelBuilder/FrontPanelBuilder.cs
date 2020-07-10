@@ -81,7 +81,7 @@ namespace FrontPanelBuilder
                 string f = basename + ".gko";
                 if (System.IO.File.Exists(f))
                 {
-                    PLS = PolyLineSet.LoadGerberFile(f);
+                    PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), f);
 
 
                     string bottomcopper = basename + "/bottomcopper.gbl";

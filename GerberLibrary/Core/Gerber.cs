@@ -735,13 +735,13 @@ namespace GerberLibrary
 
         }
 
-        public static Bounds GetBoundingBox(List<string> generatedFiles)
+        public static Bounds GetBoundingBox(ProgressLog log, List<string> generatedFiles)
         {
             Bounds A = new Bounds();
 
             foreach (var a in generatedFiles)
             {
-                ParsedGerber PLS = PolyLineSet.LoadGerberFile(a, State: new GerberParserState() { PreCombinePolygons = false });
+                ParsedGerber PLS = PolyLineSet.LoadGerberFile(log, a, State: new GerberParserState() { PreCombinePolygons = false });
                 A.AddBox(PLS.BoundingBox);
             }
             return A;
@@ -810,7 +810,7 @@ namespace GerberLibrary
             }
             else
             {
-                PLS = PolyLineSet.LoadGerberFile(GerberFilename, forcezero, Gerber.WriteSanitized, State);
+                PLS = PolyLineSet.LoadGerberFile(log, GerberFilename, forcezero, Gerber.WriteSanitized, State);
 
             }
             double WidthInMM = PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X;
@@ -922,7 +922,7 @@ namespace GerberLibrary
             }
             else
             {
-                PLS = PolyLineSet.LoadGerberFile(GerberFilename, forcezero, Gerber.WriteSanitized, State);
+                PLS = PolyLineSet.LoadGerberFile(log, GerberFilename, forcezero, Gerber.WriteSanitized, State);
 
             }
             double WidthInMM = PLS.BoundingBox.BottomRight.X - PLS.BoundingBox.TopLeft.X;

@@ -4,9 +4,11 @@ using GerberLibrary.Core.Primitives;
 using QiHe.CodeLib;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography;
 using System.Security.Permissions;
 using System.Text;
 using System.Windows.Forms;
@@ -30,7 +32,7 @@ namespace GerberLibrary
         public void AddBoardHole(PointD pos, double diameter)
         {
             PolyLine PL = new PolyLine();
-            PL.MakeCircle(diameter/2.0, 20,pos.X, pos.Y);
+            PL.MakeCircle(diameter / 2.0, 20, pos.X, pos.Y);
             Outline.AddPolyLine(PL, 0);
         }
 
@@ -170,12 +172,54 @@ namespace GerberLibrary
 
         }
 
-        public void Label(FontSet fnt, PointD pos, string txt, double size, StringAlign alignment = StringAlign.CenterCenter, double strokewidth = 0.1, bool silk = true, bool copper = false, double angle = 0, bool backside = false)
+        public static byte[] GetHash(string inputString)
         {
+            using (HashAlgorithm algorithm = SHA256.Create())
+                return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
+        }
+
+        public RectangleD Identicon(PointD center, double size, string thingtohash, bool top = true)
+        {
+            size *= 2;
+            var H = GetHash(thingtohash);
+
+            Int32 r = 0;
+            for(int i = 0;i<Math.Min(4, H.Length);i++)
+            {
+                r += (int)H[i] << (int)(i * 8);
+            }
+
+            for (int ix = 0; ix < 4; ix++)
+            {
+                for (int iy = 0; iy < 4; iy++)
+                {
+                    int b = ix + iy * 4;
+                    bool fill = ((r >> b) & 0x1) > 0 ? true : false;
+                    if (fill)
+                    {
+                        PolyLine P1 = new PolyLine();
+                        P1.MakePRectangle(size / 8, size / 8, (ix - 3.5) * size / 8 + center.X , (iy - 3.5) * size / 8 + center.Y);
+                        TopSilk.AddPolyLine(P1,0.01);
+                    }
+                }
+            }
+
+            return new RectangleD() { X = center.X - size / 2, Y = center.Y - size / 2, Height= size,Width = size };
+        }
+        public void Label(FontSet fnt, PointD pos, string txt, double size, StringAlign alignment = StringAlign.CenterCenter, double strokewidth = 0.1, bool silk = true, bool copper = false, double angle = 0, bool backside = false, bool identiconstart = false, bool identiconend = false)
+        {
+
+            var therect = new RectangleD(TopSilk.MeasureString(pos, fnt, txt, size, strokewidth, alignment, backside, angle));
 
             if (!backside)
             {
+
                 ArtExclusions.Add(new RectangleD(TopSilk.MeasureString(pos, fnt, txt, size, strokewidth, alignment, backside, angle)));
+                
+//                ArtExclusions.Add(Identicon(new PointD(therect.X - size * 0.7, therect.Y + therect.Height / 2), size, txt, true));
+
+
+
                 if (silk) TopSilk.DrawString(pos, fnt, txt, size, strokewidth, alignment, backside, angle);
                 if (copper) TopCopper.DrawString(pos, fnt, txt, size, strokewidth, alignment, backside, angle);
             }
@@ -227,14 +271,18 @@ namespace GerberLibrary
 
             public int sideholes = 6;
             public double mmbetweentabs = 40;
+
+            public double MinMountHoleSpacingMM = 10;
+
+            public double MaxMountHoleSpacingMM = 40;
         }
 
         public static void MergeFrameIntoGerberSet(string FrameFolder, string OutlineFolder, string OutputFolder, FrameSettings FS, ProgressLog log, string basename)
         {
             log.PushActivity("MergeFrame");
             GerberPanel PNL = new GerberPanel();
-            PNL.AddGerberFolder(FrameFolder);
-            PNL.AddGerberFolder(OutlineFolder);
+            PNL.AddGerberFolder(log, FrameFolder);
+            PNL.AddGerberFolder(log, OutlineFolder);
             PNL.TheSet.ClipToOutlines = false;
 
 
@@ -242,7 +290,7 @@ namespace GerberLibrary
             var FrameInstance = PNL.AddInstance(FrameFolder, new PointD(0, 0));
             var OutlineInstance = PNL.AddInstance(OutlineFolder, new PointD(0, 0));
 
-            PNL.UpdateShape();
+            PNL.UpdateShape(log);
 
             var BB = OutlineInstance.BoundingBox;
 
@@ -296,7 +344,7 @@ namespace GerberLibrary
             }
           
 
-            PNL.UpdateShape();
+            PNL.UpdateShape(log);
 
             Directory.CreateDirectory(OutputFolder);
             PNL.SaveGerbersToFolder("MergedFrame", OutputFolder, log, true, false, true, basename);
@@ -365,16 +413,7 @@ namespace GerberLibrary
 
                 double mountholediameter = (double)FS.holeDiameter;
 
-                if (FS.addHoles)
-                {
-                    double side = LE / 2.0;
-                    double top = TE / 2.0;
-
-                    PCB.Drill(new PointD(side, top), mountholediameter,1);
-                    PCB.Drill(new PointD(OuterWidth - side, top), mountholediameter,1);
-                    PCB.Drill(new PointD(OuterWidth - side, OuterHeight - top), mountholediameter,1);
-                    PCB.Drill(new PointD(side, OuterHeight - top), mountholediameter,1);
-                }
+             
 
                 // board outline
                 PolyLine PL = new PolyLine(polyid++);
@@ -396,27 +435,77 @@ namespace GerberLibrary
                 {
                     PointD fiducialPoint = P.pos;
                     PCB.Fiducial(fiducialPoint, P.CopperDiameter, P.MaskDiameter, P.Top);
-
                 }
 
                 #endregion
 
                 string FrameTitle = FS.FrameTitle;
 
+                string FrameTopTitle = FrameTitle + " - Top";
+                string FrameBottomTitle = FrameTitle + " - Bottom";
+                double verticaltitleclearance = 0;
+                double horizontaltitleclearance = 0;
                 if (FrameTitle.Length > 0)
                 {
                     FontSet fnt = FontSet.Load("Font.xml");
+                    horizontaltitleclearance = fnt.StringWidth(FrameBottomTitle, TE / 4)+ mountholediameter*2 + FS.topEdge;
+                    verticaltitleclearance = fnt.StringWidth(FrameBottomTitle, TE / 4)+ mountholediameter*2 + FS.topEdge;
 
-                    PCB.Label(fnt, new PointD(OuterWidth / 2.0, OuterHeight - TE / 4.0), FrameTitle + " - top", TE/4, StringAlign.CenterCenter,0.1, true,true,0);
-                    PCB.Label(fnt, new PointD(OuterWidth - LE / 4, OuterHeight / 2), FrameTitle + " - top", TE / 4.0, StringAlign.CenterCenter,0.1, true, true,-90);
-                    PCB.Label(fnt, new PointD(LE / 4, OuterHeight / 2), FrameTitle + " - top", TE / 4.0, StringAlign.CenterCenter, 0.1, true,true, 90);
-                    PCB.Label(fnt, new PointD(OuterWidth / 2.0, TE - TE / 4.0), FrameTitle + " - top", TE / 4.0, StringAlign.CenterCenter, 0.1, true,true,0);
+                    PCB.Label(fnt, new PointD(OuterWidth / 2.0, OuterHeight - TE / 4.0), FrameTopTitle, TE/4, StringAlign.CenterCenter,0.1, true,true,0);
+                    PCB.Label(fnt, new PointD(OuterWidth - LE / 4, OuterHeight / 2), FrameTopTitle, TE / 4.0, StringAlign.CenterCenter,0.1, true, true,-90);
+                    PCB.Label(fnt, new PointD(LE / 4, OuterHeight / 2), FrameTopTitle, TE / 4.0, StringAlign.CenterCenter, 0.1, true,true, 90);
+                    PCB.Label(fnt, new PointD(OuterWidth / 2.0, TE - TE / 4.0), FrameTopTitle, TE / 4.0, StringAlign.CenterCenter, 0.1, true,true,0);
 
 
-                    PCB.Label(fnt, new PointD(OuterWidth / 2.0, OuterHeight - TE / 4.0), FrameTitle + " - bottom", TE / 4, StringAlign.CenterCenter, 0.1, true,true,0, true);
-                    PCB.Label(fnt, new PointD(OuterWidth - LE / 4, OuterHeight / 2), FrameTitle + " - bottom", TE / 4.0, StringAlign.CenterCenter, 0.1, true, true, -90,true);
-                    PCB.Label(fnt, new PointD(LE / 4, OuterHeight / 2), FrameTitle + " - bottom", TE / 4.0, StringAlign.CenterCenter, 0.1, true, true, 90,true);
-                    PCB.Label(fnt, new PointD(OuterWidth / 2.0, TE - TE / 4.0), FrameTitle + " - bottom", TE / 4.0, StringAlign.CenterCenter, 0.1, true, true, 0,true);
+                    PCB.Label(fnt, new PointD(OuterWidth / 2.0, OuterHeight - TE / 4.0), FrameBottomTitle, TE / 4, StringAlign.CenterCenter, 0.1, true,true,0, true, true, true);
+                    PCB.Label(fnt, new PointD(OuterWidth - LE / 4, OuterHeight / 2), FrameBottomTitle, TE / 4.0, StringAlign.CenterCenter, 0.1, true, true, -90,true);
+                    PCB.Label(fnt, new PointD(LE / 4, OuterHeight / 2), FrameBottomTitle, TE / 4.0, StringAlign.CenterCenter, 0.1, true, true, 90,true);
+                    PCB.Label(fnt, new PointD(OuterWidth / 2.0, TE - TE / 4.0), FrameBottomTitle, TE / 4.0, StringAlign.CenterCenter, 0.1, true, true, 0,true);
+                }
+
+                if (FS.addHoles)
+                {
+                    double side = LE / 2.0;
+                    double top = TE / 2.0;
+
+                    PCB.Drill(new PointD(side, top), mountholediameter, 1);
+                    PCB.Drill(new PointD(OuterWidth - side, top), mountholediameter, 1);
+                    PCB.Drill(new PointD(OuterWidth - side, OuterHeight - top), mountholediameter, 1);
+                    PCB.Drill(new PointD(side, OuterHeight - top), mountholediameter, 1);
+
+                    double dx = (OuterWidth - side) - side;
+                    double dy = (OuterHeight - top) - top;
+
+                    dx -= horizontaltitleclearance;
+                    dy -= verticaltitleclearance;
+                    dx /= 2;
+                    dy /= 2;
+
+                    int horiz = (int)Math.Ceiling((dx / 2) / FS.MaxMountHoleSpacingMM);
+                    int vert = (int)Math.Ceiling((dy / 2) / FS.MaxMountHoleSpacingMM);
+
+                    dx /= (float)horiz;
+                    dy /= (float)vert;
+
+                    if (dx < FS.MinMountHoleSpacingMM) horiz = 0;
+                    if (dy < FS.MinMountHoleSpacingMM) vert = 0;
+
+                    for (int i =1;i<=horiz;i++)
+                    {
+                        PCB.Drill(new PointD(side + (dx)*i, top), mountholediameter, 1);
+                        PCB.Drill(new PointD((OuterWidth- side) - (dx) * i, top), mountholediameter, 1);
+                        PCB.Drill(new PointD(side + (dx) * i, OuterHeight - top), mountholediameter, 1);
+                        PCB.Drill(new PointD((OuterWidth - side) - (dx) * i, OuterHeight- top), mountholediameter, 1);
+                    }
+
+
+                    for (int i = 1; i <= vert; i++)
+                    {
+                        PCB.Drill(new PointD(side, top + (dy) * i), mountholediameter, 1);
+                        PCB.Drill(new PointD(side, (OuterHeight- top) - (dy) * i), mountholediameter, 1);
+                        PCB.Drill(new PointD((OuterWidth - side), top + (dy) * i), mountholediameter, 1);
+                        PCB.Drill(new PointD((OuterWidth - side), (OuterHeight - top) - (dy) * i), mountholediameter, 1);
+                    }
                 }
 
                 PolyLine Left = new PolyLine();
@@ -434,7 +523,9 @@ namespace GerberLibrary
                 PCB.ArtInclusions.Add(Top);
                 PCB.ArtInclusions.Add(Bottom);
 
-                PCB.CellularArt();
+
+
+                //PCB.CellularArt();
 
 
                 Files.AddRange(PCB.Write(Path.GetDirectoryName(basefile), Path.GetFileNameWithoutExtension(basefile),FS.offset)); ;

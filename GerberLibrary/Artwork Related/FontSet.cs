@@ -81,7 +81,26 @@ namespace GerberLibrary
             writer.Close();
         
         }
+        public double StringWidth(string text, double size= 1.0)
+        {
+            double W = 0;
+            double Scaler = size / CapsHeight; ;
 
+            for (int i = 0; i < text.Length; i++)
+            {
+                char t = text[i];
+                var R = GetChar(t);
+                if (R != null)
+                {
+                    W += R.Advance * Scaler;
+                }
+                else
+                {
+                    W += size;
+                }
+            }
+            return W;
+        }
         public LineSet GetChar(char t)
         {
             foreach(var ls in TheChars)

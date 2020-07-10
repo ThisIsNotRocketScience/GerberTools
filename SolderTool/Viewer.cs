@@ -245,7 +245,7 @@ namespace SolderTool
                             {
                                 l.Files.Add(F);
                                 Files[F].Seek(0, SeekOrigin.Begin);
-                                var pls = PolyLineSet.LoadGerberFileFromStream(new StreamReader(Files[F]), F, true, false, new GerberParserState() { PreCombinePolygons = false });
+                                var pls = PolyLineSet.LoadGerberFileFromStream(new StandardConsoleLog(), new StreamReader(Files[F]), F, true, false, new GerberParserState() { PreCombinePolygons = false });
                                 l.Gerbs.Add(pls);
                             }
                         }

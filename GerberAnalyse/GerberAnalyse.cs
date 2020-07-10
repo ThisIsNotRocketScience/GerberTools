@@ -199,7 +199,7 @@ namespace GerberAnalyse
                         if (Layer == GerberLibrary.Core.BoardLayer.Outline || Layer == GerberLibrary.Core.BoardLayer.Mill)
                         {
                             L.Seek(0, SeekOrigin.Begin);
-                            var G = GerberLibrary.PolyLineSet.LoadGerberFileFromStream(new StreamReader(L), filename);
+                            var G = GerberLibrary.PolyLineSet.LoadGerberFileFromStream(new StandardConsoleLog(), new StreamReader(L), filename);
                             Box.AddBox(G.BoundingBox);
                         }
                     }
@@ -228,12 +228,12 @@ namespace GerberAnalyse
                         GerberLibrary.Gerber.DetermineBoardSideAndLayer(L, out Side, out Layer);
                         if (Layer == GerberLibrary.Core.BoardLayer.Outline || Layer == GerberLibrary.Core.BoardLayer.Mill)
                         {
-                            var G = GerberLibrary.PolyLineSet.LoadGerberFile(L);
+                            var G = GerberLibrary.PolyLineSet.LoadGerberFile(log, L);
                             Box.AddBox(G.BoundingBox);
                         }
                         else
                         {
-                            var G = GerberLibrary.PolyLineSet.LoadGerberFile(L);
+                            var G = GerberLibrary.PolyLineSet.LoadGerberFile(log, L);
                         }
                     }
                     break;

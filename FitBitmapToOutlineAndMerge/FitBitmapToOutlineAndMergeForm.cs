@@ -80,7 +80,7 @@ namespace FitBitmapToOutlineAndMerge
             string OutlineFile = OutlineFileBox.Text;
 
             ParsedGerber PLS = null;
-            PLS = PolyLineSet.LoadGerberFile(OutlineFile);
+            PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), OutlineFile);
 
             string SilkFile = SilkFileTopBox.Text;
             string BitmapFile = BitmapFileTopBox.Text;
@@ -186,7 +186,7 @@ namespace FitBitmapToOutlineAndMerge
             {
                 return;
             }
-            PLS = PolyLineSet.LoadGerberFile(OutlineFile);
+            PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), OutlineFile);
 
             sizebox.Text = String.Format("{0}x{1}mm", PLS.BoundingBox.Width(), PLS.BoundingBox.Height());
 

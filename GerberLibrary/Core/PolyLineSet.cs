@@ -362,7 +362,7 @@ namespace GerberLibrary
 
         }
 
-        public static ParsedGerber LoadGerberFile(string gerberfile, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
+        public static ParsedGerber LoadGerberFile(ProgressLog log, string gerberfile, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
         {
             if (State == null) State = new GerberParserState();
 
@@ -370,20 +370,20 @@ namespace GerberLibrary
 
             using (StreamReader sr = new StreamReader(gerberfile))
             {
-                return ProcessStream(gerberfile, forcezerowidth, writesanitized, State, sr);
+                return ProcessStream(log, gerberfile, forcezerowidth, writesanitized, State, sr);
             }
         }
 
-        public static ParsedGerber LoadGerberFileFromStream(StreamReader sr, string originalfilename, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
+        public static ParsedGerber LoadGerberFileFromStream(ProgressLog log, StreamReader sr, string originalfilename, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
         {
             if (State == null) State = new GerberParserState();
 
             Gerber.DetermineBoardSideAndLayer(originalfilename, out State.Side, out State.Layer);
-            return ProcessStream(originalfilename, forcezerowidth, writesanitized, State, sr);
+            return ProcessStream(log, originalfilename, forcezerowidth, writesanitized, State, sr);
 
         }
 
-        public static ParsedGerber ParseGerber274x(List<String> inputlines, bool parseonly, bool forcezerowidth = false, GerberParserState State = null)
+        public static ParsedGerber ParseGerber274x(ProgressLog log, List<String> inputlines, bool parseonly, bool forcezerowidth = false, GerberParserState State = null)
         {
             if (State == null) State = new GerberParserState();
 
@@ -453,7 +453,7 @@ namespace GerberLibrary
                 shapelist.Add(new PathDefWithClosed() { Vertices = State.NewThinShapes[i].Vertices, Width = State.NewThinShapes[i].Width });
             }
 
-            var shapeslinked = Helpers.LineSegmentsToPolygons(shapelist);
+            var shapeslinked = Helpers.LineSegmentsToPolygons(log, shapelist);
 
             foreach (var a in shapeslinked)
             {
@@ -1855,7 +1855,7 @@ namespace GerberLibrary
             }
         }
 
-        private static ParsedGerber ProcessStream(string gerberfile, bool forcezerowidth, bool writesanitized, GerberParserState State, StreamReader sr)
+        private static ParsedGerber ProcessStream(ProgressLog log, string gerberfile, bool forcezerowidth, bool writesanitized, GerberParserState State, StreamReader sr)
         {
             List<String> lines = new List<string>();
             while (sr.EndOfStream == false)
@@ -1872,7 +1872,7 @@ namespace GerberLibrary
                 State.SanitizedFile = gerberfile + ".sanitized.gerber";
             };
 
-            var G = ParseGerber274x(lines, false, forcezerowidth, State); ;
+            var G = ParseGerber274x(log, lines, false, forcezerowidth, State); ;
             G.Name = gerberfile;
             return G;
         }

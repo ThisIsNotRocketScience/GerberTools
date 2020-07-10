@@ -37,6 +37,7 @@ namespace GerberLibrary
         /// <param name="Angle">Degrees</param>
         public static void Transform(ProgressLog log,   string sourcefile, string destfile, double DX, double DY, double DXp, double DYp, double AngleInDeg = 0) 
         {
+            log.PushActivity("Gerber Transform");
             List<String> lines = new List<string>();
             List<String> outlines = new List<string>();
 
@@ -61,14 +62,14 @@ namespace GerberLibrary
 
             if (Gerber.WriteSanitized) Gerber.WriteAllLines(sourcefile + ".sanitized.txt", lines);
          //   PolyLineSet Parsed = new PolyLineSet("parsed gerber");
-            ParsedGerber Parsed = PolyLineSet.ParseGerber274x(lines, true, false, new GerberParserState() { GenerateGeometry = false });
+            ParsedGerber Parsed = PolyLineSet.ParseGerber274x(log, lines, true, false, new GerberParserState() { GenerateGeometry = false });
 
             if (Gerber.ShowProgress)
             {
-                Console.WriteLine("found apertures: ");
+                log.AddString("found apertures: ");
                 foreach (var a in Parsed.State.Apertures)
                 {
-                    Console.WriteLine(a.Value.ToString());
+                    log.AddString(a.Value.ToString());
                 }
             }
             
@@ -165,18 +166,18 @@ namespace GerberLibrary
                     GCC.Decode(lines[i], CoordinateFormat);
                     if (GCC.numbercommands.Count < 1)
                     {
-                        Console.WriteLine("Skipping bad aperture definition: {0}", lines[i]);
+                        log.AddString(String.Format("Skipping bad aperture definition: {0}", lines[i]));
                     }
                     else
                     {
                         int ATID = (int)GCC.numbercommands[0];
                         var Aperture = Parsed.State.Apertures[ATID];
-                        if (Gerber.ShowProgress) Console.WriteLine("found " + Aperture.ToString());
+                        if (Gerber.ShowProgress) log.AddString(String.Format("found " + Aperture.ToString()));
                         string gerb = Aperture.BuildGerber(CoordinateFormat, AngleInDeg);
 
                         if ((Aperture.ShapeType == GerberApertureShape.Compound || Aperture.ShapeType == GerberApertureShape.Macro) && Parsed.State.ApertureMacros[Aperture.MacroName].Written == false)
                         {
-                            Console.WriteLine("Macro type defined - skipping");
+                            log.AddString(String.Format("Macro type defined - skipping"));
                         }
                         else
                         {
@@ -216,7 +217,7 @@ namespace GerberLibrary
                         outlines.Add(lines[i]);
                         if (lines[i].Contains("LNData"))
                         {
-                            Console.WriteLine(" heh");
+                            log.AddString(String.Format(" heh"));
                         }
                         if (lines[i][0] == '%')
                         {
@@ -246,7 +247,7 @@ namespace GerberLibrary
                                 }
                             }
                             moveswritten++;
-                            Console.WriteLine(" Pure D Code: {0}", lines[i]);
+                            log.AddString(String.Format("Pure D Code: {0}", lines[i]));
                         }
                         else
                         if (GS.Has("X") || GS.Has("Y") || (GS.Has("D") && GS.Get("D") < 10))
@@ -309,7 +310,7 @@ namespace GerberLibrary
                         outlines.Add(GS.Rebuild(CoordinateFormat));
                         if (PureD)
                         {
-                            Console.WriteLine("pureD");
+                            log.AddString(String.Format("pureD"));
                         }
 
                     }
@@ -334,8 +335,9 @@ namespace GerberLibrary
             }
             catch (Exception E)
             {
-                Console.WriteLine(E.Message);
+                log.AddString(String.Format(E.Message));
             }
+            log.PopActivity();
         }
 
         public static void GetTransformedCoord(double DX, double DY, double DXp, double DYp, double Angle, double CA, double SA, GerberNumberFormat CoordinateFormat, bool translate, ref double X, ref double Y)

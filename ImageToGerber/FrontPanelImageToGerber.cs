@@ -98,7 +98,7 @@ namespace ImageToGerber
                 if (System.IO.File.Exists(f))
                 {
                     int polyid = 0;
-                    PLS = PolyLineSet.LoadGerberFile(f);
+                    PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), f);
 
                 
                     string bottomcopper= basename + "/bottomcopper.gbl";

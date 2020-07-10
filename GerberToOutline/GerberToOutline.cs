@@ -58,7 +58,7 @@ namespace GerberToOutline
                 }
                 State.PreCombinePolygons = precombinepolygons;
                 
-                PLS = PolyLineSet.LoadGerberFile(infile, forcezerowidth, false, State);
+                PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), infile, forcezerowidth, false, State);
                 PLS.Side = State.Side;
                 PLS.Layer = State.Layer;
                 if (Layer == BoardLayer.Outline)

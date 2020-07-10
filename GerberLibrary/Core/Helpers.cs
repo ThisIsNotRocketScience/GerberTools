@@ -208,13 +208,20 @@ namespace GerberLibrary.Core
 
         }
 
-        public static List<PathDefWithClosed> LineSegmentsToPolygons(List<PathDefWithClosed> input, bool joinclosest = true)
+        public static List<PathDefWithClosed> LineSegmentsToPolygons(ProgressLog log,  List<PathDefWithClosed> input, bool joinclosest = true)
         {
+            List<PathDefWithClosed> LeftoverLines = new List<PathDefWithClosed>();
+            if (input.Count == 0)
+            {
+                return LeftoverLines;
+            }
+
+
+            log.PushActivity("LineSegmentsToPolygons");
             // return input;
             List<PathDefWithClosed> Paths = new List<PathDefWithClosed>();
             List<PathDefWithClosed> FirstSweep = new List<PathDefWithClosed>();
-            List<PathDefWithClosed> LeftoverLines = new List<PathDefWithClosed>();
-            if (input.Count == 0) return LeftoverLines;
+
             try
             {
                 foreach (var p in input)
@@ -226,7 +233,7 @@ namespace GerberLibrary.Core
                     }
 
                 }
-                FirstSweep = StripOverlaps(FirstSweep);
+                FirstSweep = StripOverlaps(log, FirstSweep);
 
 
                 LeftoverLines.Add(FirstSweep[0]);
@@ -252,11 +259,11 @@ namespace GerberLibrary.Core
                         }
                     }
                 }
-                LeftoverLines = StripOverlaps(LeftoverLines);
+                LeftoverLines = StripOverlaps(log, LeftoverLines);
             }
             catch (Exception E)
             {
-                Console.WriteLine(E.Message);
+                log.AddString(String.Format(E.Message));
             }
 
             while (LeftoverLines.Count > 0)
@@ -376,7 +383,7 @@ namespace GerberLibrary.Core
                     Paths.Add(P);
                 }
             }
-            Paths = StripOverlaps(Paths);
+            Paths = StripOverlaps(log, Paths);
             //  return Paths;
 
 
@@ -386,7 +393,7 @@ namespace GerberLibrary.Core
             while (Merges > 0)
             {
                 startat = lasthigh;
-                Merges = FindNextMerge(Paths, out lasthigh, startat);
+                Merges = FindNextMerge(log, Paths, out lasthigh, startat);
             }
             //return Paths;
 
@@ -405,7 +412,7 @@ namespace GerberLibrary.Core
 
                     int NewClosedCount = (from i in Paths where i.Closed == true select i).Count();
 
-                    Console.WriteLine("remaining open: {0}", NewClosedCount);
+                    log.AddString(String.Format("remaining open: {0}", NewClosedCount));
                     /*
                     var OpenPaths = (from i in Paths where i.Closed == false select i).ToArray();
                     //  foreach (var p in OpenPaths)
@@ -486,10 +493,12 @@ namespace GerberLibrary.Core
             {
                 Results.Add(Sanitize(p));
             }
+
+            log.PopActivity();
             return Results;
         }
 
-        private static List<PathDefWithClosed> StripOverlaps(List<PathDefWithClosed> Paths)
+        private static List<PathDefWithClosed> StripOverlaps(ProgressLog log, List<PathDefWithClosed> Paths)
         {
             List<PathDefWithClosed> Res = new List<PathDefWithClosed>();
             QuadTreeNode Root = new QuadTreeNode();
@@ -562,8 +571,8 @@ namespace GerberLibrary.Core
                     else
                     {
                         Res.Add(Paths[i]);
-                        Console.WriteLine("{4}: {0} out of {1}/{2}/{3}", nearcount, max, Paths[i].Vertices.Count, (Paths[i].Vertices.Count * 90) / 100, i);
-                        Console.WriteLine("{0}: skipped!", i);
+                        log.AddString(String.Format("{4}: {0} out of {1}/{2}/{3}", nearcount, max, Paths[i].Vertices.Count, (Paths[i].Vertices.Count * 90) / 100, i));
+                        log.AddString(String.Format("{0}: skipped!", i));
                     }
                 }
             }
@@ -598,7 +607,7 @@ namespace GerberLibrary.Core
             }
         }
 
-        private static int FindNextMerge(List<PathDefWithClosed> Paths, out int highestnomatch, int startat = 0)
+        private static int FindNextMerge(ProgressLog log, List<PathDefWithClosed> Paths, out int highestnomatch, int startat = 0)
         {
             highestnomatch = 0;
             QuadTreeNode Root = new QuadTreeNode();
@@ -676,7 +685,7 @@ namespace GerberLibrary.Core
                             Paths[endmatch].Vertices.AddRange(Paths[i].Vertices);
                             if (Paths[endmatch].Vertices.First() == Paths[endmatch].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 3a", Paths[endmatch].Vertices.Count());
+                                log.AddString(String.Format("closed path with {0} points during stage 3a", Paths[endmatch].Vertices.Count()));
                                 Paths[endmatch].Closed = true;
                             }
                             Paths.Remove(Paths[i]);
@@ -690,7 +699,7 @@ namespace GerberLibrary.Core
                             Paths[i].Vertices.AddRange(Paths[startmatch].Vertices);
                             if (Paths[i].Vertices.First() == Paths[i].Vertices.Last())
                             {
-                                Console.WriteLine("closed path with {0} points during stage 3b", Paths[i].Vertices.Count());
+                                log.AddString(String.Format("closed path with {0} points during stage 3b", Paths[i].Vertices.Count()));
                                 Paths[i].Closed = true;
                             }
                             Paths.Remove(Paths[startmatch]);
