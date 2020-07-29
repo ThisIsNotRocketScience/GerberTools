@@ -685,6 +685,7 @@ namespace GerberLibrary
                 case "drill":
                 case "drillnpt":
                 case "rou":
+                case "sco":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Drill;
                     break;
