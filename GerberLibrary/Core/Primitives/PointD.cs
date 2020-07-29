@@ -209,4 +209,12 @@ namespace GerberLibrary.Core.Primitives
         
     }
 
+    public static class Extensions
+    {
+        public static double Angle(this PointD p1, PointD p2)
+        {
+            return Math.Atan2(p2.Y - p1.Y, p2.X - p1.X);
+        }
+
+    }
 }
