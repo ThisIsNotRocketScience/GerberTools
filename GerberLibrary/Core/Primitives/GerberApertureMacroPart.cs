@@ -413,6 +413,8 @@ namespace GerberLibrary.Core.Primitives
                     break;
                 case ApertureMacroTypes.Polygon:
                     {
+                    try
+                    {
                         if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for polygon. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
 
                         Sides = (int)Params[2].BuildValue(paramlist);
@@ -422,6 +424,11 @@ namespace GerberLibrary.Core.Primitives
                         Xoff = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
                         Yoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
                         AT.NGon(Sides, Diameter / 2, Xoff, Yoff, Rotation);
+                    }
+                    catch(Exception E)
+                    {
+                        Console.WriteLine("Exception while making Polygon macro: {0}", E);
+                    }
                     }
                     break;
                 case ApertureMacroTypes.Outline:
@@ -453,6 +460,8 @@ namespace GerberLibrary.Core.Primitives
 
                 case ApertureMacroTypes.CenterLine:
                     {
+                    try
+                    {
                         if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for centerline. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
                         {
                             //1 Exposure off/on (0/1))
@@ -470,10 +479,17 @@ namespace GerberLibrary.Core.Primitives
                         AT.SetRotatedRectangle(Width, Height, Rotation, Xoff, Yoff);
                         //AT.ShapeType = GerberApertureShape.CenterLine;
                     }
+                    catch(Exception E)
+                    {
+                        Console.WriteLine("Exception while making CenterLine macro: {0}", E);
+                    }
+                    }
                     break;
                 case ApertureMacroTypes.LowerLeftLine:
                     {
-                        if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for lowerleftline. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
+                     try
+                    {
+                       if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for lowerleftline. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
                         {
                             // 1 Exposure off/on (0/1))
                             // 2 Rectangle width, a decimal ≥ 0.
@@ -488,10 +504,17 @@ namespace GerberLibrary.Core.Primitives
                         Xoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
                         Yoff = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
                         Rotation = Params[6].BuildValue(paramlist);
+                    }
+                    catch(Exception E)
+                    {
+                        Console.WriteLine("Exception while making LowerLeftLine macro: {0}", E);
+                    }
                         AT.SetRotatedRectangle(Width, Height, Rotation, Xoff + Width / 2, Yoff + Height / 2);
                     }
                     break;
                 case ApertureMacroTypes.Thermal:
+                     try
+                    {
                     if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for moire. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
 
                     Xoff = GNF.ScaleFileToMM(Params[1].BuildValue(paramlist));
@@ -500,6 +523,11 @@ namespace GerberLibrary.Core.Primitives
                     InnerDiameter = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
                     GapWidth = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
                     Rotation = Params[6].BuildValue(paramlist);
+                    }
+                    catch(Exception E)
+                    {
+                        Console.WriteLine("Exception while making Thermal macro: {0}", E);
+                    }
 
                     AT.SetThermal(Xoff, Yoff, OuterDiameter, InnerDiameter, GapWidth, Rotation);
 
@@ -516,6 +544,8 @@ namespace GerberLibrary.Core.Primitives
 
                     break;
                 case ApertureMacroTypes.Moire:
+                     try
+                    {
 
                     if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for moire. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
 
@@ -528,6 +558,11 @@ namespace GerberLibrary.Core.Primitives
                     CrossHairThickness = GNF.ScaleFileToMM(Params[7].BuildValue(paramlist));
                     CrossHairLength = GNF.ScaleFileToMM(Params[8].BuildValue(paramlist));
                     Rotation = GNF.ScaleFileToMM(Params[9].BuildValue(paramlist));
+                    }
+                    catch(Exception E)
+                    {
+                        Console.WriteLine("Exception while making Moire macro: {0}", E);
+                    }
 
                     AT.SetMoire(Xoff, Yoff, OuterDiameter, Width, RingGap, MaxRings, CrossHairThickness, CrossHairLength, Rotation);
                     //1 A decimal defining the X coordinate of center point.
@@ -545,6 +580,8 @@ namespace GerberLibrary.Core.Primitives
 
                 case ApertureMacroTypes.Line_2:
                 case ApertureMacroTypes.Line:
+                    {
+                     try
                     {
                         if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for line. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
                         {
@@ -564,6 +601,11 @@ namespace GerberLibrary.Core.Primitives
                         Rotation = Params[7].BuildValue(paramlist);
 
 
+                    }
+                    catch(Exception E)
+                    {
+                        Console.WriteLine("Exception while making Line_2 or Line macro: {0}", E);
+                    }
 
 
                         AT.SetLineSegment(new PointD(Xoff, Yoff), new PointD(Xend, Yend), Width, Rotation);
