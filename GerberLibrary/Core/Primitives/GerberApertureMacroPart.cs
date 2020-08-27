@@ -420,7 +420,7 @@ namespace GerberLibrary.Core.Primitives
                         Sides = (int)Params[2].BuildValue(paramlist);
                         var diamvalue = Params[5].BuildValue(paramlist);
                         Diameter = GNF.ScaleFileToMM(diamvalue);
-                        Rotation = Params[6].BuildValue(paramlist);
+                        Rotation = Params.Count>6? Params[6].BuildValue(paramlist):0;
                         Xoff = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
                         Yoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
                         AT.NGon(Sides, Diameter / 2, Xoff, Yoff, Rotation);
@@ -446,9 +446,9 @@ namespace GerberLibrary.Core.Primitives
                     {
                         if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for circle. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
                         Diameter = GNF.ScaleFileToMM(Params[2].BuildValue(paramlist));
-                        Xoff = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
-                        Yoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
-                        Rotation = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
+                    Xoff = GNF.ScaleFileToMM(Params.Count > 3 ? Params[3].BuildValue(paramlist):0);
+                    Yoff = GNF.ScaleFileToMM(Params.Count > 4 ? Params[4].BuildValue(paramlist):0);
+                    Rotation = GNF.ScaleFileToMM(Params.Count > 5 ? Params[5].BuildValue(paramlist):0);
                     }
                     catch(Exception E)
                     {
@@ -473,9 +473,9 @@ namespace GerberLibrary.Core.Primitives
                         }
                         Width = GNF.ScaleFileToMM(Params[2].BuildValue(paramlist));
                         Height = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
-                        Xoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
-                        Yoff = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
-                        Rotation = Params[6].BuildValue(paramlist);
+                        Xoff = GNF.ScaleFileToMM(Params.Count > 4 ? Params[4].BuildValue(paramlist):0);
+                        Yoff = GNF.ScaleFileToMM(Params.Count > 5 ? Params[5].BuildValue(paramlist):0);
+                        Rotation = Params.Count > 6 ? Params[6].BuildValue(paramlist):0;
                         AT.SetRotatedRectangle(Width, Height, Rotation, Xoff, Yoff);
                         //AT.ShapeType = GerberApertureShape.CenterLine;
                     }
@@ -501,9 +501,9 @@ namespace GerberLibrary.Core.Primitives
 
                         Width = GNF.ScaleFileToMM(Params[2].BuildValue(paramlist));
                         Height = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
-                        Xoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
-                        Yoff = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
-                        Rotation = Params[6].BuildValue(paramlist);
+                        Xoff = GNF.ScaleFileToMM(Params.Count > 4 ? Params[4].BuildValue(paramlist):0);
+                        Yoff = GNF.ScaleFileToMM(Params.Count > 5 ? Params[5].BuildValue(paramlist):0);
+                        Rotation = Params.Count > 6 ? Params[6].BuildValue(paramlist):0;
                     }
                     catch(Exception E)
                     {
@@ -522,7 +522,7 @@ namespace GerberLibrary.Core.Primitives
                     OuterDiameter = GNF.ScaleFileToMM(Params[3].BuildValue(paramlist));
                     InnerDiameter = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
                     GapWidth = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
-                    Rotation = Params[6].BuildValue(paramlist);
+                    Rotation = Params.Count > 6 ? Params[6].BuildValue(paramlist):0;
                     }
                     catch(Exception E)
                     {
@@ -557,7 +557,7 @@ namespace GerberLibrary.Core.Primitives
                     MaxRings = (int)Params[6].BuildValue(paramlist);
                     CrossHairThickness = GNF.ScaleFileToMM(Params[7].BuildValue(paramlist));
                     CrossHairLength = GNF.ScaleFileToMM(Params[8].BuildValue(paramlist));
-                    Rotation = GNF.ScaleFileToMM(Params[9].BuildValue(paramlist));
+                    Rotation = GNF.ScaleFileToMM(Params.Count > 9 ? Params[9].BuildValue(paramlist):0);
                     }
                     catch(Exception E)
                     {
@@ -598,7 +598,7 @@ namespace GerberLibrary.Core.Primitives
                         Yoff = GNF.ScaleFileToMM(Params[4].BuildValue(paramlist));
                         Xend = GNF.ScaleFileToMM(Params[5].BuildValue(paramlist));
                         Yend = GNF.ScaleFileToMM(Params[6].BuildValue(paramlist));
-                        Rotation = Params[7].BuildValue(paramlist);
+                        Rotation = Params.Count > 7 ? Params[7].BuildValue(paramlist):0;
 
 
                     }
