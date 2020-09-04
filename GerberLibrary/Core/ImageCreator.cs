@@ -161,8 +161,10 @@ namespace GerberLibrary
 
         public void AddBoardsToSet(List<string> FileList, ProgressLog Logger , bool fixgroup = true)
         {
+            Logger.PushActivity("AddBoardsToSet");
             foreach (var a in FileList)
             {
+                Logger.AddString(String.Format("adding {0}", a));
                 BoardSide aSide = BoardSide.Unknown;
                 BoardLayer aLayer = BoardLayer.Unknown;
                 string ext = Path.GetExtension(a);
@@ -227,7 +229,7 @@ namespace GerberLibrary
                     }
                     catch (Exception E)
                     {
-                        Logger.AddString(String.Format("Failed to add file! {0}", a));
+                        Logger.AddString(String.Format("Failed to add file! {0},{1}", a, E));
                     }
                 }
             }
@@ -242,6 +244,8 @@ namespace GerberLibrary
                 CheckRelativeBoundingBoxes(Logger);
 
             }
+
+            Logger.PopActivity();
         }
 
         public ParsedGerber AddBoardToSet(string _originalfilename, ProgressLog log, bool forcezerowidth = false, bool precombinepolygons = false, double drillscaler = 1.0)
@@ -1614,6 +1618,7 @@ namespace GerberLibrary
                 }
             }
 
+
             BoundingBox = new Bounds();
             foreach (var a in PLSs)
             {
@@ -1626,7 +1631,7 @@ namespace GerberLibrary
         }
 
 
-        private Bounds GetOutlineBoundingBox()
+        public Bounds GetOutlineBoundingBox()
         {
             Bounds B = new Bounds();
             int i = 0;

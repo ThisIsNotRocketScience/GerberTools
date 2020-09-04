@@ -329,6 +329,45 @@ namespace GerberLibrary.Core
             return ID;
         }
 
+        public void Translate(double x, double y)
+        {
+            foreach (var a in DeviceTree)
+            {
+                foreach (var b in a.Value)
+                {
+                    foreach (var c in b.Value.RefDes)
+                    {
+                        c.x += x;
+                        c.y += y;
+                    }
+                }
+            }
+        }
+
+        public void WriteRefDesGerber(string outputbasename)
+        {
+            FontSet fnt = FontSet.Load("Font.xml"); 
+            GerberArtWriter Top = new GerberArtWriter();
+            GerberArtWriter Bottom = new GerberArtWriter();
+            foreach (var a in DeviceTree)
+            {
+                foreach (var b in a.Value)
+                {
+                    foreach (var c in b.Value.RefDes)
+                    {
+                        GerberArtWriter dest = (c.Side == BoardSide.Top) ? Top : Bottom;
+                        dest.DrawString(new Primitives.PointD(c.x, c.y), fnt, c.NameOnBoard, 1, 0.1, StringAlign.CenterCenter, (c.Side == BoardSide.Top) ? false : true, c.angle);
+
+         //               double X = c.x;
+           //             double Y = c.y;
+                    }
+                }
+            }
+
+            Top.Write(outputbasename + "_top_refdes.gbr");
+            Bottom.Write(outputbasename + "_bottom_refdes.gbr");
+        }
+
         public void MergeBOM(BOM B, BOMNumberSet set, double dx, double dy, double cx, double cy, double angle)
         {
             foreach (var a in B.DeviceTree)
