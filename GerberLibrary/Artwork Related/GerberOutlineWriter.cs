@@ -454,7 +454,7 @@ namespace GerberLibrary
 
                             double y = 0;
                             double rad = 0;
-                            bool rightside = (dx > 0);
+                            bool rightside = (dx < 0);
                             if (ClockWise) rightside = !rightside;
 
                             if (FS.InsideEdgeMode == FrameSettings.InsideMode.RegularEdge)

@@ -60,7 +60,7 @@ namespace FrameCreatorTest
 
             //           GerberFrameWriter.MergeFrameIntoGerberSet(Path.Combine(basepath, "SliceFrameOutline6"), Path.Combine(basepath, "Slice6"), Path.Combine(basepath, "slice6inframe"), FS, new FrameCreatorTest(),"slice6framed" );
             // PNL.SaveOutlineTo("panelized.gko", "panelcombinedgko.gko");
-            Console.ReadKey();
+            //Console.ReadKey();
         }
 
         public override void AddString(string text, float progress = -1)
