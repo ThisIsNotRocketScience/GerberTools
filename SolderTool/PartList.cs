@@ -31,6 +31,7 @@ namespace SolderTool
         public class ListItem
         {
             public string DispName;
+            
             public int useagecount;
             public bool soldered;
             public List<BOMEntry.RefDesc> RefDes;

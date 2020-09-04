@@ -44,7 +44,12 @@ namespace SolderTool
             string disp = String.Format("{0}/{1}", solderedcount, count);
             G.DrawString(disp, F, Brushes.White, 2, 2);
             G.DrawString(SolderTool.GetCurrentPartName(), F2, Brushes.White, 2, pictureBox1.Height - F2.Height);
-            
+
+            if (ActiveDes != null)
+            {
+                string txt = String.Format("{0} {1} - {2}", ActiveEntry.DispName,ActiveDes.OriginalName, ActiveDes.NameOnBoard);
+                G.DrawString(txt, F, Brushes.Pink, 2, 20);
+            }
             
             G.TranslateTransform(10, 10);
 
@@ -75,6 +80,14 @@ namespace SolderTool
 
             }
             int i = 0;
+            if (ActiveDes!=null)
+            {
+
+
+                G.DrawLine(Pens.Gray, (float)ToolX, (float)TheBox.TopLeft.Y, (float)ToolX, (float)TheBox.BottomRight.Y);
+                G.DrawLine(Pens.Gray, (float)TheBox.TopLeft.X, (float)ToolY, (float)TheBox.BottomRight.X, (float)ToolY);
+            }
+
 
             var PL = SolderTool.GetPartList();
             foreach (var v in PL)
@@ -82,13 +95,14 @@ namespace SolderTool
                 bool Current = SolderTool.GetCurrentPart() == i;
                 foreach(var r in v.RefDes)
                 {
-                    DrawMarker(G, r, v.soldered,S,Current);
+                    DrawMarker(G, r, v.soldered,S,Current, r == ActiveDes);
                 }
                 i++;
             }
 
         }
-
+        BOMEntry.RefDesc ActiveDes = null;
+        PartList.ListItem ActiveEntry = null;
         private void RenderLayerSets(Graphics G, float S, BoardSide side, BoardLayer layer, Color C, bool lines = true)
         {
             foreach(var l in LayerSets)
@@ -128,11 +142,14 @@ namespace SolderTool
             }
         }
 
-        private void DrawMarker(Graphics g, BOMEntry.RefDesc r, bool soldered, float S, bool current)
+        private void DrawMarker(Graphics g, BOMEntry.RefDesc r, bool soldered, float S, bool current, bool activedes)
         {
             float R = 2;
             float cx = (float)r.x - R/S;
             float cy = (float)r.y - R/S;
+
+        
+            
             Color CurrentColor = soldered ? Color.Green : Color.Yellow;
            if (current)
             {
@@ -140,6 +157,14 @@ namespace SolderTool
                 float cx2 = (float)r.x - R2 / S;
                 float cy2 = (float)r.y - R2 / S;
                 g.FillRectangle(new SolidBrush(CurrentColor), cx2, cy2, R2 / S * 2, R2 / S * 2);
+            }
+           if (activedes)
+            {
+                float R2 = 8;
+                float cx2 = (float)r.x - R2 / S;
+                float cy2 = (float)r.y - R2 / S;
+                g.FillRectangle(new SolidBrush(Color.HotPink), cx2, cy2, R2 / S * 2, R2 / S * 2);
+
             }
             g.FillRectangle(soldered ? Brushes.Green : Brushes.Red, cx, cy, R/S*2, R/S*2);
     
@@ -318,6 +343,75 @@ namespace SolderTool
         internal void InvalidatePicture()
         {
             pictureBox1.Invalidate();
+        }
+
+        private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+
+            Bitmap B = new Bitmap(10,10);
+            Graphics G = Graphics.FromImage(B);
+            G.TranslateTransform(10, 10);
+
+            float S = (float)Math.Min(pictureBox1.Width / (TheBox.Width() - 20), pictureBox1.Height / (TheBox.Height() - 20));
+
+            if (TopView)
+            {
+                G.ScaleTransform(S * 0.8f, -S * 0.8f);
+                G.TranslateTransform((float)-TheBox.TopLeft.X, (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
+            }
+            else
+            {
+                G.ScaleTransform(-S * 0.8f, -S * 0.8f);
+                G.TranslateTransform((float)(-TheBox.TopLeft.X - TheBox.Width()), (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
+
+            }
+
+            
+            var inverseTransform = G.Transform.Clone();
+            inverseTransform.Invert();
+            Point [] location = new Point[1]; Point p = new Point(e.X, e.Y); location[0] = p;
+
+            inverseTransform.TransformPoints(location); 
+
+
+           
+            double rx=location[0].X, ry= location[0].Y;
+            Console.WriteLine("mouse: {0}, {1} - tranlated to {2},{3}", e.X, e.Y,rx, ry);
+            ToolX = rx;
+            ToolY = ry;
+
+            var PL = SolderTool.GetPartList();
+            float clodist = 1000000l;
+            BOMEntry.RefDesc closest = null;
+            PartList.ListItem LI;
+            foreach (var v in PL)
+            {
+                
+                foreach (var r in v.RefDes)
+                {
+                    float DX = (float)r.x - (float)ToolX;
+                    float DY = (float)r.y - (float)ToolY;
+                    float dist = (float)Math.Sqrt(DX * DX + DY * DY);
+//                    DrawMarker(G, r, v.soldered, S, Current, r == ActiveDes);
+                    if (dist<clodist)
+                    {
+                        clodist = dist;
+                        ActiveEntry = v; 
+                        closest = r;
+                    }
+                }
+                
+            }
+            ActiveDes = closest;
+
+            pictureBox1.Invalidate();
+        }
+
+        public double ToolX = 0;
+        public double ToolY = 0;
+        private void PictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+
         }
     }
 }
