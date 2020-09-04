@@ -26,8 +26,10 @@ namespace GerberLibrary
     {
         public void Load(ProgressLog log, string filename, double drillscaler = 1.0)
         {
+            var Load = log.PushActivity("Loading Excellon");
             var lines = File.ReadAllLines(filename);
             ParseExcellon(lines.ToList(), drillscaler,log);
+            log.PopActivity(Load);
         }
 
         public void Load(ProgressLog log, StreamReader stream, double drillscaler = 1.0)
@@ -42,11 +44,11 @@ namespace GerberLibrary
 
         public static void MergeAll(List<string> Files, string output, ProgressLog Log)
         {
-            Log.PushActivity("Excellon MergeAll");
+            var LogDepth = Log.PushActivity("Excellon MergeAll");
             if (Files.Count >= 2)
             {
                 MultiMerge(Files[0], Files.Skip(1).ToList(), output, Log);
-                Log.PopActivity();
+                Log.PopActivity(LogDepth);
                 return;
 
             }
@@ -62,7 +64,7 @@ namespace GerberLibrary
                 {
                     Log.AddString("Need files to do anything??");
                 }
-                Log.PopActivity();
+                Log.PopActivity(LogDepth);
                 return;
             }
 
@@ -83,16 +85,16 @@ namespace GerberLibrary
             {
                 File.Delete(s);
             }
-            Log.PopActivity();
+            Log.PopActivity(LogDepth);
         }
 
         private static void MultiMerge(string file1, List<string> otherfiles, string output, ProgressLog Log)
         {
-            Log.PushActivity("Excellon MultiMerge");
+            int MM = Log.PushActivity("Excellon MultiMerge");
             if (File.Exists(file1) == false)
             {
                 Log.AddString(String.Format("{0} not found! stopping process!", file1));
-                Log.PopActivity();
+                Log.PopActivity(MM);
                 return;
             }
             foreach (var otherfile in otherfiles)
@@ -100,7 +102,7 @@ namespace GerberLibrary
                 if (File.Exists(otherfile) == false)
                 {
                     Log.AddString(String.Format("{0} not found! stopping process!", otherfile));
-                    Log.PopActivity();
+                    Log.PopActivity(MM);
                     return;
                 }
             }
@@ -133,7 +135,7 @@ namespace GerberLibrary
             }
             File1Parsed.Write(output, 0, 0, 0, 0);
 
-            Log.PopActivity();
+            Log.PopActivity(MM);
         }
 
         private void AddToolWithHoles(ExcellonTool d)
@@ -301,7 +303,7 @@ namespace GerberLibrary
 
         bool ParseExcellon(List<string> lines, double drillscaler,ProgressLog log )
         {
-            log.PushActivity("Parse Excellon");
+            var LogID = log.PushActivity("Parse Excellon");
             Tools.Clear();
             bool headerdone = false;
             int currentline = 0;
@@ -565,7 +567,7 @@ namespace GerberLibrary
                 }
                 currentline++;
             }
-            log.PopActivity();
+            log.PopActivity(LogID);
             return headerdone;
         }
 

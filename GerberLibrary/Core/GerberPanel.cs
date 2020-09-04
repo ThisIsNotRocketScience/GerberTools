@@ -14,20 +14,43 @@ using Ionic.Zip;
 using TriangleNet;
 using TriangleNet.Geometry;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace GerberLibrary
 {
     public abstract class ProgressLog
     {
         public abstract void AddString(string text, float progress = -1);
-        public void PushActivity(string activitiy)
+        public int PushActivity(string activitiy)
         {
-        //    AddString("Activity: " + activitiy);
+            //    AddString("Activity: " + activitiy);
+            mut.WaitOne();
             ActivityStack.Add(activitiy);
+            int res = ActivityStack.Count; ;
+            mut.ReleaseMutex();
+            return res;
         }
-        public void PopActivity()
+
+        private static Mutex mut = new Mutex();
+
+        public int PopActivity(int CheckVal = -10)
         {
+            mut.WaitOne();
+            if (CheckVal > -10)
+            {
+                if (ActivityStack.Count  != CheckVal)
+                {
+                    Exception E = new Exception("ActivityStack error! ");
+                    throw (E);
+                }
+            }
+
             ActivityStack.Remove(ActivityStack.Last());
+            int res = ActivityStack.Count;
+
+            mut.ReleaseMutex();
+
+            return res;
         }
 
         public string GetDefaultText(string text, float progress)
@@ -58,10 +81,22 @@ namespace GerberLibrary
     }
     public class StandardConsoleLog : ProgressLog
     {
+        ProgressLog Forward = null;
+        public StandardConsoleLog(ProgressLog forward = null)
+        {
+            Forward = forward;
+        }
 
         public override void AddString(string text, float progress = -1)
         {
-            Console.WriteLine(GetDefaultText(text, progress));
+            if (Forward != null)
+            {
+                Forward.AddString(GetDefaultText(text, progress));
+            }
+            else
+            {
+                Console.WriteLine(GetDefaultText(text, progress));
+            }
 
         }
     }
@@ -1630,6 +1665,7 @@ namespace GerberLibrary
 
         public List<String> SaveGerbersToFolder(string BaseName, string targetfolder, ProgressLog Logger, bool SaveOutline = true, bool GenerateImages = true, bool DeleteGenerated = true, string combinedfilename = "combined")
         {
+            var logcheck = Logger.PushActivity("SaveGerbersToFolder");
             Logger.AddString("Starting export to " + targetfolder);
             List<string> GeneratedFiles = TheSet.SaveTo(targetfolder, GerberOutlines, Logger);
             List<String> FinalFiles = new List<string>();
@@ -1673,10 +1709,11 @@ namespace GerberLibrary
             object finallock = new object();
             Parallel.ForEach(FilesPerExt, (a) =>
             {
+                ProgressLog L = new StandardConsoleLog(Logger);
                 lock (finallock)
                 {
                     count++;
-                    Logger.AddString("merging *" + a.Key.ToLower(), ((float)count / (float)FilesPerExt.Keys.Count) * 0.5f + 0.3f);
+                    L.AddString("merging *" + a.Key.ToLower(), ((float)count / (float)FilesPerExt.Keys.Count) * 0.5f + 0.3f);
                 }
                 switch (FileTypePerExt[a.Key])
                 {
@@ -1687,7 +1724,7 @@ namespace GerberLibrary
                             {
                                 FinalFiles.Add(Filename);
                             }
-                            ExcellonFile.MergeAll(a.Value, Filename, Logger);
+                            ExcellonFile.MergeAll(a.Value, Filename, L);
                         }
                         break;
                     case BoardFileType.Gerber:
@@ -1699,7 +1736,7 @@ namespace GerberLibrary
                                 {
                                     FinalFiles.Add(Filename);
                                 }
-                                GerberMerger.MergeAll(a.Value, Filename, Logger);
+                                GerberMerger.MergeAll(a.Value, Filename, L);
                             }
                         }
                         break;

@@ -13,11 +13,11 @@ namespace GerberLibrary
     {
         public static void MergeAll(List<string> Files, string output, ProgressLog Log)
         {
-            Log.PushActivity("Gerber MergeAll");
+            int Check = Log.PushActivity("Gerber MergeAll");
             if (Files.Count > 2)
             {
                 MultiMerge(Files[0], Files.Skip(1).ToList(), output, Log);
-                Log.PopActivity();
+                Log.PopActivity(Check);
                 return;
             }
             if (Files.Count < 2)
@@ -32,7 +32,7 @@ namespace GerberLibrary
                 {
                     Log.AddString("Need files to do anything??");
                 }
-                Log.PopActivity(); 
+                Log.PopActivity(Check); 
                 return;
             }
            
@@ -87,16 +87,16 @@ namespace GerberLibrary
                 }
                 catch (Exception) { }
             }
-            Log.PopActivity();
+            Log.PopActivity(Check);
         }
 
         public static void MultiMerge(string file1, List<string> filestomergein, string output, ProgressLog Log)
         {
-            Log.PushActivity("Gerber MultiMerge");
+          int check =   Log.PushActivity("Gerber MultiMerge");
             if (File.Exists(file1) == false)
             {
                 Log.AddString(String.Format("{0} not found! stopping process!", Path.GetFileName(file1)));
-                Log.PopActivity();
+                Log.PopActivity(check);
                 return;
             }
             List<ParsedGerber> OtherFiles = new List<ParsedGerber>();
@@ -108,7 +108,7 @@ namespace GerberLibrary
                 if (File.Exists(otherfile) == false)
                 {
                     Log.AddString(String.Format("{0} not found! stopping process!", Path.GetFileName(otherfile)));
-                    Log.PopActivity();
+                    Log.PopActivity(check);
                     return;
                 }
 
@@ -624,7 +624,7 @@ namespace GerberLibrary
             OutputLines.Add(Gerber.EOF);
             Gerber.WriteAllLines(output, PolyLineSet.SanitizeInputLines(OutputLines));
 
-            Log.PopActivity();
+            Log.PopActivity(check);
 
 
         }
