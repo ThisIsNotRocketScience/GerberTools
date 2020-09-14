@@ -845,6 +845,7 @@ namespace GerberLibrary
             if (FileType == BoardFileType.Drill)
             {
                 PLS = PolyLineSet.LoadExcellonDrillFile(log, GerberFilename);
+                PLS.CalcPathBounds();
             }
             else
             {
@@ -956,7 +957,8 @@ namespace GerberLibrary
             }
             if (FileType == BoardFileType.Drill)
             {
-                PLS = PolyLineSet.LoadExcellonDrillFile(log, GerberFilename); ;
+                PLS = PolyLineSet.LoadExcellonDrillFile(log, GerberFilename);
+                PLS.CalcPathBounds();
             }
             else
             {
