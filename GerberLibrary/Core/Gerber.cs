@@ -70,6 +70,44 @@ namespace GerberLibrary
         public static bool WriteSanitized = false;
         #endregion
 
+        public static string FindOutlineFile(string folder )
+        {
+            if (Directory.Exists(folder) == false) return null;
+            foreach(var a in Directory.GetFiles(folder))
+            {
+                BoardSide bs;
+                BoardLayer bl;
+                DetermineBoardSideAndLayer(a, out bs, out bl);
+                if (bl == BoardLayer.Outline) return a;
+            }
+
+            foreach (var a in Directory.GetFiles(folder))
+            {
+                BoardSide bs;
+                BoardLayer bl;
+                DetermineBoardSideAndLayer(a, out bs, out bl);
+                if (bl == BoardLayer.Mill) return a;
+            }
+            return null;
+
+        }
+        public static PolyLine FindAndLoadOutlineFile(string folder)
+        {
+
+            string File = FindOutlineFile(folder);
+            if (File == null || File.Length ==  0) return null;
+
+            PolyLine PL = new PolyLine(PolyLine.PolyIDs.Outline);
+            ParsedGerber pls  = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), File);
+            if (pls.OutlineShapes.Count > 0)
+            {
+                return pls.OutlineShapes[0];
+            }
+
+            return null;
+        }
+
+
         public static void ZipGerberFolderToFactoryFolder(string Name, string BoardGerbersFolder, string BoardFactoryFolder)
         {
             if (Directory.Exists(BoardGerbersFolder))
