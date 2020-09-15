@@ -1102,8 +1102,10 @@ namespace GerberLibrary
 
                 var C1 = PStart + StartNorm * drillradius;
                 var C2 = PEnd + EndNorm * drillradius;
-
-                var DF = C2 - C1;
+                
+                //if centers are at the same location then the linesegment between them does not exist.  This results in a generating a bad unit vector and 
+                //therfore bad angles and bad arcs.  If the centers are at the same location use the linesgment between the start and end points instead.
+                var DF = (C1 != C2) ? C2 - C1 : PEnd - PStart;
                 DF.Normalize();
                 var DR = DF.Rotate(90);
 
