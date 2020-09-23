@@ -34,11 +34,11 @@ namespace GerberToImage
                 Console.WriteLine("GerberToImage <files> [--dpi N] [--noxray] [--nopcb] [--silk color] [--trace color] [--copper color] [--mask color]");
                 return;
             }
-
+         
             int dpi = 400;
             Arguments NextArg = Arguments.None;
             bool xray = true;
-               bool normal = true;
+            bool normal = true;
             string pcbcolor = "green";
             string silkcolor = "white";
             string tracecolor = "auto";
@@ -133,7 +133,6 @@ namespace GerberToImage
             GIC.SetColors(colors);
             GIC.WriteImageFiles(TargetFileBaseName, dpi, false, xray, normal, new StandardConsoleLog());
             Console.WriteLine("Done writing {0}", TargetFileBaseName);
-       //    Console.ReadKey();
         }
 
         private static void CreateImageForSingleFile(ProgressLog log, string arg, Color Foreground, Color Background)
