@@ -30,7 +30,10 @@ namespace GerberLibrary.Core.Primitives
         }
 
         public int ID = -1;
-
+        public override string ToString()
+        {
+            return String.Format("{0} vertices, bounds: {1}", Vertices.Count, GetBounds());
+        }
         public PolyLine() : this(PolyIDs.Temp) { }
 
         public PolyLine(PolyIDs nID)
@@ -655,7 +658,7 @@ namespace GerberLibrary.Core.Primitives
             Polygon b = this.toPolygon();
 
             clips.Add(b);
-            Polygons clips2 = Clipper.OffsetPolygons(clips, margin* 100000.0f, JoinType.jtMiter);
+            Polygons clips2 = Clipper.OffsetPolygons(clips, margin* 100000.0f, JoinType.jtRound);
 
             foreach(var r in clips2)
             {
