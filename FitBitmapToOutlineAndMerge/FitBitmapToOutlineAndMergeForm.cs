@@ -94,7 +94,7 @@ namespace FitBitmapToOutlineAndMerge
             statustext = "processing top!"; 
             CreateStuff(DPI, PLS, OutlineFile, SilkFile, BitmapFile, Flipped, Invert, CopperFile, soldermaskfile);
             statustext = "processing bottom!";
-            CreateStuff(DPI, PLS, OutlineFile, SilkFileBottomBox.Text, BitmapFileBottomBox.Text, FlippedBottom, InvertBottom, CopperFile, soldermaskfile);
+            CreateStuff(DPI, PLS, OutlineFile, SilkFileBottomBox.Text, BitmapFileBottomBox.Text, FlippedBottom, InvertBottom, "", "");
 
             BGThread = null;
             statustext = "done!";
@@ -166,7 +166,13 @@ namespace FitBitmapToOutlineAndMerge
             }
             else
             {
-                File.Copy(OutSilk, Path.Combine(output, Path.GetFileName(SilkFile)), true);
+                if (!Directory.Exists(Path.Combine(output, Path.GetFileName(SilkFile))))
+                {
+                    File.Copy(OutSilk, Path.Combine(output, Path.GetFileName(SilkFile)), true);
+                }
+                else
+                {
+                }
             }
             
 
