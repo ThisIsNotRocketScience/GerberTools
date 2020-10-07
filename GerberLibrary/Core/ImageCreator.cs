@@ -28,7 +28,7 @@ namespace GerberLibrary
 
         bool hasgko = false;
 
-        List<ParsedGerber> PLSs = new List<ParsedGerber>();
+      public  List<ParsedGerber> PLSs = new List<ParsedGerber>();
 
         public ParsedGerber GetGerberByName(string name)
         {

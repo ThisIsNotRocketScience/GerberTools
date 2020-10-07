@@ -87,6 +87,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameCreatorTest", "FrameCr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MakeIcon", "..\MakeIcon\MakeIcon.csproj", "{D4D4DC84-983D-4B9E-8253-1F6D8AEE02E2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PnP_Processor", "..\PnP_Processor\PnP_Processor.csproj", "{884D67EC-0142-4425-9FD2-1D562407FE27}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -383,6 +385,14 @@ Global
 		{D4D4DC84-983D-4B9E-8253-1F6D8AEE02E2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D4D4DC84-983D-4B9E-8253-1F6D8AEE02E2}.Release|x86.ActiveCfg = Release|Any CPU
 		{D4D4DC84-983D-4B9E-8253-1F6D8AEE02E2}.Release|x86.Build.0 = Release|Any CPU
+		{884D67EC-0142-4425-9FD2-1D562407FE27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{884D67EC-0142-4425-9FD2-1D562407FE27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{884D67EC-0142-4425-9FD2-1D562407FE27}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{884D67EC-0142-4425-9FD2-1D562407FE27}.Debug|x86.Build.0 = Debug|Any CPU
+		{884D67EC-0142-4425-9FD2-1D562407FE27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{884D67EC-0142-4425-9FD2-1D562407FE27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{884D67EC-0142-4425-9FD2-1D562407FE27}.Release|x86.ActiveCfg = Release|Any CPU
+		{884D67EC-0142-4425-9FD2-1D562407FE27}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -424,6 +434,7 @@ Global
 		{16EF10F9-DAC3-4496-98C8-0BFB5E1698E7} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 		{6DAC1D1F-8265-4DE3-B5A0-D39C3493B521} = {F705564A-6956-4675-A941-6ED916ADC0AD}
 		{D4D4DC84-983D-4B9E-8253-1F6D8AEE02E2} = {F705564A-6956-4675-A941-6ED916ADC0AD}
+		{884D67EC-0142-4425-9FD2-1D562407FE27} = {5B17443F-D48D-429E-83E3-2C7DCA8C6ED3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FF204A88-D467-4D27-816B-E8B2C30CA74F}

@@ -287,13 +287,7 @@ namespace SolderTool
 
         }
 
-        class LayerSet
-        {
-            public List<ParsedGerber> Gerbs = new List<ParsedGerber>();
-            public List<string> Files = new List<string>();
-            public BoardSide Side;
-            public BoardLayer Layer;
-        }
+
 
         List<LayerSet> LayerSets = new List<LayerSet>();
 
