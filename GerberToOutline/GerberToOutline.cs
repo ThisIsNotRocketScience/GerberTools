@@ -38,7 +38,7 @@ namespace GerberToOutline
             if (FileType == BoardFileType.Drill)
             {
                 if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", infile);
-                PLS = PolyLineSet.LoadExcellonDrillFile(infile, false, 1.0);
+                PLS = PolyLineSet.LoadExcellonDrillFile(new StandardConsoleLog(), infile, false, 1.0);
                 // ExcellonFile EF = new ExcellonFile();
                 // EF.Load(a);
             }
@@ -58,7 +58,7 @@ namespace GerberToOutline
                 }
                 State.PreCombinePolygons = precombinepolygons;
                 
-                PLS = PolyLineSet.LoadGerberFile(infile, forcezerowidth, false, State);
+                PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), infile, forcezerowidth, false, State);
                 PLS.Side = State.Side;
                 PLS.Layer = State.Layer;
                 if (Layer == BoardLayer.Outline)

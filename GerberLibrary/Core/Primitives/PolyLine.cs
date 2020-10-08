@@ -13,7 +13,8 @@ namespace GerberLibrary.Core.Primitives
 {
     public class PolyLine
     {
-        public enum PolyIDs{
+        public enum PolyIDs
+        {
             Outline = -20,
             Bitmap = -30,
             No = -2,
@@ -29,10 +30,13 @@ namespace GerberLibrary.Core.Primitives
         }
 
         public int ID = -1;
-
+        public override string ToString()
+        {
+            return String.Format("{0} vertices, bounds: {1}", Vertices.Count, GetBounds());
+        }
         public PolyLine() : this(PolyIDs.Temp) { }
 
-        public PolyLine(PolyIDs nID )
+        public PolyLine(PolyIDs nID)
         {
             ID = (int)nID;
         }
@@ -41,8 +45,8 @@ namespace GerberLibrary.Core.Primitives
         {
             ID = nID;
         }
-        
-        
+
+
         public List<PointD> Vertices = new List<PointD>();
 
 
@@ -94,6 +98,22 @@ namespace GerberLibrary.Core.Primitives
             {
                 Hole = true;
             }
+        }
+
+        internal bool ClockWise()
+        {
+
+
+            bool isClockwise = false;
+            double sum = 0;
+            for (int i = 0; i < Vertices.Count; i++)
+            {
+                sum += (Vertices[(i + 1) % Vertices.Count].X - Vertices[i].X) * (Vertices[(i + 1) % Vertices.Count].Y + Vertices[i].Y);
+            }
+            isClockwise = (sum > 0) ? true : false;
+            return isClockwise;
+
+
         }
 
         public bool Draw = true;
@@ -198,34 +218,34 @@ namespace GerberLibrary.Core.Primitives
             Vertices.Add(new PointD(-p, -p));
         }
 
-        public void MakeCircle(double p, int C = 20)
+        public void MakeCircle(double radius, int C = 20, double ox = 0, double oy = 0)
         {
             Vertices.Clear();
             for (int i = 0; i < C + 1; i++)
             {
                 double P = ((double)i / (double)(C)) * (double)Math.PI * 2;
-                Vertices.Add(new PointD(Math.Sin(P) * p, Math.Cos(P) * p));
+                Vertices.Add(new PointD(Math.Sin(P) * radius + ox, Math.Cos(P) * radius + oy));
             }
         }
 
-        internal void MakeRectangle(double w, double h)
+        internal void MakeRectangle(double w, double h, double ox = 0, double oy = 0)
         {
             Vertices.Clear();
-            Vertices.Add(new PointD(-w / 2, -h / 2));
-            Vertices.Add(new PointD(w / 2, -h / 2));
-            Vertices.Add(new PointD(w / 2, h / 2));
-            Vertices.Add(new PointD(-w / 2, h / 2));
-            Vertices.Add(new PointD(-w / 2, -h / 2));
+            Vertices.Add(new PointD(ox + -w / 2, oy + -h / 2));
+            Vertices.Add(new PointD(ox + w / 2, oy + -h / 2));
+            Vertices.Add(new PointD(ox + w / 2, oy + h / 2));
+            Vertices.Add(new PointD(ox + -w / 2, oy + h / 2));
+            Vertices.Add(new PointD(ox + -w / 2, oy + -h / 2));
         }
 
-        internal void MakePRectangle(double w, double h)
+        internal void MakePRectangle(double w, double h, double ox = 0, double oy = 0)
         {
             Vertices.Clear();
-            Vertices.Add(new PointD(0,0));
-            Vertices.Add(new PointD(w , 0));
-            Vertices.Add(new PointD(w , h));
-            Vertices.Add(new PointD(0, h));
-            Vertices.Add(new PointD(0,0));
+            Vertices.Add(new PointD(ox + 0, oy + 0));
+            Vertices.Add(new PointD(ox + w, oy + 0));
+            Vertices.Add(new PointD(ox + w, oy + h));
+            Vertices.Add(new PointD(ox + 0, oy + h));
+            Vertices.Add(new PointD(ox + 0, oy + 0));
         }
 
 
@@ -255,12 +275,19 @@ namespace GerberLibrary.Core.Primitives
         public Bounds GetBounds()
         {
             Bounds B = new Bounds();
-            foreach(var v in Vertices)
+            foreach (var v in Vertices)
             {
                 B.FitPoint(v);
             }
             return B;
         }
+
+
+        public bool ContainsPoint(double x, double y)
+        {
+            return Helpers.IsInPolygon(Vertices, new PointD(x, y));
+        }
+
         public PointD GetCentroid()
         {
             double accumulatedArea = 0.0f;
@@ -293,11 +320,11 @@ namespace GerberLibrary.Core.Primitives
                 centerY += (Vertices[i].Y);
             }
 
-            if(Vertices.Count== 0)
+            if (Vertices.Count == 0)
             {
                 return new PointD(0, 0);
             }
-            
+
             return new PointD(centerX / (float)Vertices.Count, centerY / (float)Vertices.Count);
         }
 
@@ -379,7 +406,7 @@ namespace GerberLibrary.Core.Primitives
 
         public bool EntirelyInside(PolyLine b)
         {
-            foreach(var v in Vertices)
+            foreach (var v in Vertices)
             {
                 if (b.PointInPoly(v) == false)
                 {
@@ -464,7 +491,7 @@ namespace GerberLibrary.Core.Primitives
         internal double OutlineLength()
         {
             double L = 0;
-            for (int i = 0; i < Vertices.Count-1; i++)
+            for (int i = 0; i < Vertices.Count - 1; i++)
             {
                 L += (Vertices[i] - Vertices[i + 1]).Length();
             }
@@ -488,16 +515,16 @@ namespace GerberLibrary.Core.Primitives
 
         public static PolyLine Stroke(double x1, double y1, double x2, double y2, double w)
         {
-            PolyLine PL = new PolyLine( PolyIDs.GFXTemp);
+            PolyLine PL = new PolyLine(PolyIDs.GFXTemp);
             PointD A = new PointD(x1, y1);
             PointD B = new PointD(x2, y2);
             var C = B - A;
 
-            PL.MakeRectangle(w,C.Length() + w);
-            PL.Translate(0, C.Length()/2 );
-            PL.RotateDegrees(Math.Atan2(C.Y, C.X)*360/(Math.PI*2)  - 90);
-            PL.Translate(x1, y1);                
-            
+            PL.MakeRectangle(w, C.Length() + w);
+            PL.Translate(0, C.Length() / 2);
+            PL.RotateDegrees(Math.Atan2(C.Y, C.X) * 360 / (Math.PI * 2) - 90);
+            PL.Translate(x1, y1);
+
             return PL;
         }
 
@@ -609,8 +636,8 @@ namespace GerberLibrary.Core.Primitives
 
             }
 
-            Res.Add(PolyLine.Stroke(-w / 2, hunit * 0.5 - stroke*2, w / 2, hunit * 0.5 - stroke * 2, stroke));
-            foreach(var r in Res)
+            Res.Add(PolyLine.Stroke(-w / 2, hunit * 0.5 - stroke * 2, w / 2, hunit * 0.5 - stroke * 2, stroke));
+            foreach (var r in Res)
             {
                 r.RotateDegrees(rotation);
                 r.Translate(_x, _y);
@@ -622,6 +649,36 @@ namespace GerberLibrary.Core.Primitives
 
         }
 
+        internal List<PolyLine> Offset(double margin, int v)
+        {
+            List<PolyLine> Res = new List<PolyLine>();
+
+            
+            Polygons clips = new Polygons();
+            Polygon b = this.toPolygon();
+
+            clips.Add(b);
+            Polygons clips2 = Clipper.OffsetPolygons(clips, margin* 100000.0f, JoinType.jtRound);
+
+            foreach(var r in clips2)
+            {
+                PolyLine PLR = new PolyLine(v++);
+                PLR.fromPolygon(r);
+                Res.Add(PLR);
+            }
+            
+            
+            return Res;
+
+        }
+        public void MakeTriangle(PointD A, PointD B, PointD C)
+        {
+            Vertices.Clear();
+            Vertices.Add(A);
+            Vertices.Add(B);
+            Vertices.Add(C);
+
+        }
     }
 
 }

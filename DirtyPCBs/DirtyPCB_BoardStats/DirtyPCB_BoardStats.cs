@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Ionic.Zip;
 using System.Web.Script.Serialization;
+using GerberLibrary;
 
 namespace DirtyPCB_BoardStats
 {
@@ -26,7 +27,7 @@ namespace DirtyPCB_BoardStats
                 
                 foreach(var L in Directory.GetFiles(args[0]).ToList())
                 {
-                    TheStats.AddFile(L);
+                    TheStats.AddFile(new GerberLibrary.StandardConsoleLog(), L);
                 }
                 
             }
@@ -44,14 +45,14 @@ namespace DirtyPCB_BoardStats
                             {
                                 e.Extract(MS);
                                 MS.Seek(0, SeekOrigin.Begin);
-                                TheStats.AddFile( MS, e.FileName);
+                                TheStats.AddFile(new GerberLibrary.StandardConsoleLog(), MS, e.FileName);
                             }
                         }
                     }
                 }
                 else
                 {
-                    TheStats.AddFile(args[0]);
+                    TheStats.AddFile(new GerberLibrary.StandardConsoleLog(), args[0]);
                 }
 
             }
@@ -71,7 +72,7 @@ namespace DirtyPCB_BoardStats
             private GerberLibrary.Bounds Box = new GerberLibrary.Bounds();
 
 
-            public void AddFile(MemoryStream L, string filename)
+            public void AddFile(GerberLibrary.ProgressLog log, MemoryStream L, string filename)
             {
                 L.Seek(0, SeekOrigin.Begin);
 
@@ -83,7 +84,7 @@ namespace DirtyPCB_BoardStats
                             GerberLibrary.ExcellonFile EF = new GerberLibrary.ExcellonFile();
                             L.Seek(0, SeekOrigin.Begin);
 
-                            EF.Load(new StreamReader(L));
+                            EF.Load(log, new StreamReader(L));
                             DrillCount += EF.TotalDrillCount();
                         }
                         break;
@@ -95,7 +96,7 @@ namespace DirtyPCB_BoardStats
                             if (Layer == GerberLibrary.Core.BoardLayer.Outline || Layer == GerberLibrary.Core.BoardLayer.Mill)
                             {
                                 L.Seek(0, SeekOrigin.Begin);
-                                var G = GerberLibrary.PolyLineSet.LoadGerberFileFromStream(new StreamReader(L), filename);
+                                var G = GerberLibrary.PolyLineSet.LoadGerberFileFromStream(new StandardConsoleLog(), new StreamReader(L), filename);
                                 Box.AddBox(G.BoundingBox);
                             }
                         }
@@ -105,7 +106,7 @@ namespace DirtyPCB_BoardStats
 
             }
 
-            public void AddFile(string L)
+            public void AddFile(GerberLibrary.ProgressLog log, string L)
             {
                 var T = GerberLibrary.Gerber.FindFileType(L);
                 switch (T)
@@ -113,7 +114,7 @@ namespace DirtyPCB_BoardStats
                     case GerberLibrary.Core.BoardFileType.Drill:
                         {
                             GerberLibrary.ExcellonFile EF = new GerberLibrary.ExcellonFile();
-                            EF.Load(L);
+                            EF.Load(log, L);
                             DrillCount += EF.TotalDrillCount();
                         }
                         break;
@@ -124,7 +125,7 @@ namespace DirtyPCB_BoardStats
                             GerberLibrary.Gerber.DetermineBoardSideAndLayer(L, out Side, out Layer);
                             if (Layer == GerberLibrary.Core.BoardLayer.Outline || Layer == GerberLibrary.Core.BoardLayer.Mill)
                             {
-                                var G = GerberLibrary.PolyLineSet.LoadGerberFile(L);
+                                var G = GerberLibrary.PolyLineSet.LoadGerberFile(log, L);
                                 Box.AddBox(G.BoundingBox);
                             }
                         }

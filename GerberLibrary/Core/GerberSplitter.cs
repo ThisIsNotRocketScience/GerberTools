@@ -60,6 +60,8 @@ namespace GerberLibrary
 
         public void Split(string p, GerberNumberFormat form, bool finddecimalpoint = false)
         {
+//            StandardConsoleLog L = new StandardConsoleLog();
+  //          L.PushActivity("Split");
             if (p.Length < 2) return;
             try
             {
@@ -71,6 +73,7 @@ namespace GerberLibrary
                     CommandsInOrder.Add(GNP.Command);
                     // line is a comment!
                     //           Console.WriteLine("comment: {0}", p.Substring(3));
+    //                L.PopActivity();
                     return;
                 }
                 bool wasnumber = false;
@@ -79,25 +82,32 @@ namespace GerberLibrary
                 string running = "";
                 for (int i = 0; i < p.Length; i++)
                 {
+                    
                     char current = p[i];
+      //              L.AddString(p[i].ToString());
                     if (char.IsNumber(current) || current == '+' || current == '-' || current == '.')
                     {
                         isnumber = true;
+        //                L.AddString(p[i].ToString() +" is a number" );
                     }
                     else
                     {
                         isnumber = false;
+          //              L.AddString(p[i].ToString() + " is not a number");
                     }
 
                     if (isnumber != wasnumber)
                     {
+            //            L.AddString("number state change!");
                         if (isnumber)
                         {
+              //              L.AddString("Setting up running command: " + running);
                             GNP.Command = running;
                             GNP.Orig = running;
                         }
                         else
                         {
+                //            L.AddString("trying to parse" + running);
                             GNP.Orig += running;
                             GNP.Parse(running, form, finddecimalpoint);
                             Pairs[GNP.Command] = GNP;
@@ -121,6 +131,7 @@ namespace GerberLibrary
             {
                 Console.WriteLine("this line does not seem to contain gerber: {0}", p);
             }
+//            L.PopActivity();
         }
 
         internal void Set(string name, double val)

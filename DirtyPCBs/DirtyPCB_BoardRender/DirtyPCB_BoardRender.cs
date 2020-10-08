@@ -142,7 +142,7 @@ namespace DirtyPCB_BoardRender
 
                 Colors.BoardRenderSilkColor = TheSettings.SilkScreenColor;
                 Colors.BoardRenderPadColor = TheSettings.CopperColor;
-                GIC.AddBoardsToSet(InputFiles.ToList());
+                GIC.AddBoardsToSet(InputFiles.ToList(), new SilentLog());
                 GIC.SetColors(Colors);
                 if (GIC.Errors.Count > 0)
                 {
@@ -171,7 +171,7 @@ namespace DirtyPCB_BoardRender
             }
         }
 
-        public void AddString(string text, float progress = -1F)
+        public override void AddString(string text, float progress = -1F)
         {
             Console.WriteLine("Progress: {0}", text);
         }

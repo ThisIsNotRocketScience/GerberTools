@@ -200,8 +200,6 @@
             // XRayOut
             // 
             this.XRayOut.AutoSize = true;
-            this.XRayOut.Checked = true;
-            this.XRayOut.CheckState = System.Windows.Forms.CheckState.Checked;
             this.XRayOut.Location = new System.Drawing.Point(457, 149);
             this.XRayOut.Name = "XRayOut";
             this.XRayOut.Size = new System.Drawing.Size(74, 24);
@@ -212,6 +210,8 @@
             // PCBOut
             // 
             this.PCBOut.AutoSize = true;
+            this.PCBOut.Checked = true;
+            this.PCBOut.CheckState = System.Windows.Forms.CheckState.Checked;
             this.PCBOut.Location = new System.Drawing.Point(457, 103);
             this.PCBOut.Name = "PCBOut";
             this.PCBOut.Size = new System.Drawing.Size(94, 24);
@@ -244,8 +244,8 @@
             // QuickGerberRender
             // 
             this.AllowDrop = true;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(681, 462);
             this.Controls.Add(this.splitter1);

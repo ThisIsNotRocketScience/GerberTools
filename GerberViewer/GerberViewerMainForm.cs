@@ -19,6 +19,7 @@ namespace GerberViewer
     {
         private DockPanel dockPanel;
         LoadedStuff Document = new LoadedStuff();
+        private ProgressLog _log;
 
         public GerberViewerMainForm(string[] args)
         {
@@ -27,6 +28,7 @@ namespace GerberViewer
 
             InitializeComponent();
 
+            _log = new StandardConsoleLog();
             this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
 
             var theme = new VS2015BlueTheme();
@@ -75,7 +77,7 @@ namespace GerberViewer
             TheBottomDisplay.Show(this.dockPanel, DockState.Document);
             TheBottomDisplay.Text = "Bottom";
 
-            TheList = new LayerList(this, Document);
+            TheList = new LayerList(this, Document, _log);
             TheList.Show(this.dockPanel, DockState.DockLeft);
 
 
@@ -85,24 +87,28 @@ namespace GerberViewer
         public void LoadGerberFolder(List<string> list)
         {
             if (list == null) return;
-
-            foreach (var a in list)
+            try
             {
-                Document.AddFile(a);
-            }
-            UpdateAll();
+                foreach (var a in list)
+                {
+                    Document.AddFile(_log,a);
+                }
+                UpdateAll();
 
             ClearDisplays();
 
-            foreach (var a in Document.Gerbers)
-            {
-               a.Panel = new LayerDisplay(Document, a, this);
-               a.Panel.Show(this.dockPanel, DockState.Document);
-                a.Panel.Text = a.File.ToString() ;
-                SingleLayers.Add(a.Panel);
+                foreach (var a in Document.Gerbers)
+                {
+                    a.Panel = new LayerDisplay(Document, a, this);
+                    a.Panel.Show(this.dockPanel, DockState.Document);
+                    a.Panel.Text = a.File.ToString();
+                    SingleLayers.Add(a.Panel);
+                }
             }
-            
-
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.StackTrace +ex.Message);
+            }
         }
 
         private void UpdateAll(bool reloadlist = true)

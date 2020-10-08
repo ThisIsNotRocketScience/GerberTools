@@ -299,17 +299,17 @@ namespace AntennaBuilder
             if (WriteCombinedImage)
             {
                 GerberImageCreator GIC = new GerberImageCreator();
-                GIC.AddBoardsToSet(FilesGenerated);
+                GIC.AddBoardsToSet(FilesGenerated, new StandardConsoleLog());
                 GIC.WriteImageFiles(basename + "_render", 200, false);
             }
             if (WriteImages)
             {
-                Gerber.SaveGerberFileToImage(OutlineFile, OutlineFile + "_render.png", 1000, Color.Black, Color.White);
-                Gerber.SaveGerberFileToImage(CopperBottom, CopperBottom + "_render.png", 1000, Color.Black, Color.White);
-                Gerber.SaveGerberFileToImage(CopperTop, CopperTop + "_render.png", 1000, Color.Black, Color.White);
-                Gerber.SaveGerberFileToImage(DrillFile, DrillFile + "_render.png", 1000, Color.Black, Color.White);
-                Gerber.SaveGerberFileToImage(SilkFileTop, SilkFileTop + "_render.png", 1000, Color.Black, Color.White);
-                Gerber.SaveGerberFileToImage(SilkFileBottom, SilkFileBottom + "_render.png", 1000, Color.Black, Color.White);
+                Gerber.SaveGerberFileToImage(new StandardConsoleLog(),OutlineFile, OutlineFile + "_render.png", 1000, Color.Black, Color.White);
+                Gerber.SaveGerberFileToImage(new StandardConsoleLog(),CopperBottom, CopperBottom + "_render.png", 1000, Color.Black, Color.White);
+                Gerber.SaveGerberFileToImage(new StandardConsoleLog(),CopperTop, CopperTop + "_render.png", 1000, Color.Black, Color.White);
+                Gerber.SaveGerberFileToImage(new StandardConsoleLog(),DrillFile, DrillFile + "_render.png", 1000, Color.Black, Color.White);
+                Gerber.SaveGerberFileToImage(new StandardConsoleLog(),SilkFileTop, SilkFileTop + "_render.png", 1000, Color.Black, Color.White);
+                Gerber.SaveGerberFileToImage(new StandardConsoleLog(),SilkFileBottom, SilkFileBottom + "_render.png", 1000, Color.Black, Color.White);
             }
 
         }

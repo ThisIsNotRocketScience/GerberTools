@@ -197,7 +197,7 @@ namespace GerberCombinerBuilder
 
                     foreach (var a in Directory.GetFiles(path, "*.*"))
                     {
-                        GIC.AddBoardToSet(a);
+                        GIC.AddBoardToSet(a, new SilentLog());
                     }
 
                     GIC.WriteImageFiles(OFD.FileName, showimage: Gerber.DirectlyShowGeneratedBoardImages);

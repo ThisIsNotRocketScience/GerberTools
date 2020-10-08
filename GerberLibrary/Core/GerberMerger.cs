@@ -13,23 +13,26 @@ namespace GerberLibrary
     {
         public static void MergeAll(List<string> Files, string output, ProgressLog Log)
         {
+            int Check = Log.PushActivity("Gerber MergeAll");
             if (Files.Count > 2)
             {
                 MultiMerge(Files[0], Files.Skip(1).ToList(), output, Log);
+                Log.PopActivity(Check);
                 return;
             }
             if (Files.Count < 2)
             {
                 if (Files.Count == 1)
                 {
-                    Console.WriteLine("Merging 1 file is copying... doing so...");
+                    Log.AddString("Merging 1 file is copying... doing so...");
                     if (File.Exists(output)) File.Delete(output);
                     File.Copy(Files[0], output);
                 }
                 else
                 {
-                    Console.WriteLine("Need files to do anything??");
+                    Log.AddString("Need files to do anything??");
                 }
+                Log.PopActivity(Check); 
                 return;
             }
            
@@ -84,14 +87,16 @@ namespace GerberLibrary
                 }
                 catch (Exception) { }
             }
-
+            Log.PopActivity(Check);
         }
 
         public static void MultiMerge(string file1, List<string> filestomergein, string output, ProgressLog Log)
         {
+          int check =   Log.PushActivity("Gerber MultiMerge");
             if (File.Exists(file1) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(file1));
+                Log.AddString(String.Format("{0} not found! stopping process!", Path.GetFileName(file1)));
+                Log.PopActivity(check);
                 return;
             }
             List<ParsedGerber> OtherFiles = new List<ParsedGerber>();
@@ -102,13 +107,14 @@ namespace GerberLibrary
             {
                 if (File.Exists(otherfile) == false)
                 {
-                    Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(otherfile));
+                    Log.AddString(String.Format("{0} not found! stopping process!", Path.GetFileName(otherfile)));
+                    Log.PopActivity(check);
                     return;
                 }
 
                 List<string> OtherLines = File.ReadAllLines(otherfile).ToList();
                 OtherLines = PolyLineSet.SanitizeInputLines(OtherLines);
-                ParsedGerber OtherFileParsed = PolyLineSet.ParseGerber274x(OtherLines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
+                ParsedGerber OtherFileParsed = PolyLineSet.ParseGerber274x(Log, OtherLines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
                 OtherFiles.Add(OtherFileParsed);
                 OtherFileParsed.OriginalLines = OtherLines;
                 MaxDigitsAfter = Math.Max(OtherFileParsed.State.CoordinateFormat.DigitsAfter, MaxDigitsAfter);
@@ -118,7 +124,7 @@ namespace GerberLibrary
             List<string> File1Lines = File.ReadAllLines(file1).ToList();
 
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
-            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(Log, File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
                         
                    
@@ -271,14 +277,14 @@ namespace GerberLibrary
                                             File1Parsed.State.CoordinateFormat.SetImperialMode();
                                         }
                                         // skip changing metric mode!
-                                        Console.WriteLine("ignoring metric/imperial gcode: G{0}", GS.Get("G"));
+                                        Log.AddString(String.Format("ignoring metric/imperial gcode: G{0}", GS.Get("G")));
 
                                     }
                                     else
                                     {
                                         if (GS.Get("G") == 4)
                                         {
-                                            Console.WriteLine("skipping comment: {0}", CurrentLine);
+                                            Log.AddString(String.Format("skipping comment: {0}", CurrentLine));
                                         }
                                         else
                                         {
@@ -386,14 +392,14 @@ namespace GerberLibrary
             // TODO: set polarity back to "neutral" - or should each file do this at the start anyway? 
             if (Gerber.ShowProgress)
             {
-                Console.WriteLine("File 1 format: {0}", File1Parsed.State.CoordinateFormat);
+              Log.AddString(String.Format("File 1 format: {0}", File1Parsed.State.CoordinateFormat));
             }
 
             foreach (var otherfile in OtherFiles)
             {
                 if (Gerber.ShowProgress)
                 {
-                    Console.WriteLine("File 2 format: {0}", otherfile.State.CoordinateFormat);
+                    Log.AddString(String.Format("File 2 format: {0}", otherfile.State.CoordinateFormat));
                 }
                 OutputLines.Add("G04 next file*");
                 if (CurrentPolarity != "LPD") { OutputLines.Add("%LPD*%"); CurrentPolarity = "LPD"; }
@@ -588,14 +594,14 @@ namespace GerberLibrary
                                                 otherfile.State.CoordinateFormat.SetImperialMode();
                                             }
 
-                                            Console.WriteLine("ignoring metric/imperial gcode: G{0}", GS.Get("G"));
+                                            Log.AddString(String.Format("ignoring metric/imperial gcode: G{0}", GS.Get("G")));
                                             // skip changing metric mode!
                                         }
                                         else
                                         {
                                             if (GS.Get("G") == 4)
                                             {
-                                                Console.WriteLine("skipping comment: {0}", CurrentLine);
+                                                Log.AddString(String.Format("skipping comment: {0}", CurrentLine));
                                             }
                                             else
                                             {
@@ -617,6 +623,62 @@ namespace GerberLibrary
 
             OutputLines.Add(Gerber.EOF);
             Gerber.WriteAllLines(output, PolyLineSet.SanitizeInputLines(OutputLines));
+
+            Log.PopActivity(check);
+
+
+        }
+
+        internal static void MergeAllByFileType(List<string> allFiles, string targetfolder,string combinedfilename, ProgressLog Logger)
+        {
+            Dictionary<string, List<string>> FilesPerExt = new Dictionary<string, List<string>>();
+            Dictionary<string, BoardFileType> FileTypePerExt = new Dictionary<string, BoardFileType>();
+            foreach (var s in allFiles)
+            {
+                string ext = Path.GetExtension(s).ToLower(); ;
+                if (ext == "xln") ext = "txt";
+                if (ext == "drl") ext = "txt";                
+                BoardLayer layer;
+                BoardSide Side;
+
+                Gerber.DetermineBoardSideAndLayer(s, out Side, out layer);
+                ext = String.Format(".{0}_{1}", layer, Side);                
+
+                if (FilesPerExt.ContainsKey(ext) == false)
+                {
+                    FilesPerExt[ext] = new List<string>();
+                }
+
+                FileTypePerExt[ext] = Gerber.FindFileType(s);
+                FilesPerExt[ext].Add(s);
+            }
+            int count = 0;
+            foreach (var a in FilesPerExt)
+            {
+                count++;
+                Logger.AddString("merging *" + a.Key.ToLower(), ((float)count / (float)FilesPerExt.Keys.Count) * 0.5f + 0.3f);
+                switch (FileTypePerExt[a.Key])
+                {
+                    case BoardFileType.Drill:
+                        {
+                            string Filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            //FinalFiles.Add(Filename);
+                            ExcellonFile.MergeAll(a.Value, Filename, Logger);
+                        }
+                        break;
+                    case BoardFileType.Gerber:
+                        {
+                            if (a.Key.ToLower() != ".gko")
+                            {
+                                string Filename = Path.Combine(targetfolder, combinedfilename + a.Key);
+                            //    FinalFiles.Add(Filename);
+                                GerberMerger.MergeAll(a.Value, Filename, Logger);
+                            }
+                        }
+                        break;
+                }
+            }
+
         }
 
         private static void CheckAllApertures(ParsedGerber file1Parsed, List<string> File1Lines, ProgressLog Log)
@@ -678,37 +740,35 @@ namespace GerberLibrary
 
         public static void Merge(string file1, string file2, string output, ProgressLog Log)
         {
+            Log.PushActivity("Gerber Merge");
             if (File.Exists(file1) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(file1));
+                Log.AddString(String.Format("{0} not found! stopping process!", Path.GetFileName(file1)));
+                Log.PopActivity();
                 return;
             }
             if (File.Exists(file2) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(file2));
+                Log.AddString(String.Format("{0} not found! stopping process!", Path.GetFileName(file2)));
+                Log.PopActivity();
                 return;
             }
 
             Log.AddString(String.Format("Merging {0} with {1} in to {2}", Path.GetFileName(file1), Path.GetFileName(file2), Path.GetFileName(output)));
-        //    Console.WriteLine("*** Reading {0}", Path.GetFileName( file1));
-            List<string> File1Lines = File.ReadAllLines(file1).ToList();
 
+            List<string> File1Lines = File.ReadAllLines(file1).ToList();
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
-            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true,false, new GerberParserState(){ PreCombinePolygons = false, GenerateGeometry = false});
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(Log, File1Lines, true,false, new GerberParserState(){ PreCombinePolygons = false, GenerateGeometry = false});
           
-         //   Console.WriteLine("*** Reading {0}",  Path.GetFileName(file2));
             List<string> File2Lines = File.ReadAllLines(file2).ToList();
             File2Lines = PolyLineSet.SanitizeInputLines(File2Lines);
-            ParsedGerber File2Parsed = PolyLineSet.ParseGerber274x(File2Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
+            ParsedGerber File2Parsed = PolyLineSet.ParseGerber274x(Log, File2Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
             CheckAllApertures(File1Parsed, File1Lines, Log);
             CheckAllApertures(File2Parsed, File2Lines, Log);
 
             int ApertureOffset = 0;
             if (File1Parsed.State.Apertures.Count > 0) ApertureOffset = File1Parsed.State.Apertures.Keys.Max() + 1;
-
-
-//            Console.WriteLine("*** Writing  {0}", output);
 
             List<string> OutputLines = new List<string>();
             GerberNumberFormat GNF = new GerberNumberFormat();
@@ -853,14 +913,14 @@ namespace GerberLibrary
                                             File1Parsed.State.CoordinateFormat.SetImperialMode();
                                         }
                                         // skip changing metric mode!
-                                        Console.WriteLine("ignoring metric/imperial gcode: G{0}", GS.Get("G"));
+                                        Log.AddString(String.Format("ignoring metric/imperial gcode: G{0}", GS.Get("G")));
 
                                     }
                                     else
                                     {
                                         if (GS.Get("G") == 4)
                                         {
-                                            Console.WriteLine("skipping comment: {0}", CurrentLine);
+                                            Log.AddString(String.Format("skipping comment: {0}", CurrentLine));
                                         }
                                         else
                                         {
@@ -965,8 +1025,8 @@ namespace GerberLibrary
             // TODO: set polarity back to "neutral" - or should each file do this at the start anyway? 
             if (Gerber.ShowProgress)
             {
-                Console.WriteLine("File 1 format: {0}", File1Parsed.State.CoordinateFormat);
-                Console.WriteLine("File 2 format: {0}", File2Parsed.State.CoordinateFormat);
+                Log.AddString(String.Format("File 1 format: {0}", File1Parsed.State.CoordinateFormat));
+                Log.AddString(String.Format("File 2 format: {0}", File2Parsed.State.CoordinateFormat));
             }
             OutputLines.Add("G04 next file*");
 
@@ -1160,14 +1220,14 @@ namespace GerberLibrary
                                             File2Parsed.State.CoordinateFormat.SetImperialMode();
                                         }
 
-                                        Console.WriteLine("ignoring metric/imperial gcode: G{0}", GS.Get("G"));
+                                        Log.AddString(String.Format("ignoring metric/imperial gcode: G{0}", GS.Get("G")));
                                         // skip changing metric mode!
                                     }
                                     else
                                     {
                                         if (GS.Get("G") == 4)
                                         {
-                                            Console.WriteLine("skipping comment: {0}", CurrentLine);
+                                            Log.AddString(String.Format("skipping comment: {0}", CurrentLine));
                                         }
                                         else
                                         {
@@ -1188,24 +1248,27 @@ namespace GerberLibrary
 
             OutputLines.Add(Gerber.EOF);
             Gerber.WriteAllLines(output, PolyLineSet.SanitizeInputLines(OutputLines));
+
+            Log.PopActivity();
         }
 
 
         public static void WriteContainedOnly(string inputfile,PolyLine Boundary, string outputfilename, ProgressLog Log)
         {
+            Log.PushActivity("Gerber Clipper");
             if (File.Exists(inputfile) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(inputfile));
+                Log.AddString(String.Format("{0} not found! stopping process!", Path.GetFileName(inputfile)));
+                Log.PopActivity();
                 return;
             }
            
 
             Log.AddString(String.Format("Clipping {0} to {1}", Path.GetFileName(inputfile), Path.GetFileName(outputfilename)));
-            //    Console.WriteLine("*** Reading {0}", Path.GetFileName( file1));
             List<string> File1Lines = File.ReadAllLines(inputfile).ToList();
 
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
-            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
+            ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(Log, File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
             CheckAllApertures(File1Parsed, File1Lines, Log);
 
@@ -1343,7 +1406,7 @@ namespace GerberLibrary
                                             File1Parsed.State.CoordinateFormat.SetImperialMode();
                                         }
                                         // skip changing metric mode!
-                                        Console.WriteLine("ignoring metric/imperial gcode: G{0}", GS.Get("G"));
+                                        Log.AddString(String.Format("ignoring metric/imperial gcode: G{0}", GS.Get("G")));
 
                                     }
                                     else
@@ -1462,7 +1525,7 @@ namespace GerberLibrary
             // TODO: set polarity back to "neutral" - or should each file do this at the start anyway? 
             if (Gerber.ShowProgress)
             {
-                Console.WriteLine("File 1 format: {0}", File1Parsed.State.CoordinateFormat);
+                Log.AddString(String.Format("File 1 format: {0}", File1Parsed.State.CoordinateFormat));
                
             }
             OutputLines.Add("G04 next file*");
@@ -1475,6 +1538,8 @@ namespace GerberLibrary
 
             OutputLines.Add(Gerber.EOF);
             Gerber.WriteAllLines(outputfilename, PolyLineSet.SanitizeInputLines(OutputLines));
+
+            Log.PopActivity();
         }
     }
 }

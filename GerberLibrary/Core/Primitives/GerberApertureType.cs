@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClipperLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -345,39 +346,77 @@ namespace GerberLibrary.Core.Primitives
                 List<PolyLine> ResPre = new List<PolyLine>();
                 List<PolyLine> ResPreNeg = new List<PolyLine>();
 
-                foreach (var a in Parts.Where(x => x.Polarity == true))
+                foreach (var a in Parts.Where(x => x.Polarity == false))
                 {
                     ResPre.AddRange(a.CreatePolyLineSet(0, 0, ShapeID, 0 , 1, GerberParserState.MirrorMode.NoMirror));
                 }
-                foreach (var a in Parts.Where(x => x.Polarity == false))
+                foreach (var a in Parts.Where(x => x.Polarity == true))
                 {
-                    ResPre.AddRange(a.CreatePolyLineSet(0, 0, ShapeID, 0, 1, GerberParserState.MirrorMode.NoMirror));
+                    ResPreNeg.AddRange(a.CreatePolyLineSet(0, 0, ShapeID, 0, 1, GerberParserState.MirrorMode.NoMirror));
                 }
                 Polygons Combined = new Polygons();
+                Polygons Solution = new Polygons();
+
 
                 Polygons clips = new Polygons();
 
-
-                foreach (var c in ResPre)
+               
+                if (ResPreNeg.Count == 0)
                 {
-                    //                    c.CheckIfHole();
-                    //Clipper cp = new Clipper();
-                    //cp.AddPolygons(Combined, PolyType.ptSubject);
-                    //clips.Add(c.toPolygon());
-                    //cp.AddPolygons(clips, PolyType.ptClip);
-                    //cp.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftEvenOdd);
+                    foreach (var c in ResPre)
+                    {
+                        //                    c.CheckIfHole();
+                        //clips.Add(c.toPolygon());
+                        //cp.AddPolygons(clips, PolyType.ptClip);
+                        //cp.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftEvenOdd);
 
-                    Combined.Add(c.toPolygon());
+                        Solution.Add(c.toPolygon());
 
+                    }
+                    foreach (var p in Solution)
+                    {
+                        PolyLine PL = new PolyLine(ShapeID);
+                        PL.fromPolygon(p);
+                        Res.Add(PL);
+                    }
                 }
-
-
-
-                foreach (var p in Combined)
+                else
                 {
-                    PolyLine PL = new PolyLine(ShapeID);
-                    PL.fromPolygon(p);
-                    Res.Add(PL);
+                    foreach (var c in ResPreNeg)
+                    {
+                        //                    c.CheckIfHole();
+                        //clips.Add(c.toPolygon());
+                        //cp.AddPolygons(clips, PolyType.ptClip);
+                        //cp.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftEvenOdd);
+
+                        clips.Add(c.toPolygon());
+
+                    }
+
+                    foreach (var c in ResPre)
+                    {
+                        //                    c.CheckIfHole();
+                        //clips.Add(c.toPolygon());
+                        //cp.AddPolygons(clips, PolyType.ptClip);
+                        //cp.Execute(ClipType.ctUnion, Combined, PolyFillType.pftNonZero, PolyFillType.pftEvenOdd);
+
+                        Combined.Add(c.toPolygon());
+
+                    }
+
+                    Clipper cp = new Clipper();
+                    cp.AddPolygons(Combined, PolyType.ptClip);
+                    cp.AddPolygons(clips, PolyType.ptSubject);
+
+                    cp.Execute(ClipType.ctDifference, Solution, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+
+
+                    foreach (var p in Solution)
+                    {
+                        PolyLine PL = new PolyLine(ShapeID);
+                        PL.fromPolygon(p);
+                        Res.Add(PL);
+                    }
                 }
             }
             else

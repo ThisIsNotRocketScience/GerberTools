@@ -12,8 +12,24 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
-    public partial class Progress : Form, GerberLibrary.ProgressLog
+
+    public partial class Progress : Form
     {
+
+        public class ProgressForward : GerberLibrary.ProgressLog
+        {
+            public Progress parent;
+            public ProgressForward(Progress p)
+            {
+                parent = p;
+            }
+            public override void AddString(string text, float progress = -1)
+            {
+                parent.AddString(text, progress);
+            }
+        }
+
+
         private List<string> Files;
 
 
@@ -73,7 +89,7 @@ namespace WindowsFormsApplication1
             bool fixgroup = true;
             string ext1 = Path.GetExtension(Files[0]);
             if (Files.Count == 1 && ext1 != ".zip") fixgroup = false;
-            GIC.AddBoardsToSet(Files, fixgroup, this);
+            GIC.AddBoardsToSet(Files, new ProgressForward(this), fixgroup);
 
             if (GIC.Errors.Count > 0)
             {
@@ -92,18 +108,18 @@ namespace WindowsFormsApplication1
                     if (Files.Count() == 1)
                     {
                         string justthefilename =Path.Combine( Path.GetDirectoryName(Files[0]) , Path.GetFileNameWithoutExtension(Files[0]));
-                        GIC.WriteImageFiles(justthefilename, idpi, true,Xray, Normal, this);
+                        GIC.WriteImageFiles(justthefilename, idpi, true,Xray, Normal, new ProgressForward(this));
 
                     }
                     else
                     {
-                        GIC.WriteImageFiles(Path.GetDirectoryName(Files[0]) + ".png", idpi, true, Xray, Normal, this);
+                        GIC.WriteImageFiles(Path.GetDirectoryName(Files[0]) + ".png", idpi, true, Xray, Normal, new ProgressForward(this));
                     }
                     //       GIC.DrawAllFiles(Path.GetDirectoryName(Files[0]) + "_Layer", 200, this);
                 }
                 else
                 {
-                    GIC.DrawAllFiles(Files[0] + "_Layer", idpi, this);
+                    GIC.DrawAllFiles(Files[0] + "_Layer", idpi, new ProgressForward( this));
                 }
             }
             catch(Exception E)

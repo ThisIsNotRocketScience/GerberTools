@@ -30,7 +30,7 @@ namespace ImageToGerber
                         if (System.IO.File.Exists(back)) ConvertFile(a, true);
 
                         GerberImageCreator GIC = new GerberImageCreator();
-                        GIC.AddBoardsToSet(System.IO.Directory.GetFiles(basename).ToList());
+                        GIC.AddBoardsToSet( System.IO.Directory.GetFiles(basename).ToList(), new StandardConsoleLog());
                         GIC.WriteImageFiles(basename + "/render");
 
                     }
@@ -98,7 +98,7 @@ namespace ImageToGerber
                 if (System.IO.File.Exists(f))
                 {
                     int polyid = 0;
-                    PLS = PolyLineSet.LoadGerberFile(f);
+                    PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), f);
 
                 
                     string bottomcopper= basename + "/bottomcopper.gbl";
