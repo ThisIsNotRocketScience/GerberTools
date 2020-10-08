@@ -23,6 +23,7 @@ namespace PnP_Processor
 
         BoardDisplay BoardDisp;
         BOMList TheBOMList;
+
         public PnPMain(string[] args)
         {
             InitializeComponent();
@@ -41,8 +42,6 @@ namespace PnP_Processor
 
             dockPanel.UpdateDockWindowZOrder(DockStyle.Left, true);
             
-////            var maincontainer = new DockContent();
-   //         maincontainer.Show(dockPanel, DockState.DockRight);
             Actions A1 = new Actions(this);
             A1.Show(dockPanel);
 
@@ -59,18 +58,6 @@ namespace PnP_Processor
         {
             
         }
-
-       
-
-        
-        public void ProcessFolder(string basefolder, ProgressLog log)
-        {
-       
-
-            BoardDisp.Invalidate();
-            
-        }
-
        
         List<PnPProcDoc> Docs = new List<PnPProcDoc>();
 
@@ -95,6 +82,13 @@ namespace PnP_Processor
                     TheBOMList.UpdateList();
                 }
             }
+        }
+
+        public List<string> selectedrefdes = new List<string>();
+        internal void UpdateBoard(List<string> refdeslist)
+        {
+            selectedrefdes = refdeslist;
+            BoardDisp.RefreshPic();
         }
     }
 }

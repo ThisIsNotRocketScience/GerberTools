@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GerberLibrary.Core;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,6 +13,27 @@ namespace PnP_Processor
 {
     public partial class BOMList :   WeifenLuo.WinFormsUI.Docking.DockContent
     {
+        public class BOMEntryItem
+        {
+            public BOMEntryItem(BOMEntry e)
+            {
+                entry = e;
+            }
+            public BOMEntry entry;
+        }
+        
+        public class REFDesItem
+        {
+            public REFDesItem(BOMEntry.RefDesc rd, BOMEntry e)
+            {
+                refdes = rd;
+                entry = e;
+            }
+
+            public BOMEntry entry;
+            public BOMEntry.RefDesc refdes;
+        }
+
         public PnPMain pnp;
         public BOMList(PnPMain main)
         {
@@ -33,17 +55,78 @@ namespace PnP_Processor
             }
             pnplist.Enabled = true;
             BOM.Enabled = true;
+            List<BOMEntryItem> be = new List<BOMEntryItem>();
             foreach(var a in D.B.DeviceTree)
             {
                 foreach(var b in a.Value)
                 {
-                    BOM.Items.Add(b.Value.Combined());
+                    be.Add(new BOMEntryItem(b.Value));
                     foreach(var c in b.Value.RefDes)
                     {
-                        pnplist.Items.Add(c.NameOnBoard);
+                        pnplist.Items.Add(new REFDesItem( c, b.Value));
                     }
                 }
             }
+            be = be.OrderBy(x => x.entry.Combined()).ToList();
+            foreach(var a in be)
+            {
+                BOM.Items.Add(a);
+            }            
+        }
+
+        private void pnplist_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            e.DrawBackground();
+            e.DrawFocusRectangle();
+            e.Graphics.DrawString((pnplist.Items[e.Index] as REFDesItem).refdes.OriginalName, new Font(FontFamily.GenericSansSerif, 14, FontStyle.Bold), Brushes.Black, e.Bounds);
+        }
+
+        private void BOM_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            e.DrawBackground();
+            e.DrawFocusRectangle();
+            e.Graphics.DrawString((BOM.Items[e.Index] as BOMEntryItem).entry.Combined(), new Font(FontFamily.GenericSansSerif, 14, FontStyle.Bold), Brushes.Black, e.Bounds);
+        }
+
+        bool SelectionInProcess = false;
+
+        private void BOM_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (SelectionInProcess) return;
+            SelectionInProcess = true;
+            pnplist.ClearSelected();
+
+            if (BOM.SelectedItem == null) return;
+
+            BOMEntryItem be = BOM.SelectedItem as BOMEntryItem;
+            List<int> indices = new List<int>();
+            List<string> refdeslist = new List<string>();
+            foreach(var a in be.entry.RefDes)
+            {
+                for (int i =0;i<pnplist.Items.Count;i++)
+                {
+                    REFDesItem b = pnplist.Items[i] as REFDesItem;
+                
+                    if(b.refdes.NameOnBoard == a.NameOnBoard)
+                    {
+                        refdeslist.Add(a.NameOnBoard);
+                        indices.Add(i);
+                    }
+                }
+            }
+            foreach (var i in indices) pnplist.SelectedItems.Add(pnplist.Items[i]);
+            
+            pnp.UpdateBoard(refdeslist);
+
+            SelectionInProcess = false;
+        }
+
+        private void pnplist_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (SelectionInProcess) return;
+
+            
+
         }
     }
 }

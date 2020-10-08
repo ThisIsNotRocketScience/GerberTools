@@ -100,7 +100,6 @@ namespace SolderTool
                 if (i == CurrentPart)
                 {
                     G.FillRectangle(new SolidBrush(Color.FromArgb(100, 255, 255, 0)), 0, y, pictureBox1.Width, 14);
-
                 }
                 G.DrawString(count, F, Br, 2, y);
                 G.DrawString(v.DispName, F, Br, 22, y);

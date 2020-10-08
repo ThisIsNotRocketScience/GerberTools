@@ -25,8 +25,6 @@ namespace PnP_Processor
             PostDisplay = postdisplay;
         }
 
-
-
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
             TheBox.Reset();
@@ -99,12 +97,16 @@ namespace PnP_Processor
                     {
                         foreach(var rf in pp.RefDes)
                         {
-                            DrawMarker(G, rf, true, S, false, false);
+                            DrawMarker(G, rf, true, S, false, pnp.selectedrefdes.Contains(rf.NameOnBoard));
                         }
                     }
                 }
             }
+        }
 
+        internal void RefreshPic()
+        {
+            pictureBox1.Invalidate();
         }
 
         private void RenderLayerSets(Graphics G, float S, BoardSide side, BoardLayer layer, Color C, bool lines = true)
