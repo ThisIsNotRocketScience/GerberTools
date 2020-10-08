@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -64,12 +67,19 @@
     <Compile Include="BoardDisplay.Designer.cs">
       <DependentUpon>BoardDisplay.cs</DependentUpon>
     </Compile>
+    <Compile Include="BOMList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BOMList.Designer.cs">
+      <DependentUpon>BOMList.cs</DependentUpon>
+    </Compile>
     <Compile Include="PnPMain.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="PnPMain.Designer.cs">
       <DependentUpon>PnPMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="PnPProcDoc.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Actions.resx">
@@ -77,6 +87,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="BoardDisplay.resx">
       <DependentUpon>BoardDisplay.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BOMList.resx">
+      <DependentUpon>BOMList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PnPMain.resx">
       <DependentUpon>PnPMain.cs</DependentUpon>

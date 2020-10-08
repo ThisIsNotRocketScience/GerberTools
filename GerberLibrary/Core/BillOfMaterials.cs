@@ -1,13 +1,167 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace GerberLibrary.Core
 {
+    public enum PartOrderingStatus
+    {
+        Unknown,
+        Meta,
+        Unavailable,
+        Backorder,
+        Kippevoer,
+        MustBeOrdered,
+        InCart,
+        Ordered,
+        Stocked
+    }
+
+    public class StockDocument
+    {
+        public DateTime LastUpdated;
+        public List<StockPart> Parts = new List<StockPart>();
+
+        public static StockDocument Load(string filename)
+        {
+            XmlSerializer SettingsSerialize = new XmlSerializer(typeof(StockDocument));
+            FileStream ReadFileStream = null;
+
+            try
+            {
+                ReadFileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+                // Load the object saved above by using the Deserialize function
+                StockDocument newset = (StockDocument)SettingsSerialize.Deserialize(ReadFileStream);
+                return newset;
+
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public void Save(string filename)
+        {
+            XmlSerializer SerializerObj = new XmlSerializer(typeof(StockDocument));
+            TextWriter WriteFileStream = new StreamWriter(filename);
+            SerializerObj.Serialize(WriteFileStream, this);
+            WriteFileStream.Close();
+
+        }
+    }
+
+    public class StockPart
+    {
+        public int InStock = 0;
+        public int NeededForProduction = 0;
+        public string name;
+        public string MFGPartname;
+        public string MFG;
+        public string value;
+        public PartOrderingStatus status;
+        public string Stock;
+        public string Notes;
+        public bool IsPolarized;
+
+
+    }
+
+    public class BoardContainer
+    {
+        public static int boardcount = 0;
+
+
+        public string Name = "";
+        public Color color = Color.LightGray;
+        public Bitmap PrintableLabel = new Bitmap(256, 256);
+        public int BoardID;
+        public string BoardIDname = "";
+
+        public BoardContainer(string basename)
+        {
+            BoardID = boardcount;
+            boardcount++;
+
+
+            Name = basename;
+            if (BoardID > 0)
+            {
+                color = Helpers.RefractionNormalledMaxBrightnessAndSat((BoardID + 1) / 13.0f);
+                BuildBitmap();
+                char id = (char)((int)'A' + BoardID - 1);
+                BoardIDname += id;
+            }
+            else
+            {
+                BoardIDname = "X";
+            }
+        }
+
+        void BuildBitmap()
+        {
+
+        }
+
+        public void DrawLabel(Graphics graphics, Font font, Rectangle rectangle, bool darkedge = false, float fontangle = 0)
+        {
+            if (darkedge) graphics.FillRectangle(new SolidBrush(Color.FromArgb(30, 30, 30)), new Rectangle(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height));
+            graphics.FillRectangle(new SolidBrush(color), new Rectangle(rectangle.X + 2, rectangle.Y + 2, rectangle.Width - 4, rectangle.Height - 4));
+            var S = graphics.MeasureString(BoardIDname, font);
+            var store = graphics.Transform.Clone();
+            graphics.TranslateTransform(rectangle.X + (rectangle.Width) / 2, rectangle.Y + (rectangle.Height) / 2);
+            graphics.RotateTransform(fontangle);
+            graphics.DrawString(BoardIDname, font, Brushes.Black, new PointF(-S.Width / 2, -S.Height / 2 + 3));
+            graphics.Transform = store;
+        }
+    }
+
+    public class PartListDisplayItem
+    {
+        public BOMEntry value;
+        public int theidx;
+        public PartListDisplayItem(int idx, BOMEntry value, StockPart P)
+        {
+            theidx = idx;
+            this.value = value;
+            Part = P;
+
+        }
+        public StockPart Part;
+
+        public List<BoardContainer> BoardsThisPartAppearsOn = new List<BoardContainer>();
+        public override string ToString()
+        {
+            return String.Format("{0}: {1} - {2} ({3})", theidx, value.RefDes.Count(), value.Combined(), value.PackageName);
+        }
+
+        public void FillBoardsFrom(List<BoardContainer> boards)
+        {
+            Dictionary<BoardContainer, bool> hadboards = new Dictionary<BoardContainer, bool>();
+            var refgroups = from i in value.RefDes group i by i.SourceBoard;
+            foreach (var g in refgroups)
+            {
+                var name = Path.GetFileNameWithoutExtension(g.Key);
+                var bc = (from i in boards where (i.Name + "_BOM" == name) select i).FirstOrDefault();
+                if (bc != null)
+                {
+                    hadboards[bc] = true;
+                }
+
+            }
+
+            BoardsThisPartAppearsOn.Clear();
+            foreach (var a in hadboards.Keys) BoardsThisPartAppearsOn.Add(a);
+        }
+    }
+
     public class BOMEntry
     {
         public string Name;
@@ -28,6 +182,13 @@ namespace GerberLibrary.Core
             public double angle;
 
             public BoardSide Side = BoardSide.Top;
+
+
+            public override string ToString()
+            {
+                return String.Format("{0} ({1},{2}) {3} - {4}", NameOnBoard, x, y, angle, Side);
+            }
+
         }
         public List<RefDesc> RefDes = new List<RefDesc>();
         public bool Soldered = false;
@@ -36,11 +197,11 @@ namespace GerberLibrary.Core
         {
             if (set == null)
             {
-                RefDes.Add(new RefDesc() { NameOnBoard = refdes, angle = angle, OriginalName = refdes, SourceBoard = source, x = x, y = y , Side = side});
+                RefDes.Add(new RefDesc() { NameOnBoard = refdes, angle = angle, OriginalName = refdes, SourceBoard = source, x = x, y = y, Side = side });
                 return refdes;
             }
             string newref = set.GetNew(refdes);
-            RefDes.Add(new RefDesc() { NameOnBoard = newref, angle = angle, OriginalName = refdes, SourceBoard = source, x = x, y = y , Side = side});
+            RefDes.Add(new RefDesc() { NameOnBoard = newref, angle = angle, OriginalName = refdes, SourceBoard = source, x = x, y = y, Side = side });
             return newref;
         }
 
@@ -56,7 +217,7 @@ namespace GerberLibrary.Core
                 return CombinedName;
             }
             // else
-            return (Name + "_" + PackageName + "_" + Value).Replace(' ', '_').Replace(',','.');
+            return (Name + "_" + PackageName + "_" + Value).Replace(' ', '_').Replace(',', '.');
         }
 
         public string DisplayLine()
@@ -120,8 +281,8 @@ namespace GerberLibrary.Core
                     string F2 = "R*_R0603_" + unit.ToLower();
                     string F3 = "RES_0603_1%_0603_" + unit.ToUpper();
                     string F4 = "RES_0603_1%_0603_" + unit.ToLower();
-                
-                    
+
+
                     string T = "RES_0603_1%_RES_0603_" + unit;
                     Res[F] = T;
                     Res[F2] = T;
@@ -346,7 +507,7 @@ namespace GerberLibrary.Core
 
         public void WriteRefDesGerber(string outputbasename)
         {
-            FontSet fnt = FontSet.Load("Font.xml"); 
+            FontSet fnt = FontSet.Load("Font.xml");
             GerberArtWriter Top = new GerberArtWriter();
             GerberArtWriter Bottom = new GerberArtWriter();
             foreach (var a in DeviceTree)
@@ -358,8 +519,8 @@ namespace GerberLibrary.Core
                         GerberArtWriter dest = (c.Side == BoardSide.Top) ? Top : Bottom;
                         dest.DrawString(new Primitives.PointD(c.x, c.y), fnt, c.NameOnBoard, 1, 0.1, StringAlign.CenterCenter, (c.Side == BoardSide.Top) ? false : true, c.angle);
 
-         //               double X = c.x;
-           //             double Y = c.y;
+                        //               double X = c.x;
+                        //             double Y = c.y;
                     }
                 }
             }
@@ -848,11 +1009,11 @@ namespace GerberLibrary.Core
                     string to = A[1];
 
                     bool dooverride = false;
-                    if (A.Count()> 2)
-                        {
-                            if (A[2] == "override" ){ dooverride = true; };
-                        }
-                        RemapPair(log, from, to, dooverride);
+                    if (A.Count() > 2)
+                    {
+                        if (A[2] == "override") { dooverride = true; };
+                    }
+                    RemapPair(log, from, to, dooverride);
                     //Console.WriteLine("remapped {0} to {1}", from, to);
 
                 }
@@ -865,7 +1026,7 @@ namespace GerberLibrary.Core
             log.PopActivity();
         }
 
-        private void RemapPair(ProgressLog log, string from, string to, bool overridevalue )
+        private void RemapPair(ProgressLog log, string from, string to, bool overridevalue)
         {
             log.PushActivity("RemapPair");
             if (from != to)
@@ -942,7 +1103,7 @@ namespace GerberLibrary.Core
                 {
                     foreach (var c in b.Value.RefDes)
                     {
-                        Output.Add(String.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\"", c.NameOnBoard, c.x.ToString().Replace(',', '.'), c.y.ToString().Replace(',', '.'), c.angle.ToString().Replace(',','.'), c.Side.ToString()));
+                        Output.Add(String.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\"", c.NameOnBoard, c.x.ToString().Replace(',', '.'), c.y.ToString().Replace(',', '.'), c.angle.ToString().Replace(',', '.'), c.Side.ToString()));
                     }
                 }
             }
@@ -973,7 +1134,7 @@ namespace GerberLibrary.Core
                 string Centroids = "";
                 string BOMFile = "";
 
-                foreach(var a in F)
+                foreach (var a in F)
                 {
                     if (a.ToLower().Contains("bill of materials"))
                     {
@@ -1004,12 +1165,12 @@ namespace GerberLibrary.Core
                 const char escaper = '"';
                 bool escaped = false;
                 string current = "";
-                for(int i =0;i<inp.Length;i++)
+                for (int i = 0; i < inp.Length; i++)
                 {
-                    switch(inp[i])
+                    switch (inp[i])
                     {
                         case escaper:
-                    
+
                             if (escaped)
                             {
                                 escaped = false;
@@ -1045,7 +1206,7 @@ namespace GerberLibrary.Core
             public void LoadFile(string file)
             {
                 var L = File.ReadAllLines(file);
-                foreach(var l in L)
+                foreach (var l in L)
                 {
                     string S = l.Trim();
                     if (S.Length > 0)
@@ -1087,7 +1248,7 @@ namespace GerberLibrary.Core
                     double X = 0, Y = 0, Angle = 0;
 
                     X = Double.Parse(Line.columns[3]) / 1000000.0;
-                   Y = Double.Parse(Line.columns[4]) / 1000000.0;
+                    Y = Double.Parse(Line.columns[4]) / 1000000.0;
                     Angle = Double.Parse(Line.columns[5]);
 
                     BoardSide Side = BoardSide.Top;
@@ -1103,22 +1264,22 @@ namespace GerberLibrary.Core
             bomloader.LoadFile(bOMFile);
 
             FirstRow = -1;
-            for(int i = 0;i<bomloader.Lines.Count;i++)
+            for (int i = 0; i < bomloader.Lines.Count; i++)
             {
                 if (bomloader.Lines[i].columns[0] == "VALUE")
                 {
                     FirstRow = i + 1;
-                    
+
                 }
             }
 
             if (FirstRow > -1)
             {
-                for (int i =FirstRow;i<bomloader.Lines.Count;i++)
+                for (int i = FirstRow; i < bomloader.Lines.Count; i++)
                 {
                     string value = bomloader.Lines[i].columns[0];
                     string package = bomloader.Lines[i].columns[1];
-                    var refdes = bomloader.Lines[i].columns[3].Split(',') ;
+                    var refdes = bomloader.Lines[i].columns[3].Split(',');
                     foreach (var rd in refdes)
                     {
                         var S = positions[rd];
@@ -1215,8 +1376,8 @@ namespace GerberLibrary.Core
                 foreach (var v in ds.Value.Values)
                 {
                     SetRotationOffset(v.Combined(), GetRotationOffset(v.Combined()));
-                    
-                    string refdescs = "\""  + v.RefDes[0].NameOnBoard;
+
+                    string refdescs = "\"" + v.RefDes[0].NameOnBoard;
                     for (int i = 1; i < v.RefDes.Count; i++)
                     {
                         refdescs += ", " + v.RefDes[i].NameOnBoard;
@@ -1233,7 +1394,7 @@ namespace GerberLibrary.Core
                     {
                         mfg = v.MfgPartNumber.Replace(',', '.');
                     }
-                    string line = String.Format("{0},{1},{2},{3},{4},{5}",V,refdescs,v.PackageName,mfg,v.Combined(), v.Name);
+                    string line = String.Format("{0},{1},{2},{3},{4},{5}", V, refdescs, v.PackageName, mfg, v.Combined(), v.Name);
                     outlinesBOM.Add(line);
 
                 }
@@ -1254,9 +1415,9 @@ namespace GerberLibrary.Core
                         p.x.ToString().Replace(",", ".") + "mm",
                         p.y.ToString().Replace(",", ".") + "mm",
                         p.Side == BoardSide.Top ? "T" : "B",
-                           (p.angle + 360 + GetRotationOffset(v.Combined()))%360);
+                           (p.angle + 360 + GetRotationOffset(v.Combined())) % 360);
                         outlinesPNP.Add(line);
-                        
+
                     }
                 }
             }
@@ -1272,7 +1433,7 @@ namespace GerberLibrary.Core
                 {
                     foreach (var p in v.RefDes)
                     {
-                        int angle = (int)((p.angle + 179 + 360 + GetRotationOffset(v.Combined())) % 360) -179;
+                        int angle = (int)((p.angle + 179 + 360 + GetRotationOffset(v.Combined())) % 360) - 179;
                         string line = String.Format("{0},{1},{2},{3},{4}",
                         p.NameOnBoard,
                         p.x.ToString("F2").Replace(",", "."),
@@ -1303,7 +1464,7 @@ namespace GerberLibrary.Core
             return 0;
 
         }
-        public static void SetRotationOffset(string name,int off)
+        public static void SetRotationOffset(string name, int off)
         {
             RotationOffsets[name] = off;
         }
@@ -1316,7 +1477,7 @@ namespace GerberLibrary.Core
             try
             {
                 var L = File.ReadAllLines(v);
-                foreach(var s in L)
+                foreach (var s in L)
                 {
                     try
                     {
@@ -1325,13 +1486,13 @@ namespace GerberLibrary.Core
                         int rot = int.Parse(items[1]);
                         RotationOffsets[t] = rot;
                     }
-                    catch(Exception)
+                    catch (Exception)
                     {
 
                     }
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
@@ -1349,9 +1510,9 @@ namespace GerberLibrary.Core
             //outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #");
             var regex = new Regex("(?<=^|,)(\"(?:[^\"]|\"\")*\"|[^,]*)");
 
-          
+
             //outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
-            for (int i =1;i<pnplines.Count();i++)
+            for (int i = 1; i < pnplines.Count(); i++)
             {
                 var s = pnplines[i];
                 List<string> items = new List<string>();
@@ -1362,16 +1523,16 @@ namespace GerberLibrary.Core
 
                 var rd = items[0];
                 var X = ConvertDimension(items[1]);
-                var Y= ConvertDimension(items[2]);
+                var Y = ConvertDimension(items[2]);
                 var Side = items[3] == "T" ? BoardSide.Top : BoardSide.Bottom;
-                var Angle= Double.Parse(items[4]);
+                var Angle = Double.Parse(items[4]);
 
                 positions[rd] = new BOMEntry.RefDesc() { angle = Angle, x = X, y = Y, OriginalName = rd, NameOnBoard = rd, SourceBoard = bOMFile, Side = Side };
             }
 
             BOMNumberSet Set = new BOMNumberSet();
             var headers = bomlines[0].Split(',');
-            
+
             for (int i = 1; i < bomlines.Count(); i++)
             {
                 var s = bomlines[i];
@@ -1400,16 +1561,16 @@ namespace GerberLibrary.Core
                         OptionalOut<BOMEntry> Entr = new OptionalOut<BOMEntry>(); ;
                         string name = items[5];
                         string combined = items[4];
-                        AddBOMItemInt(package, name, value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side, Entr);
+                        AddBOMItemInt(package, name, value, rd_.Trim(), Set, bOMFile, S.x, S.y, S.angle, S.Side, Entr);
                         Entr.Result.SetCombined(combined);
                         //AddBOMItemExt(package, name, value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side);
 
                     }
                     else
                     {
-                        AddBOMItemExt(package, "", value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side);
+                        AddBOMItemExt(package, "", value, rd_.Trim(), Set, bOMFile, S.x, S.y, S.angle, S.Side);
                     }
-                        
+
                 }
 
 
@@ -1426,7 +1587,7 @@ namespace GerberLibrary.Core
 
             }
 
-            return double.Parse(v.Replace('.',','));
+            return double.Parse(v.Replace('.', ','));
         }
 
         public int GetSolderedPartCount(List<string> toIgnore)
@@ -1437,7 +1598,7 @@ namespace GerberLibrary.Core
                 //Console.WriteLine(a.Key);
                 foreach (var b in a.Value)
                 {
-                    if (toIgnore.Contains(b.Value.PackageName) == false )
+                    if (toIgnore.Contains(b.Value.PackageName) == false)
                     {
                         if (b.Value.Soldered == true) partcount += b.Value.RefDes.Count;
                     }
@@ -1447,4 +1608,5 @@ namespace GerberLibrary.Core
             return partcount;
         }
     }
+
 }

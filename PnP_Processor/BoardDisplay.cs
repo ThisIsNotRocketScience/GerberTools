@@ -42,39 +42,77 @@ namespace PnP_Processor
             G.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
             G.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
-            if (pnp.Set == null) return;
-
-            Font F = new Font("Arial", 16);
-            Font F2 = new Font("Arial Bold", 26);
-
-
-            G.TranslateTransform(10, 10);
-
-            float S = (float)Math.Min(pictureBox1.Width / (TheBox.Width() - 20), pictureBox1.Height / (TheBox.Height() - 20));
+            if (pnp.ActiveDoc == null) return;
+            var D = pnp.ActiveDoc;
+            TheBox.AddBox(D.Box);
+            Font F = new Font("Arial", 10);
+            Font F2 = new Font("Arial Bold", 16);
 
 
-            bool TopView = false;
-            if (PostDisplay) TopView = pnp.FlipBoard?false:true;
+            
 
-            if (TopView)
+            if (D.loaded == false)
             {
-                G.ScaleTransform(S * 0.8f, -S * 0.8f);
-                G.TranslateTransform((float)-TheBox.TopLeft.X, (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
+                int H = Height - F.Height;
+                for (int i = 0;i<D.Log.Count;i++)
+                {
+                    G.DrawString(D.Log[i], F, Brushes.LightGray, 10, (i-D.Log.Count) * F.Height + H);
+                }
             }
             else
             {
-                G.ScaleTransform(-S * 0.8f, -S * 0.8f);
-                G.TranslateTransform((float)(-TheBox.TopLeft.X - TheBox.Width()), (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
 
+                G.DrawLine(Pens.White, pictureBox1.Width / 2, 0, pictureBox1.Width / 2, pictureBox1.Height);
+                G.DrawString("Before", F2, Brushes.White, new RectangleF(0, pictureBox1.Height - 40, pictureBox1.Width / 2, 40), new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Far });
+                G.DrawString("After", F2, Brushes.White, new RectangleF(pictureBox1.Width / 2, pictureBox1.Height - 40, pictureBox1.Width / 2, 40), new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Far });
+               
+                
+                
+                G.TranslateTransform(10, 10);
+
+                float S = (float)Math.Min(pictureBox1.Width / (TheBox.Width() - 20), pictureBox1.Height / (TheBox.Height() - 20));
+
+
+                bool TopView = false;
+                if (PostDisplay) TopView = D.FlipBoard ? false : true;
+
+                if (TopView)
+                {
+                    G.ScaleTransform(S * 0.8f, -S * 0.8f);
+                    G.TranslateTransform((float)-TheBox.TopLeft.X, (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
+                }
+                else
+                {
+                    G.ScaleTransform(-S * 0.8f, -S * 0.8f);
+                    G.TranslateTransform((float)(-TheBox.TopLeft.X - TheBox.Width()), (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
+
+                }
+                RenderLayerSets(G, S, BoardSide.Both, BoardLayer.Outline, Color.Gray, true);
+                
+          //      RenderLayerSets(G, S, BoardSide.Bottom, BoardLayer.Silk, Color.DarkGray, true);
+            //    RenderLayerSets(G, S, BoardSide.Top, BoardLayer.Silk, Color.White, true);
+
+                var B = D.B;
+                foreach(var p in B.DeviceTree)
+                {
+                    foreach(var pp in p.Value.Values)
+                    {
+                        foreach(var rf in pp.RefDes)
+                        {
+                            DrawMarker(G, rf, true, S, false, false);
+                        }
+                    }
+                }
             }
-            RenderLayerSets(G, S, BoardSide.Both, BoardLayer.Outline, Color.White, true);
-
 
         }
 
         private void RenderLayerSets(Graphics G, float S, BoardSide side, BoardLayer layer, Color C, bool lines = true)
-        {            
-            foreach (var l in pnp.Set.PLSs)
+        {
+
+            if (pnp.ActiveDoc == null) return;
+            var D = pnp.ActiveDoc;
+            foreach (var l in D.Set.PLSs)
             {
                 if (l.Side == side && l.Layer == layer)
                 {
@@ -97,7 +135,7 @@ namespace PnP_Processor
                 {
                     if (lines)
                     {
-                        G.DrawLines(new Pen(C, 1 / S), Pts.ToArray());
+                        G.DrawLines(new Pen(C, (float)ds.Width*0.2f / S), Pts.ToArray());
                     }
                     else
                     {
@@ -113,7 +151,11 @@ namespace PnP_Processor
             float cx = (float)r.x - R / S;
             float cy = (float)r.y - R / S;
 
+            float sa = (float)Math.Sin((r.angle * Math.PI * 2) / 360.0);
+            float ca = (float)Math.Cos((r.angle * Math.PI * 2) / 360.0);
 
+            g.DrawArc(new Pen(Color.Yellow, 1.0f / S), new RectangleF((float)r.x - 9 / S, (float)r.y - 9 / S, 18 / S, 18 / S), 270, (float)r.angle);
+            g.DrawLine(new Pen(Color.LightYellow, 1.0f / S), (float)r.x, (float)r.y, (float)r.x + sa * 10.0f/S, (float)r.y - ca * 10.0f / S );
 
             Color CurrentColor = soldered ? Color.Green : Color.Yellow;
             if (current)
@@ -135,6 +177,20 @@ namespace PnP_Processor
 
 
         }
+        int lastlogstamp = -1;
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (pnp.ActiveDoc == null) return;
+            if (pnp.ActiveDoc.Stamp != lastlogstamp)
+            {
+                lastlogstamp = pnp.ActiveDoc.Stamp;
+                pictureBox1.Invalidate();
+            }
+        }
 
+        private void pictureBox1_Resize(object sender, EventArgs e)
+        {
+            pictureBox1.Invalidate();
+        }
     }
 }
