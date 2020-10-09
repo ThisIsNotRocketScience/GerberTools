@@ -78,14 +78,14 @@ namespace PnP_Processor
         {
             e.DrawBackground();
             e.DrawFocusRectangle();
-            e.Graphics.DrawString((pnplist.Items[e.Index] as REFDesItem).refdes.OriginalName, new Font(FontFamily.GenericSansSerif, 14, FontStyle.Bold), Brushes.Black, e.Bounds);
+            e.Graphics.DrawString((pnplist.Items[e.Index] as REFDesItem).refdes.OriginalName, new Font(FontFamily.GenericSansSerif, 10, FontStyle.Regular), Brushes.Black, e.Bounds);
         }
 
         private void BOM_DrawItem(object sender, DrawItemEventArgs e)
         {
             e.DrawBackground();
             e.DrawFocusRectangle();
-            e.Graphics.DrawString((BOM.Items[e.Index] as BOMEntryItem).entry.Combined(), new Font(FontFamily.GenericSansSerif, 14, FontStyle.Bold), Brushes.Black, e.Bounds);
+            e.Graphics.DrawString((BOM.Items[e.Index] as BOMEntryItem).entry.Combined(), new Font(FontFamily.GenericSansSerif, 10, FontStyle.Regular), Brushes.Black, e.Bounds);
         }
 
         bool SelectionInProcess = false;

@@ -63,42 +63,57 @@ namespace PnP_Processor
                 G.DrawLine(Pens.White, pictureBox1.Width / 2, 0, pictureBox1.Width / 2, pictureBox1.Height);
                 G.DrawString("Before", F2, Brushes.White, new RectangleF(0, pictureBox1.Height - 40, pictureBox1.Width / 2, 40), new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Far });
                 G.DrawString("After", F2, Brushes.White, new RectangleF(pictureBox1.Width / 2, pictureBox1.Height - 40, pictureBox1.Width / 2, 40), new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Far });
-               
-                
-                
-                G.TranslateTransform(10, 10);
+                var T = G.Transform.Clone();
 
-                float S = (float)Math.Min(pictureBox1.Width / (TheBox.Width() - 20), pictureBox1.Height / (TheBox.Height() - 20));
+                G.Transform.Reset();
+                G.SetClip(new Rectangle(0, 0, pictureBox1.Width / 2, pictureBox1.Height));
+                Render(D, G, false);
+                G.Transform = T;
+
+                G.SetClip(new Rectangle(pictureBox1.Width / 2, 0, pictureBox1.Width / 2, pictureBox1.Height));
+                G.TranslateTransform(pictureBox1.Width / 2, 0);
+                Render(D, G, true);
+
+              
+            }
+        }
+
+        private void Render(PnPProcDoc D,  Graphics G, bool v)
+        {
+            
+
+          //  G.TranslateTransform(10, 10);
+
+            float S = (float)Math.Min(pictureBox1.Width / (TheBox.Width() - 20), pictureBox1.Height / (TheBox.Height() - 20));
 
 
-                bool TopView = false;
-                if (PostDisplay) TopView = D.FlipBoard ? false : true;
+            bool TopView = false;
+            if (PostDisplay) TopView = D.FlipBoard ? false : true;
 
-                if (TopView)
+            if (TopView)
+            {
+                G.ScaleTransform(S * 0.8f, -S * 0.8f);
+                G.TranslateTransform((float)-TheBox.TopLeft.X, (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
+            }
+            else
+            {
+                G.ScaleTransform(-S * 0.8f, -S * 0.8f);
+                G.TranslateTransform((float)(-TheBox.TopLeft.X - TheBox.Width()), (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
+
+            }
+            RenderLayerSets(G, S, BoardSide.Both, BoardLayer.Outline, Color.Gray, true);
+
+            //      RenderLayerSets(G, S, BoardSide.Bottom, BoardLayer.Silk, Color.DarkGray, true);
+            //  RenderLayerSets(G, S, BoardSide.Top, BoardLayer.Silk, Color.White, true);
+
+            var B = D.B;
+            foreach (var p in B.DeviceTree)
+            {
+                foreach (var pp in p.Value.Values)
                 {
-                    G.ScaleTransform(S * 0.8f, -S * 0.8f);
-                    G.TranslateTransform((float)-TheBox.TopLeft.X, (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
-                }
-                else
-                {
-                    G.ScaleTransform(-S * 0.8f, -S * 0.8f);
-                    G.TranslateTransform((float)(-TheBox.TopLeft.X - TheBox.Width()), (float)-TheBox.TopLeft.Y - (float)TheBox.Height());
-
-                }
-                RenderLayerSets(G, S, BoardSide.Both, BoardLayer.Outline, Color.Gray, true);
-                
-          //      RenderLayerSets(G, S, BoardSide.Bottom, BoardLayer.Silk, Color.DarkGray, true);
-            //    RenderLayerSets(G, S, BoardSide.Top, BoardLayer.Silk, Color.White, true);
-
-                var B = D.B;
-                foreach(var p in B.DeviceTree)
-                {
-                    foreach(var pp in p.Value.Values)
+                    foreach (var rf in pp.RefDes)
                     {
-                        foreach(var rf in pp.RefDes)
-                        {
-                            DrawMarker(G, rf, true, S, false, pnp.selectedrefdes.Contains(rf.NameOnBoard));
-                        }
+                        DrawMarker(G, rf, true, S, false, pnp.selectedrefdes.Contains(rf.NameOnBoard));
                     }
                 }
             }
