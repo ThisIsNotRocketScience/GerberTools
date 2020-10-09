@@ -124,6 +124,11 @@ namespace GerberLibrary
             return new PointD((TopLeft.X + BottomRight.X) * 0.5, (TopLeft.Y + BottomRight.Y) * 0.5);
         }
 
+        public PointD Center()
+        {
+            return Middle();
+        }
+
         public void Reset()
         {
             TopLeft.X = 10000;

@@ -22,6 +22,14 @@ namespace PnP_Processor
             return (res!=null)?res:"";
         }
 
+        public bool GetRegBool(string name)
+        {
+            Microsoft.Win32.RegistryKey key;
+            key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey("TiNRS_PnP_Proc");
+            var res = key.GetValue(name) as string;
+            key.Close();
+            return (res != null) ? (res=="true"):false;
+        }
         public void SetReg(string name, string value)
         {
             Microsoft.Win32.RegistryKey key;
@@ -29,6 +37,15 @@ namespace PnP_Processor
             key.SetValue(name, value);
             key.Close();           
         }
+
+        public void SetRegBool(string name, bool value)
+        {
+            Microsoft.Win32.RegistryKey key;
+            key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey("TiNRS_PnP_Proc");
+            key.SetValue(name, value ? "true" : "false");
+            key.Close();
+        }
+
 
         public PnPMain pnp;
         bool blocksave = false;
@@ -43,9 +60,13 @@ namespace PnP_Processor
             bombox.Text = GetReg("BOMFile");
             outlinebox.Text = GetReg("OutlineFile");
             gerberzipbox.Text = GetReg("GerberZip");
-
+            topsilk.Checked = GetRegBool("topsilkvisible");
+            bottomsilk.Checked = GetRegBool("bottomsilkvisible");
             blocksave = false;
             pnp = parent;
+
+            pnp.topsilkvisible = topsilk.Checked;
+            pnp.bottomsilkvisible = bottomsilk.Checked;
         }
 
 
@@ -181,6 +202,25 @@ namespace PnP_Processor
             };
            
             pnp.AddDoc(d);
+
+        }
+
+        private void topsilk_CheckedChanged(object sender, EventArgs e)
+        {
+            if (blocksave) return;
+            SetRegBool("topsilkvisible", topsilk.Checked);
+            pnp.topsilkvisible = topsilk.Checked;
+
+            pnp.UpdateBoard(null);
+        }
+
+        private void bottomsilk_CheckedChanged(object sender, EventArgs e)
+        {
+            if (blocksave) return;
+            SetRegBool("bottomsilkvisible", bottomsilk.Checked);
+            pnp.bottomsilkvisible = bottomsilk.Checked;
+
+            pnp.UpdateBoard(null);
 
         }
     }

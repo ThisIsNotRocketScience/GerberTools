@@ -44,14 +44,17 @@
             this.gerberzipbutton = new System.Windows.Forms.Button();
             this.gerberzipbox = new System.Windows.Forms.TextBox();
             this.ProcessButton = new System.Windows.Forms.Button();
+            this.topsilk = new System.Windows.Forms.CheckBox();
+            this.bottomsilk = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // selectbom
             // 
             this.selectbom.AutoSize = true;
-            this.selectbom.Location = new System.Drawing.Point(616, 44);
+            this.selectbom.Location = new System.Drawing.Point(411, 29);
+            this.selectbom.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.selectbom.Name = "selectbom";
-            this.selectbom.Size = new System.Drawing.Size(231, 30);
+            this.selectbom.Size = new System.Drawing.Size(154, 23);
             this.selectbom.TabIndex = 0;
             this.selectbom.Text = "BOM File";
             this.selectbom.UseVisualStyleBackColor = true;
@@ -59,9 +62,10 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(2, 1);
+            this.button2.Location = new System.Drawing.Point(1, 1);
+            this.button2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(138, 41);
+            this.button2.Size = new System.Drawing.Size(92, 27);
             this.button2.TabIndex = 1;
             this.button2.Text = "Rotate 90";
             this.button2.UseVisualStyleBackColor = true;
@@ -69,9 +73,10 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(146, 1);
+            this.button3.Location = new System.Drawing.Point(97, 1);
+            this.button3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(331, 41);
+            this.button3.Size = new System.Drawing.Size(221, 27);
             this.button3.TabIndex = 2;
             this.button3.Text = "Switch Sides";
             this.button3.UseVisualStyleBackColor = true;
@@ -79,42 +84,47 @@
             // 
             // pnpbox
             // 
-            this.pnpbox.Location = new System.Drawing.Point(2, 80);
+            this.pnpbox.Location = new System.Drawing.Point(1, 52);
+            this.pnpbox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.pnpbox.Name = "pnpbox";
-            this.pnpbox.Size = new System.Drawing.Size(596, 26);
+            this.pnpbox.Size = new System.Drawing.Size(399, 20);
             this.pnpbox.TabIndex = 2;
             this.pnpbox.TextChanged += new System.EventHandler(this.pnpbox_TextChanged);
             // 
             // stockbox
             // 
-            this.stockbox.Location = new System.Drawing.Point(2, 112);
+            this.stockbox.Location = new System.Drawing.Point(1, 73);
+            this.stockbox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.stockbox.Name = "stockbox";
-            this.stockbox.Size = new System.Drawing.Size(596, 26);
+            this.stockbox.Size = new System.Drawing.Size(399, 20);
             this.stockbox.TabIndex = 3;
             this.stockbox.TextChanged += new System.EventHandler(this.stockbox_TextChanged);
             // 
             // outlinebox
             // 
-            this.outlinebox.Location = new System.Drawing.Point(2, 144);
+            this.outlinebox.Location = new System.Drawing.Point(1, 94);
+            this.outlinebox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.outlinebox.Name = "outlinebox";
-            this.outlinebox.Size = new System.Drawing.Size(596, 26);
+            this.outlinebox.Size = new System.Drawing.Size(399, 20);
             this.outlinebox.TabIndex = 4;
             this.outlinebox.TextChanged += new System.EventHandler(this.outlinebox_TextChanged);
             // 
             // bombox
             // 
-            this.bombox.Location = new System.Drawing.Point(2, 48);
+            this.bombox.Location = new System.Drawing.Point(1, 31);
+            this.bombox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.bombox.Name = "bombox";
-            this.bombox.Size = new System.Drawing.Size(596, 26);
+            this.bombox.Size = new System.Drawing.Size(399, 20);
             this.bombox.TabIndex = 5;
             this.bombox.TextChanged += new System.EventHandler(this.bombox_TextChanged);
             // 
             // selectpnp
             // 
             this.selectpnp.AutoSize = true;
-            this.selectpnp.Location = new System.Drawing.Point(616, 76);
+            this.selectpnp.Location = new System.Drawing.Point(411, 49);
+            this.selectpnp.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.selectpnp.Name = "selectpnp";
-            this.selectpnp.Size = new System.Drawing.Size(231, 30);
+            this.selectpnp.Size = new System.Drawing.Size(154, 23);
             this.selectpnp.TabIndex = 6;
             this.selectpnp.Text = "PNP File";
             this.selectpnp.UseVisualStyleBackColor = true;
@@ -123,9 +133,10 @@
             // selectstock
             // 
             this.selectstock.AutoSize = true;
-            this.selectstock.Location = new System.Drawing.Point(616, 108);
+            this.selectstock.Location = new System.Drawing.Point(411, 70);
+            this.selectstock.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.selectstock.Name = "selectstock";
-            this.selectstock.Size = new System.Drawing.Size(231, 30);
+            this.selectstock.Size = new System.Drawing.Size(154, 23);
             this.selectstock.TabIndex = 7;
             this.selectstock.Text = "Stock File";
             this.selectstock.UseVisualStyleBackColor = true;
@@ -134,9 +145,10 @@
             // selectoutline
             // 
             this.selectoutline.AutoSize = true;
-            this.selectoutline.Location = new System.Drawing.Point(616, 140);
+            this.selectoutline.Location = new System.Drawing.Point(411, 91);
+            this.selectoutline.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.selectoutline.Name = "selectoutline";
-            this.selectoutline.Size = new System.Drawing.Size(231, 30);
+            this.selectoutline.Size = new System.Drawing.Size(154, 23);
             this.selectoutline.TabIndex = 8;
             this.selectoutline.Text = "Outline File";
             this.selectoutline.UseVisualStyleBackColor = true;
@@ -145,9 +157,10 @@
             // selectsilk
             // 
             this.selectsilk.AutoSize = true;
-            this.selectsilk.Location = new System.Drawing.Point(616, 172);
+            this.selectsilk.Location = new System.Drawing.Point(411, 112);
+            this.selectsilk.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.selectsilk.Name = "selectsilk";
-            this.selectsilk.Size = new System.Drawing.Size(231, 30);
+            this.selectsilk.Size = new System.Drawing.Size(154, 23);
             this.selectsilk.TabIndex = 10;
             this.selectsilk.Text = "Silk File";
             this.selectsilk.UseVisualStyleBackColor = true;
@@ -155,9 +168,10 @@
             // 
             // silkbox
             // 
-            this.silkbox.Location = new System.Drawing.Point(2, 176);
+            this.silkbox.Location = new System.Drawing.Point(1, 114);
+            this.silkbox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.silkbox.Name = "silkbox";
-            this.silkbox.Size = new System.Drawing.Size(596, 26);
+            this.silkbox.Size = new System.Drawing.Size(399, 20);
             this.silkbox.TabIndex = 9;
             this.silkbox.TextChanged += new System.EventHandler(this.silkbox_TextChanged);
             // 
@@ -169,9 +183,10 @@
             // gerberzipbutton
             // 
             this.gerberzipbutton.AutoSize = true;
-            this.gerberzipbutton.Location = new System.Drawing.Point(616, 204);
+            this.gerberzipbutton.Location = new System.Drawing.Point(411, 133);
+            this.gerberzipbutton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.gerberzipbutton.Name = "gerberzipbutton";
-            this.gerberzipbutton.Size = new System.Drawing.Size(231, 30);
+            this.gerberzipbutton.Size = new System.Drawing.Size(154, 23);
             this.gerberzipbutton.TabIndex = 12;
             this.gerberzipbutton.Text = "Gerber Zip File";
             this.gerberzipbutton.UseVisualStyleBackColor = true;
@@ -179,28 +194,54 @@
             // 
             // gerberzipbox
             // 
-            this.gerberzipbox.Location = new System.Drawing.Point(2, 208);
+            this.gerberzipbox.Location = new System.Drawing.Point(1, 135);
+            this.gerberzipbox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.gerberzipbox.Name = "gerberzipbox";
-            this.gerberzipbox.Size = new System.Drawing.Size(596, 26);
+            this.gerberzipbox.Size = new System.Drawing.Size(399, 20);
             this.gerberzipbox.TabIndex = 11;
             this.gerberzipbox.TextChanged += new System.EventHandler(this.gerberzipbox_TextChanged);
             // 
             // ProcessButton
             // 
-            this.ProcessButton.Location = new System.Drawing.Point(483, 1);
+            this.ProcessButton.Location = new System.Drawing.Point(322, 1);
+            this.ProcessButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.ProcessButton.Name = "ProcessButton";
-            this.ProcessButton.Size = new System.Drawing.Size(331, 41);
+            this.ProcessButton.Size = new System.Drawing.Size(221, 27);
             this.ProcessButton.TabIndex = 13;
             this.ProcessButton.Text = "Process!";
             this.ProcessButton.UseVisualStyleBackColor = true;
             this.ProcessButton.Click += new System.EventHandler(this.ProcessButton_Click);
             // 
+            // topsilk
+            // 
+            this.topsilk.AutoSize = true;
+            this.topsilk.Location = new System.Drawing.Point(650, 54);
+            this.topsilk.Name = "topsilk";
+            this.topsilk.Size = new System.Drawing.Size(65, 17);
+            this.topsilk.TabIndex = 14;
+            this.topsilk.Text = "Top Silk";
+            this.topsilk.UseVisualStyleBackColor = true;
+            this.topsilk.CheckedChanged += new System.EventHandler(this.topsilk_CheckedChanged);
+            // 
+            // bottomsilk
+            // 
+            this.bottomsilk.AutoSize = true;
+            this.bottomsilk.Location = new System.Drawing.Point(650, 77);
+            this.bottomsilk.Name = "bottomsilk";
+            this.bottomsilk.Size = new System.Drawing.Size(79, 17);
+            this.bottomsilk.TabIndex = 15;
+            this.bottomsilk.Text = "Bottom Silk";
+            this.bottomsilk.UseVisualStyleBackColor = true;
+            this.bottomsilk.CheckedChanged += new System.EventHandler(this.bottomsilk_CheckedChanged);
+            // 
             // Actions
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ClientSize = new System.Drawing.Size(912, 250);
+            this.ClientSize = new System.Drawing.Size(880, 162);
+            this.Controls.Add(this.bottomsilk);
+            this.Controls.Add(this.topsilk);
             this.Controls.Add(this.ProcessButton);
             this.Controls.Add(this.gerberzipbutton);
             this.Controls.Add(this.gerberzipbox);
@@ -216,6 +257,7 @@
             this.Controls.Add(this.outlinebox);
             this.Controls.Add(this.stockbox);
             this.Controls.Add(this.pnpbox);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "Actions";
             this.Text = "Actions";
             this.ResumeLayout(false);
@@ -241,5 +283,7 @@
         private System.Windows.Forms.Button gerberzipbutton;
         private System.Windows.Forms.TextBox gerberzipbox;
         private System.Windows.Forms.Button ProcessButton;
+        private System.Windows.Forms.CheckBox topsilk;
+        private System.Windows.Forms.CheckBox bottomsilk;
     }
 }

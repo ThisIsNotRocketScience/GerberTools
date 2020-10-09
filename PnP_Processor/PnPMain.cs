@@ -60,7 +60,7 @@ namespace PnP_Processor
         }
        
         List<PnPProcDoc> Docs = new List<PnPProcDoc>();
-
+        internal bool topsilkvisible;
         public PnPProcDoc ActiveDoc = null;
         bool DocLoaded = false;
         internal void AddDoc(PnPProcDoc d)
@@ -85,9 +85,11 @@ namespace PnP_Processor
         }
 
         public List<string> selectedrefdes = new List<string>();
-        internal void UpdateBoard(List<string> refdeslist)
+        internal bool bottomsilkvisible;
+
+        internal void UpdateBoard(List<string> refdeslist= null)
         {
-            selectedrefdes = refdeslist;
+           if(refdeslist !=null)  selectedrefdes = refdeslist;
             BoardDisp.RefreshPic();
         }
     }

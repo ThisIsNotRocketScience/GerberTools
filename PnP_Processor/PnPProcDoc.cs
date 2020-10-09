@@ -44,13 +44,22 @@ namespace PnP_Processor
             GerberImageCreator GIC = new GerberImageCreator();
             List<String> Files = new List<string>();
             Files.Add(v);
-            GIC.AddBoardsToSet(Files, log);
+            GIC.AddBoardsToSet(Files, log,true, false);
 
             // log.AddString(GIC.GetOutlineBoundingBox().ToString());
             log.PopActivity();
             return GIC;
         }
-        public BOM B;
+        public BOM B = new BOM();
+        public BOM BPost = new BOM();
+
+        void BuildPostBom()
+        {
+            BPost = new BOM();
+            BOMNumberSet s = new BOMNumberSet();
+            BPost.MergeBOM(B, s, 0, 0, 0, 0, 0);
+            BPost.FixupAngles();
+        }
        public  GerberImageCreator Set;
         private void LoadStuff()
         {
@@ -67,6 +76,7 @@ namespace PnP_Processor
                 log.PushActivity("Loading BOM");
                 log.AddString(String.Format("Loading BOM! {0},{1}", Path.GetFileName(bom), Path.GetFileName(pnp)));
                 B.LoadJLC(bom, pnp);
+                BuildPostBom();
                 log.PopActivity();
 
                 if (gerberzip != null && File.Exists(gerberzip))

@@ -1607,6 +1607,42 @@ namespace GerberLibrary.Core
 
             return partcount;
         }
+
+        public BOMEntry.RefDesc GetRefDes(string rdi)
+        {
+            foreach(var t in DeviceTree)
+            { 
+                foreach(var b in t.Value.Values)
+                {
+                    foreach (var rd in b.RefDes)
+                    {
+                        if (rd.NameOnBoard == rdi)
+                        {
+                            return rd;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public void FixupAngles()
+        {
+            foreach (var t in DeviceTree)
+            {
+                foreach (var b in t.Value.Values)
+                {
+                    foreach (var rd in b.RefDes)
+                    {
+                        if (rd.angle > 180)
+                        {
+                            rd.angle -= 360;
+                        }
+                    }
+                }
+            }
+            
+        }
     }
 
 }

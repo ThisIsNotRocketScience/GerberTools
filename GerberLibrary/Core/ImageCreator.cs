@@ -159,7 +159,7 @@ namespace GerberLibrary
             return Color.FromArgb(color.A, (int)red, (int)green, (int)blue);
         }
 
-        public void AddBoardsToSet(List<string> FileList, ProgressLog Logger , bool fixgroup = true)
+        public void AddBoardsToSet(List<string> FileList, ProgressLog Logger , bool fixgroup = true, bool forcezerowidth = false)
         {
             Logger.PushActivity("AddBoardsToSet");
             foreach (var a in FileList)
@@ -212,7 +212,7 @@ namespace GerberLibrary
 
                                 e.Extract(MS);
                                 MS.Seek(0, SeekOrigin.Begin);
-                                AddFileToSet(MS, e.FileName, Logger);
+                                AddFileToSet(MS, e.FileName, Logger, 1, forcezerowidth);
                             }
                         }
                     }
@@ -225,7 +225,7 @@ namespace GerberLibrary
                         FileStream FS = File.OpenRead(a);
                         FS.CopyTo(MS2);
                         MS2.Seek(0, SeekOrigin.Begin);
-                        AddFileToSet(MS2, a, Logger);
+                        AddFileToSet(MS2, a, Logger,1, forcezerowidth);
                     }
                     catch (Exception E)
                     {
@@ -510,11 +510,11 @@ namespace GerberLibrary
 
         }
 
-        private void AddFileToSet(string aname, ProgressLog Logger, double drillscaler = 1.0)
+        private void AddFileToSet(string aname, ProgressLog Logger, double drillscaler = 1.0, bool forcezerowidth = false)
         {
             if (Streams.ContainsKey(aname))
             {
-                AddFileToSet(Streams[aname], aname, Logger, drillscaler);
+                AddFileToSet(Streams[aname], aname, Logger, drillscaler, forcezerowidth);
             }
             else
             {
@@ -522,14 +522,14 @@ namespace GerberLibrary
             }
         }
 
-        private void AddFileToSet(MemoryStream MS, string aname, ProgressLog Logger, double drillscaler = 1.0)
+        private void AddFileToSet(MemoryStream MS, string aname, ProgressLog Logger, double drillscaler = 1.0, bool forcezerowidth = false)
         {
 
             Streams[aname] = MS;
 
             ///string[] filesplit = a.Split('.');
 
-            bool zerowidth = false;
+            bool zerowidth = forcezerowidth;
             bool precombine = false;
 
             BoardSide aSide;
