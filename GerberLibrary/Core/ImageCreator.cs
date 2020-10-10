@@ -97,6 +97,41 @@ namespace GerberLibrary
             GAW.Write(outputfile);
         }
 
+        public void Translate(double x, double y)
+        {
+            BoundingBox.Reset();
+            foreach (var f in PLSs)
+            {
+                f.Translate(new PointD(x,y));
+                f.CalcPathBounds();
+                BoundingBox.AddBox(f.BoundingBox);
+            }
+        }
+
+        public void FlipXY()
+        {
+            BoundingBox.Reset();
+            foreach (var f in PLSs)
+            {
+                f.FlipXY();
+                f.CalcPathBounds();
+                BoundingBox.AddBox(f.BoundingBox);
+            }
+        }
+
+        public void SetBottomRightToZero()
+        {
+            double dx = this.BoundingBox.BottomRight.X;
+            double dy = this.BoundingBox.TopLeft.Y;
+            BoundingBox.Reset();
+            foreach (var f in PLSs)
+            {
+                f.Translate(new PointD(-dx, -dy));
+                f.CalcPathBounds();
+                BoundingBox.AddBox(f.BoundingBox);
+            }
+        }
+
         private bool IsInPolygons(ParsedGerber toclip, List<ParsedGerber> ols)
         {
             foreach (var o in ols)
@@ -117,6 +152,35 @@ namespace GerberLibrary
             }
 
             return true;
+
+        }
+
+        public void CopyFrom(GerberImageCreator set)
+        {
+            foreach(var p in set.PLSs)
+            {
+                ParsedGerber PG = new ParsedGerber();
+                PG.CopyFrom(p);
+                PG.Side = p.Side;
+                PG.Layer = p.Layer;
+                PG.CalcPathBounds();
+                BoundingBox.AddBox(PG.BoundingBox);
+                PLSs.Add(PG);
+            }
+        }
+
+        public void SetBottomLeftToZero()
+        {
+            double dx = this.BoundingBox.TopLeft.X;
+            double dy = this.BoundingBox.TopLeft.Y;
+            BoundingBox.Reset();
+            foreach(var f in PLSs)
+            {
+                f.Translate(new PointD(-dx, -dy));
+                f.CalcPathBounds();
+                BoundingBox.AddBox(f.BoundingBox);
+            }
+
 
         }
 

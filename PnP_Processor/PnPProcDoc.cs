@@ -53,18 +53,64 @@ namespace PnP_Processor
         public BOM B = new BOM();
         public BOM BPost = new BOM();
 
-        void BuildPostBom()
+        public void BuildPostBom()
         {
             BPost = new BOM();
             BOMNumberSet s = new BOMNumberSet();
-            BPost.MergeBOM(B, s, 0, 0, 0, 0, 0);
-            BPost.FixupAngles();
+            if (FlipBoard)
+            {
+                FixOffset = new PointD(Set.BoundingBox.BottomRight.X, Set.BoundingBox.TopLeft.Y);
+            }
+            else
+            {
+                FixOffset = new PointD(Set.BoundingBox.TopLeft.X, Set.BoundingBox.TopLeft.Y);
+            }
+
+            BPost.MergeBOM(B, s, 0, 0, -FixOffset.X, -FixOffset.Y, 0);
+            
+            FixSet = new GerberImageCreator();
+            FixSet.CopyFrom(Set);
+            
+
+            if (FlipBoard)
+            {
+                FixSet.SetBottomRightToZero();
+                FixSet.FlipXY();
+                FixSet.Translate(0, FixSet.BoundingBox.Height());
+                BPost.SwapXY();
+                BPost.FlipSides();
+                BPost.Translate(0, FixSet.BoundingBox.Height());
+            }
+            else
+            {
+                FixSet.SetBottomLeftToZero();
+            }
+            BPost.FixupAngles(StockDoc);
         }
-       public  GerberImageCreator Set;
+
+        public GerberImageCreator Set;
+        public GerberImageCreator FixSet;
         private void LoadStuff()
         {
 
-
+            if (stock.Length > 0 && File.Exists(stock))
+            {
+                try
+                {
+                    log.PushActivity("Loading stock");
+                    StockDoc = StockDocument.Load(stock);
+                    if (StockDoc == null) StockDoc = new StockDocument();
+                }
+                catch(Exception)
+                {
+                    StockDoc = new StockDocument();
+                }
+                 log.PopActivity();
+            }
+            else
+            {
+                StockDoc = new StockDocument();
+            }
             log.PushActivity("Loading document");
             B = new BOM();
 
@@ -76,7 +122,6 @@ namespace PnP_Processor
                 log.PushActivity("Loading BOM");
                 log.AddString(String.Format("Loading BOM! {0},{1}", Path.GetFileName(bom), Path.GetFileName(pnp)));
                 B.LoadJLC(bom, pnp);
-                BuildPostBom();
                 log.PopActivity();
 
                 if (gerberzip != null && File.Exists(gerberzip))
@@ -91,12 +136,7 @@ namespace PnP_Processor
                 }
                 Box = Set.BoundingBox;
 
-
-                //            string OutputGerberName = fixedoutputfolder + "\\" + Path.GetFileName(boardfile);
-                //B.WriteRefDesGerber(OutputGerberName+"ORIGPLACEMENT");
-                FixOffset = new PointD(-Set.BoundingBox.TopLeft.X, -Set.BoundingBox.BottomRight.Y);
-                //                B.WriteRefDesGerber(OutputGerberName);
-                //              B.WriteJLCCSV(fixedoutputfolder, Path.GetFileName(filebase), true);
+                BuildPostBom();
 
                 log.PopActivity();
             }
@@ -115,6 +155,7 @@ namespace PnP_Processor
         public int Stamp = 0;
         static int MainStamp = 0;
         public Bounds Box = new Bounds();
+        private StockDocument StockDoc;
 
         public override void AddString(string text, float progress = -1)
         {

@@ -95,6 +95,30 @@ namespace GerberLibrary.Core
             //Console.WriteLine("Optimized path - before: {0}, after: {1}", BeforeTotal, AfterTotal);
         }
 
+        internal void FlipXY()
+        {
+            foreach (var a in DisplayShapes)
+            {
+                a.FlipXY();
+            }
+
+            foreach (var a in OutlineShapes)
+            {
+                a.FlipXY(); 
+            }
+            foreach (var a in Shapes)
+            {
+                a.FlipXY(); 
+            }
+            foreach (var a in ZerosizePoints)
+            {
+                var T = a.X;
+                a.X = a.Y;
+                a.Y = T;
+            }
+
+        }
+
         public void DefaultShape()
         {
             Shapes.Clear();
@@ -115,6 +139,24 @@ namespace GerberLibrary.Core
             Shapes.Add(S2);
 
             BuildBoundary();
+        }
+
+        internal void CopyFrom(ParsedGerber p)
+        {
+            Shapes = CopyPolylines(p.Shapes);
+            DisplayShapes = CopyPolylines(p.DisplayShapes);
+            OutlineShapes = CopyPolylines(p.OutlineShapes);
+            ZerosizePoints = CopyPoints(p.ZerosizePoints);
+        }
+
+        private List<PointD> CopyPoints(List<PointD> zerosizePoints)
+        {
+            return (from i in zerosizePoints select new PointD(i.X, i.Y)).ToList();
+        }
+
+        private List<PolyLine> CopyPolylines(List<PolyLine> shapes)
+        {
+            return (from i in shapes select i.Copy()).ToList();
         }
 
         public List<PolyLine> Shapes = new List<PolyLine>();
@@ -228,6 +270,16 @@ namespace GerberLibrary.Core
             {
                 a.Translate(T.X, T.Y);
             }
+            foreach (var a in Shapes)
+            {
+                a.Translate(T.X, T.Y);
+            }
+            foreach (var a in ZerosizePoints)
+            {
+                a.X += T.X;
+                a.Y += T.Y;
+            }
+
         }
         public PointD Normalize()
         {

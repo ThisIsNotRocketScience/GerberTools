@@ -57,6 +57,14 @@ namespace GerberLibrary.Core.Primitives
             {
                 PL.Add(a.X, a.Y);
             }
+            PL.ID = ID;
+            PL.Hole = Hole;
+            PL.Width = Width;
+            PL.Thin = Thin;
+            PL.ClearanceMode = ClearanceMode;
+            PL.Draw = Draw;
+            PL.MyColor = MyColor;
+            
             return PL;
         }
 
@@ -151,6 +159,16 @@ namespace GerberLibrary.Core.Primitives
                 }
             }
 
+        }
+
+        internal void FlipXY()
+        {
+            for (int i = 0; i < Vertices.Count; i++)
+            {
+                var T = Vertices[i].X;
+                Vertices[i].X = Vertices[i].Y;
+                Vertices[i].Y = T;
+            }
         }
 
         public Polygon toPolygon()

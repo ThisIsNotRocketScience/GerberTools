@@ -46,6 +46,7 @@
             this.ProcessButton = new System.Windows.Forms.Button();
             this.topsilk = new System.Windows.Forms.CheckBox();
             this.bottomsilk = new System.Windows.Forms.CheckBox();
+            this.flipDiag = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // selectbom
@@ -234,12 +235,24 @@
             this.bottomsilk.UseVisualStyleBackColor = true;
             this.bottomsilk.CheckedChanged += new System.EventHandler(this.bottomsilk_CheckedChanged);
             // 
+            // flipDiag
+            // 
+            this.flipDiag.AutoSize = true;
+            this.flipDiag.Location = new System.Drawing.Point(650, 112);
+            this.flipDiag.Name = "flipDiag";
+            this.flipDiag.Size = new System.Drawing.Size(87, 17);
+            this.flipDiag.TabIndex = 16;
+            this.flipDiag.Text = "Flip Diagonal";
+            this.flipDiag.UseVisualStyleBackColor = true;
+            this.flipDiag.CheckedChanged += new System.EventHandler(this.flipDiag_CheckedChanged);
+            // 
             // Actions
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(880, 162);
+            this.Controls.Add(this.flipDiag);
             this.Controls.Add(this.bottomsilk);
             this.Controls.Add(this.topsilk);
             this.Controls.Add(this.ProcessButton);
@@ -285,5 +298,6 @@
         private System.Windows.Forms.Button ProcessButton;
         private System.Windows.Forms.CheckBox topsilk;
         private System.Windows.Forms.CheckBox bottomsilk;
+        private System.Windows.Forms.CheckBox flipDiag;
     }
 }

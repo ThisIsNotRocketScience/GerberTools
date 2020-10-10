@@ -62,9 +62,10 @@ namespace PnP_Processor
             gerberzipbox.Text = GetReg("GerberZip");
             topsilk.Checked = GetRegBool("topsilkvisible");
             bottomsilk.Checked = GetRegBool("bottomsilkvisible");
+            flipDiag.Checked = GetRegBool("flipboard");
             blocksave = false;
             pnp = parent;
-
+            pnp.flipboard = flipDiag.Checked;
             pnp.topsilkvisible = topsilk.Checked;
             pnp.bottomsilkvisible = bottomsilk.Checked;
         }
@@ -221,6 +222,17 @@ namespace PnP_Processor
             pnp.bottomsilkvisible = bottomsilk.Checked;
 
             pnp.UpdateBoard(null);
+
+        }
+
+        private void flipDiag_CheckedChanged(object sender, EventArgs e)
+        {
+            if (blocksave) return; 
+            
+            SetRegBool("flipboard", bottomsilk.Checked);
+            pnp.flipboard = flipDiag.Checked;
+            pnp.RebuildPost();
+
 
         }
     }

@@ -41,7 +41,7 @@ namespace PnP_Processor
             TheBOMList.Show(dockPanel, DockState.DockLeft);
 
             dockPanel.UpdateDockWindowZOrder(DockStyle.Left, true);
-            
+
             Actions A1 = new Actions(this);
             A1.Show(dockPanel);
 
@@ -51,14 +51,14 @@ namespace PnP_Processor
 
         internal void Flip()
         {
-            
+
         }
 
         internal void Rotate()
         {
-            
+
         }
-       
+
         List<PnPProcDoc> Docs = new List<PnPProcDoc>();
         internal bool topsilkvisible;
         public PnPProcDoc ActiveDoc = null;
@@ -76,7 +76,7 @@ namespace PnP_Processor
         {
             if (DocLoaded == false)
             {
-                if (ActiveDoc!=null && ActiveDoc.loaded == true)
+                if (ActiveDoc != null && ActiveDoc.loaded == true)
                 {
                     DocLoaded = true;
                     TheBOMList.UpdateList();
@@ -86,10 +86,20 @@ namespace PnP_Processor
 
         public List<string> selectedrefdes = new List<string>();
         internal bool bottomsilkvisible;
-
-        internal void UpdateBoard(List<string> refdeslist= null)
+        internal bool flipboard;
+        public void RebuildPost()
         {
-           if(refdeslist !=null)  selectedrefdes = refdeslist;
+            if (ActiveDoc != null)
+            {
+                ActiveDoc.FlipBoard = flipboard;
+                ActiveDoc.BuildPostBom();
+            }
+            UpdateBoard(null);
+        }
+        internal void UpdateBoard(List<string> refdeslist = null)
+        {
+            if (refdeslist != null) selectedrefdes = refdeslist;
+
             BoardDisp.RefreshPic();
         }
     }

@@ -48,6 +48,14 @@ namespace GerberLibrary.Core
             }
         }
 
+        public StockPart FindPart(string combinedname)
+        {
+            foreach (var a in Parts)
+            {
+                if (a.name == combinedname) return a;
+            }
+            return null;
+        }
         public void Save(string filename)
         {
             XmlSerializer SerializerObj = new XmlSerializer(typeof(StockDocument));
@@ -1610,9 +1618,9 @@ namespace GerberLibrary.Core
 
         public BOMEntry.RefDesc GetRefDes(string rdi)
         {
-            foreach(var t in DeviceTree)
-            { 
-                foreach(var b in t.Value.Values)
+            foreach (var t in DeviceTree)
+            {
+                foreach (var b in t.Value.Values)
                 {
                     foreach (var rd in b.RefDes)
                     {
@@ -1626,7 +1634,35 @@ namespace GerberLibrary.Core
             return null;
         }
 
-        public void FixupAngles()
+        public void FixupAngles(StockDocument doc)
+        {
+            foreach (var t in DeviceTree)
+            {
+                foreach (var b in t.Value.Values)
+                {
+                    var partname = b.Combined();
+                    var p = doc.FindPart(partname);
+                    bool symmetric = false;
+                    if (p != null) symmetric = p.IsPolarized ? false : true;
+                    foreach (var rd in b.RefDes)
+                    {
+                        if (rd.angle > 180)
+                        {
+                            rd.angle -= 360;
+                        }
+                        if (symmetric)
+                        {
+                            rd.angle = (rd.angle + 180) % 180;
+                            if (rd.angle > 90) rd.angle -= 180;
+                        }
+
+                    }
+                }
+            }
+
+        }
+
+        public void SwapXY()
         {
             foreach (var t in DeviceTree)
             {
@@ -1634,14 +1670,35 @@ namespace GerberLibrary.Core
                 {
                     foreach (var rd in b.RefDes)
                     {
-                        if (rd.angle > 180)
+                        var tt = rd.x;
+                        rd.x = rd.y;
+                        rd.y = tt;
+                        rd.angle = 45 + (45 - rd.angle);
+                    }
+                }
+            }
+        }
+
+        public void FlipSides()
+        {
+            foreach (var t in DeviceTree)
+            {
+                foreach (var b in t.Value.Values)
+                {
+                    foreach (var rd in b.RefDes)
+                    {
+                        switch (rd.Side)
                         {
-                            rd.angle -= 360;
+                            case BoardSide.Bottom:
+                                rd.Side = BoardSide.Top;
+                                break;
+                            case BoardSide.Top:
+                                rd.Side = BoardSide.Bottom;
+                                break;
                         }
                     }
                 }
             }
-            
         }
     }
 

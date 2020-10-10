@@ -12,12 +12,12 @@ using System.Windows.Forms;
 
 namespace PnP_Processor
 {
-    public partial class BoardDisplay :  WeifenLuo.WinFormsUI.Docking.DockContent
+    public partial class BoardDisplay : WeifenLuo.WinFormsUI.Docking.DockContent
     {
         public PnPMain pnp;
         public bool PostDisplay = false;
         Bounds TheBox = new Bounds();
-        
+
         public BoardDisplay(PnPMain parent, bool postdisplay)
         {
             InitializeComponent();
@@ -27,7 +27,7 @@ namespace PnP_Processor
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-          
+
 
             e.Graphics.Clear(Color.Black);
 
@@ -44,14 +44,14 @@ namespace PnP_Processor
             Font F2 = new Font("Arial Bold", 16);
 
 
-            
+
 
             if (D.loaded == false)
             {
                 int H = Height - F.Height;
-                for (int i = 0;i<D.Log.Count;i++)
+                for (int i = 0; i < D.Log.Count; i++)
                 {
-                    G.DrawString(D.Log[i], F, Brushes.LightGray, 10, (i-D.Log.Count) * F.Height + H);
+                    G.DrawString(D.Log[i], F, Brushes.LightGray, 10, (i - D.Log.Count) * F.Height + H);
                 }
             }
             else
@@ -71,48 +71,64 @@ namespace PnP_Processor
                 G.TranslateTransform(pictureBox1.Width / 2, 0);
                 Render(D, G, true);
 
-              
+
             }
         }
 
-        private void Render(PnPProcDoc D,  Graphics G, bool after)
+        private void Render(PnPProcDoc D, Graphics G, bool after)
         {
-            
-             G.TranslateTransform(G.ClipBounds.Width/2, G.ClipBounds.Height/2);
+
+            G.TranslateTransform(G.ClipBounds.Width / 2, G.ClipBounds.Height / 2);
 
             TheBox.Reset();
-         //   TheBox.FitPoint(0, 0);
-            TheBox.AddBox(D.Box);
-            if (idx>-1)
+            //   TheBox.FitPoint(0, 0);
+            //TheBox.AddBox(D.Box);
+
+            TheBox.FitPoint(-250, -250);
+            TheBox.FitPoint(250, 250);
+            if (idx > -1)
             {
-               var rd = pnp.selectedrefdes[idx % pnp.selectedrefdes.Count()];
+                var rd = pnp.selectedrefdes[idx % pnp.selectedrefdes.Count()];
                 BOMEntry.RefDesc refd = D.B.GetRefDes(rd);
+                if (after)
+                {
+                     refd = D.BPost.GetRefDes(rd);
+
+                }
                 if (refd != null)
                 {
                     TheBox.Reset();
-                    TheBox.FitPoint(refd.x - 10, refd.y - 10);
-                    TheBox.FitPoint(refd.x + 10, refd.y + 10);
+                    TheBox.FitPoint(refd.x - 20, refd.y - 20);
+                    TheBox.FitPoint(refd.x + 20, refd.y + 20);
                 }
 
             }
 
-            float S = (float)Math.Min(pictureBox1.Width / (TheBox.Width() ), pictureBox1.Height / (TheBox.Height() ));
+            float S = (float)Math.Min(pictureBox1.Width / (TheBox.Width()), pictureBox1.Height / (TheBox.Height()));
 
-            bool TopView = false;
-            if (PostDisplay) TopView = D.FlipBoard ? false : true;
 
-                var C = TheBox.Center();
-                G.ScaleTransform(S * 0.8f, -S * 0.8f);
+            var C = TheBox.Center();
+            G.ScaleTransform(S * 0.8f, -S * 0.8f);
+            if (idx>-1)
+            {
                 G.TranslateTransform((float)-C.X, (float)-C.Y);
+            }
 
-            RenderLayerSets(G, S, BoardSide.Both, BoardLayer.Outline, Color.Gray, true);
+            MarkPoint(G, Color.Blue, "zero", 0, 0, S);
+            MarkPoint(G, Color.Green, "zero", (float)D.FixOffset.X, (float)D.FixOffset.Y, S);
 
-            if (pnp.bottomsilkvisible) RenderLayerSets(G, S, BoardSide.Bottom, BoardLayer.Silk, Color.White, true);
-            if (pnp.topsilkvisible) RenderLayerSets(G, S, BoardSide.Top, BoardLayer.Silk, Color.DarkGray, true);
+            RenderLayerSets(after, G, S, BoardSide.Both, BoardLayer.Outline, Color.Gray, true);
+
+            if (pnp.bottomsilkvisible) RenderLayerSets(after, G, S, BoardSide.Bottom, BoardLayer.Silk, Color.White, true);
+            if (pnp.topsilkvisible) RenderLayerSets(after, G, S, BoardSide.Top, BoardLayer.Silk, Color.DarkGray, true);
+
+
+
 
             var B = D.B;
             if (after) B = D.BPost;
             int curpart = 0;
+
             foreach (var p in B.DeviceTree)
             {
                 foreach (var pp in p.Value.Values)
@@ -127,23 +143,39 @@ namespace PnP_Processor
             }
         }
 
+        private void MarkPoint(Graphics g, Color blue, string lbl, float x, float y, float S)
+        {
+            g.DrawRectangle(new Pen(blue, 1.0f / S), x - 1.0f, y - 1, 2, 2);
+        }
+
         internal void RefreshPic()
         {
             pictureBox1.Invalidate();
         }
 
-        private void RenderLayerSets(Graphics G, float S, BoardSide side, BoardLayer layer, Color C, bool lines = true)
+        private void RenderLayerSets(bool after, Graphics G, float S, BoardSide side, BoardLayer layer, Color C, bool lines = true)
         {
 
             if (pnp.ActiveDoc == null) return;
             var D = pnp.ActiveDoc;
-            foreach (var l in D.Set.PLSs)
+            List<ParsedGerber> s;
+            if (after)
             {
-                if (l.Side == side && l.Layer == layer)
+                s = D.FixSet.PLSs;
+
+                foreach (var l in s)
                 {
-                     RenderOutline(G, S, l, C, lines);
+                    if (l.Side == side && l.Layer == layer)
+                    {
+                        RenderOutline(G, S, l, C, lines);
+                    }
                 }
             }
+            else
+            {
+               s = D.Set.PLSs;
+            }
+          
         }
 
         private static void RenderOutline(Graphics G, float S, ParsedGerber d, Color C, bool lines = true)
@@ -160,7 +192,7 @@ namespace PnP_Processor
                 {
                     if (lines)
                     {
-                        G.DrawLines(new Pen(C, (float)ds.Width*0.2f / S), Pts.ToArray());
+                        G.DrawLines(new Pen(C, (float)ds.Width * 0.2f / S), Pts.ToArray());
                     }
                     else
                     {
@@ -170,7 +202,7 @@ namespace PnP_Processor
             }
         }
 
-        private void DrawMarker(Color PartCol,Graphics g, BOMEntry.RefDesc r, bool soldered, float S, bool current, bool activedes)
+        private void DrawMarker(Color PartCol, Graphics g, BOMEntry.RefDesc r, bool soldered, float S, bool current, bool activedes)
         {
             float R = 2;
             float cx = (float)r.x - R / S;
@@ -178,8 +210,8 @@ namespace PnP_Processor
 
             float sa = (float)Math.Sin((-r.angle * Math.PI * 2) / 360.0);
             float ca = (float)Math.Cos((-r.angle * Math.PI * 2) / 360.0);
-            g.DrawArc(new Pen(PartCol, 1.0f / S), new RectangleF((float)r.x - 0.5f , (float)r.y - 0.5f, 1, 1), 270, (float)-r.angle);
-            g.DrawLine(new Pen(PartCol, 1.0f / S), (float)r.x, (float)r.y, (float)r.x + sa * 1.0f, (float)r.y - ca * 1.0f  );
+            g.DrawArc(new Pen(PartCol, 1.0f / S), new RectangleF((float)r.x - 0.5f, (float)r.y - 0.5f, 1, 1), 270, (float)-r.angle);
+            g.DrawLine(new Pen(PartCol, 1.0f / S), (float)r.x, (float)r.y, (float)r.x + sa * 1.0f, (float)r.y - ca * 1.0f);
 
             Color CurrentColor = soldered ? Color.Green : Color.Yellow;
             if (current)
@@ -224,7 +256,7 @@ namespace PnP_Processor
         private void BoardDisplay_KeyPress(object sender, KeyPressEventArgs e)
         {
 
-            switch(e.KeyChar)
+            switch (e.KeyChar)
             {
                 case 'f':
                     {
@@ -237,7 +269,7 @@ namespace PnP_Processor
 
             }
             pictureBox1.Invalidate();
-           
+
         }
     }
 }
