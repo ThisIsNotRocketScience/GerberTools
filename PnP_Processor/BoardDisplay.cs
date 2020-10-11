@@ -92,7 +92,7 @@ namespace PnP_Processor
                 BOMEntry.RefDesc refd = D.B.GetRefDes(rd);
                 if (after)
                 {
-                     refd = D.BPost.GetRefDes(rd);
+                    refd = D.BPost.GetRefDes(rd);
 
                 }
                 if (refd != null)
@@ -109,7 +109,7 @@ namespace PnP_Processor
 
             var C = TheBox.Center();
             G.ScaleTransform(S * 0.8f, -S * 0.8f);
-            if (idx>-1)
+            if (idx > -1)
             {
                 G.TranslateTransform((float)-C.X, (float)-C.Y);
             }
@@ -117,13 +117,25 @@ namespace PnP_Processor
             MarkPoint(G, Color.Blue, "zero", 0, 0, S);
             MarkPoint(G, Color.Green, "zero", (float)D.FixOffset.X, (float)D.FixOffset.Y, S);
 
+
+            RenderParts(D, after, G, BoardSide.Bottom, S);
+            RenderLayerSets(after, G, S, BoardSide.Both, BoardLayer.Outline, Color.FromArgb(210, 4, 20, 4), false);
             RenderLayerSets(after, G, S, BoardSide.Both, BoardLayer.Outline, Color.Gray, true);
 
-            if (pnp.bottomsilkvisible) RenderLayerSets(after, G, S, BoardSide.Bottom, BoardLayer.Silk, Color.White, true);
-            if (pnp.topsilkvisible) RenderLayerSets(after, G, S, BoardSide.Top, BoardLayer.Silk, Color.DarkGray, true);
+            if (pnp.bottomsilkvisible)
+            {
+                RenderLayerSets(after, G, S, BoardSide.Bottom, BoardLayer.Silk, Color.FromArgb(60, 60, 60), false); ;
+                RenderLayerSets(after, G, S, BoardSide.Bottom, BoardLayer.SolderMask, Color.FromArgb(100, 100, 10), false);
+            }
+            if (pnp.topsilkvisible)
+            {
+                RenderLayerSets(after, G, S, BoardSide.Top, BoardLayer.Silk, Color.FromArgb(60, 60, 60), false);
+                RenderLayerSets(after, G, S, BoardSide.Top, BoardLayer.SolderMask, Color.FromArgb(100, 100, 10), false);
+            }
 
 
 
+            RenderParts(D, after, G, BoardSide.Top, S);
 
             var B = D.B;
             if (after) B = D.BPost;
@@ -143,9 +155,33 @@ namespace PnP_Processor
             }
         }
 
+        private void RenderParts(PnPProcDoc D, bool after, Graphics G, BoardSide side, float S)
+        {
+
+            var B = D.B;
+            if (after) B = D.BPost;
+            int curpart = 0;
+
+            foreach (var p in B.DeviceTree)
+            {
+                foreach (var pp in p.Value.Values)
+                {
+                    var curcol = Helpers.RefractionNormalledMaxBrightnessAndSat(curpart / p.Value.Values.Count());
+                    curpart++;
+                    foreach (var rf in pp.RefDes)
+                    {
+                        if (rf.Side == side)
+                        {
+                            BOM.RenderPackage(G, rf.x, rf.y, rf.angle, pp.PackageName, rf.Side);
+                        }
+                    }
+                }
+            }
+        }
+
         private void MarkPoint(Graphics g, Color blue, string lbl, float x, float y, float S)
         {
-            g.DrawRectangle(new Pen(blue, 1.0f / S), x - 1.0f, y - 1, 2, 2);
+            g.DrawRectangle(new Pen(blue, 1.0f / S), x - 2.0f / S, y - 2 / S, 4 / S, 4 / S);
         }
 
         internal void RefreshPic()
@@ -163,19 +199,19 @@ namespace PnP_Processor
             {
                 s = D.FixSet.PLSs;
 
-                foreach (var l in s)
-                {
-                    if (l.Side == side && l.Layer == layer)
-                    {
-                        RenderOutline(G, S, l, C, lines);
-                    }
-                }
             }
             else
             {
-               s = D.Set.PLSs;
+                s = D.Set.PLSs;
             }
-          
+            foreach (var l in s)
+            {
+                if (l.Side == side && l.Layer == layer)
+                {
+                    RenderOutline(G, S, l, C, lines);
+                }
+            }
+
         }
 
         private static void RenderOutline(Graphics G, float S, ParsedGerber d, Color C, bool lines = true)

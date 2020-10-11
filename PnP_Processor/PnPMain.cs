@@ -67,6 +67,7 @@ namespace PnP_Processor
         {
             Docs.Add(d);
             DocLoaded = false;
+            d.FlipBoard = flipboard;
             d.StartLoad();
             ActiveDoc = d;
             TheBOMList.UpdateList();

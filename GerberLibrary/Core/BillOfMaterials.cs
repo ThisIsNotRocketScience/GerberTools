@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1699,6 +1700,570 @@ namespace GerberLibrary.Core
                     }
                 }
             }
+        }
+
+        public static void RenderPackage(Graphics g, double x, double y, double angle, string packageName, BoardSide side)
+        {
+
+
+            var t = g.Transform.Clone();
+            g.TranslateTransform((float)x, (float)y);
+            if (side == BoardSide.Bottom)
+            {
+                g.MultiplyTransform(new System.Drawing.Drawing2D.Matrix(-1, 0, 0, 1, 0, 0));
+                g.RotateTransform((float)angle);
+            }
+            else
+            {
+
+                g.RotateTransform((float)-angle);
+            }
+
+            switch(packageName)
+            {
+                case "3MMLED":
+                    RenderLed(g);
+                    break;
+                case "TC33X":
+                case "MINITRIM":
+                    RenderTrimPot(g);
+                    break;
+                case "SOT363":
+                    RenderSOT363(g);
+                    break;
+                case "SOT223":
+                    RenderSOT223(g);
+                    break;
+                case "CASE-A_3216":
+                    RenderTantalum(g);
+                    break;
+
+                case "SOT-323-ZENER":
+                case "SOT-323":
+                case "SOT323":
+                    RenderSot323(g);
+                    break;
+
+                case "SOT23-BEC":
+                case "SOT-23":
+                case "SOT23":
+                    RenderSot23(g);
+                    break;
+
+                case "DO-214AC":
+                    RenderDO214Diode(g);
+                    break;
+                case "C5B4.5":                    
+                    RenderBigCap(g,7, 4.0f, Color.FromArgb(200, 60, 60));
+                    
+                    break;
+                case "R0603":
+                case "0603":
+                    RenderSMD2Pin(g, 6, 3, Color.FromArgb(60, 60, 60));
+                    break;
+                case "L0805":
+                    RenderSMD2Pin(g, 8, 5, Color.FromArgb(60, 70, 80));
+                    break;
+                case "C0603":
+                    RenderSMD2Pin(g, 6, 3, Color.FromArgb(160, 130, 60));
+                    break;
+                case "R0805":
+                case "0805":
+                    RenderSMD2Pin(g, 8, 5, Color.FromArgb(60, 60, 60));
+                    break;
+                case "C0805":
+                    RenderSMD2Pin(g, 8, 5, Color.FromArgb(160, 130, 60));
+                    break;
+                case "SO14":
+                case "SOIC14":
+                    RenderSOIC(g, 14);
+                    break;
+                case "SO16":
+                case "SOIC16":
+                    RenderSOIC(g, 16);
+                    break;
+                case "SO8":
+                case "SOIC-8/150mil":
+                case "SO08":
+                case "SOIC8-N_MC":
+                case "SOIC8":
+                    RenderSOIC(g, 8);
+                    break;
+                default:
+                    Console.WriteLine("unknown package: {0}", packageName);
+                    break;
+                case "TSSOP14":
+                case "TSSOP-14":
+                    RenderSSOP(g, 14);
+                    break;
+                case "TSSOP8":
+                case "TSSOP-8":
+                    RenderSSOP(g, 8);
+                    break;
+                case "UMAX8":
+                    RenderSSOP(g, 8,3.0f);
+                    break;
+                case "TSSOP16":
+                case "TSSOP-16":
+                    RenderSSOP(g, 16);
+                    break;
+                case "SSOP24":
+                    RenderSSOP(g, 24);
+                    break;
+                case "PANASONIC_C":
+                    RenderECap(g, 5.3f);                    
+                    break;
+                case "CASE_B":
+                    RenderECap(g, 4.3f);
+                    break;
+                case "CAPAE-6.6x6.6h5.4":
+                case "PANASONIC_D":
+                    RenderECap(g, 6);
+                    break;
+                case "QFN50P400X400X100-25N":
+                    RenderQFN(g, 4,4,6, 0.5f);
+                    break;
+                case "ALPS_POT_SQUAREHOLES":
+                    RenderPot(g);
+                    break;
+                case "PB6149L":
+                    RenderButton(g);
+                    break;
+                case "TOOLINGHOLE":
+                case "SWDPADS":
+                case "SQUAREFIDUCIAL":
+                    break;
+                case "3.5MM-JACK-SWITCH-13MM-NOHOLES":
+                    RenderJack(g);
+                        break;
+                case "TS-23E01":
+                    RenderToggleSwitch(g);
+                    break;
+                case "TRIMPOT":
+                    RenderBigTrim(g);
+                    break;
+
+                case "SOT23-5":
+                    RenderSot23_5(g);
+                    break;
+                case "HDR-1x2T/2.54/5x2":
+                    RenderPinHeader(g, 2, 1, 2.54f);
+                    break;
+                case "M50-3600542":
+                    RenderPinHeader(g, 5, 2, 1.27f);
+                    break;
+
+            }
+
+            g.Transform = t;
+        }
+
+        private static void RenderPinHeader(Graphics g, int wpin, int hpin, float pinspacing)
+        {
+            float L = (wpin ) * pinspacing;
+            float W = (hpin ) * pinspacing; ;
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(30, 30, 30)), -L / 2, -W / 2, L, W);
+
+
+            
+            RectangleF pinrect = new RectangleF(0, 0, 0.4f, 0.4f);
+            float woffs = (wpin/ 2);
+            if ((wpin% 2) != 1) woffs -= 0.5f;
+
+            float hoffs = (hpin / 2);
+            if ((hpin % 2) != 1) hoffs -= 0.5f;
+
+            float pinw = 0.6f;
+            for (int p = 0; p < wpin; p++)
+            {
+                for (int q = 0; q < hpin; q++)
+                {
+                    float x = (p - woffs) * pinspacing - pinw /2; 
+                    float y = (q - hoffs) * pinspacing - pinw / 2; 
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 130)), x,y,pinw,pinw);
+                }
+
+            }
+        }
+        private static void RenderSot23_5(Graphics g)
+        {
+            float L = 3;
+            float W = 1.4f;
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(60, 60, 60)), -L / 2, -W / 2, L, W);
+
+            float pinspacing = 0.8f;
+            int sidepins = 6 / 2;
+            RectangleF pinrect = new RectangleF(0, 0, 0.4f, 0.4f);
+            float offs = (sidepins / 2);
+            if ((sidepins % 2) != 1) offs -= 0.5f;
+
+            List<bool> bottom = new List<bool>() { true, true, true};
+            List<bool> top = new List<bool>() { true, false, true };
+
+            for (int p = 0; p < sidepins; p++)
+            {
+                pinrect.X = (p - offs) * pinspacing - 0.2f;
+                pinrect.Y = -1.25f;
+                if (top[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+
+                pinrect.Y = 1.25f - 0.5f;
+                if (bottom[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+            }
+
+        }
+
+        private static void RenderBigTrim(Graphics g)
+        {
+            float W = 2.54f*4;
+            float H = 2.54f*2;
+            g.FillRectangle(new SolidBrush(Color.FromArgb(20, 20, 160)), -W / 2, -H / 2, W, H);
+            float L = 2.54f;
+            g.FillEllipse(new SolidBrush(Color.FromArgb(145, 145, 10)), -W / 2 , H / 2 - L, L, L);
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(120, 120, 0)), -W / 2, H /2 - L + L/2 -0.1f, L, 0.2f);
+        }
+
+        private static void RenderToggleSwitch(Graphics g)
+        {
+            float W = 23;
+            float H = 11;
+            g.FillRectangle(new SolidBrush(Color.FromArgb(130, 130, 130)), -W / 2, -H / 2, W, H);
+            float L = 5.0f;
+            g.FillEllipse(new SolidBrush(Color.FromArgb(145, 145, 145)), -L / 2, -L / 2, L, L);
+        }
+
+        private static void RenderJack(Graphics g)
+        {
+            float W = 10;
+            float H = 10;
+            g.FillRectangle(new SolidBrush(Color.FromArgb(30, 30, 30)), -W / 2, -H / 2, W, H);
+            float L = 9.5f;
+            g.FillEllipse(new SolidBrush(Color.FromArgb(35, 35, 35)), -L / 2, -L / 2, L, L);
+            L = 3.5f;
+            g.FillEllipse(new SolidBrush(Color.FromArgb(2, 2, 2)), -L / 2, -L / 2, L, L);
+        }
+
+        private static void RenderButton(Graphics g)
+        {
+            float W = 6;
+            float H = 6;
+            g.FillRectangle(new SolidBrush(Color.FromArgb(120, 120, 120)), -W / 2, -H / 2, W, H);
+            float L = 6;
+            g.FillEllipse(new SolidBrush(Color.FromArgb(200, 180, 0)), -L / 2, -L / 2, L, L);
+
+        }
+
+        private static void RenderPot(Graphics g)
+        {
+            float W = 9;
+            float H = 9;
+            g.FillRectangle(new SolidBrush(Color.FromArgb(120, 120, 120)), -W / 2, -H / 2, W, H);
+        }
+
+        private static void RenderQFN(Graphics g, float W, float H, int sidepins, float spacingbetweenpins)
+        {
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(50, 50, 50)), -W / 2, -H / 2, W, H);
+
+            float offs = (sidepins / 2);
+            if ((sidepins % 2) != 1) offs -= 0.5f;
+            RectangleF hpin = new RectangleF(0, 0, spacingbetweenpins * 0.8f, spacingbetweenpins * 0.2f);
+            RectangleF vpin = new RectangleF(0, 0, spacingbetweenpins * 0.2f, spacingbetweenpins * 0.8f);
+            SolidBrush b = new SolidBrush(Color.FromArgb(160, 160, 160));
+            for (int p = 0; p < sidepins; p++)
+            {
+                hpin.X = (p - offs) * spacingbetweenpins - hpin.Width/2;
+                vpin.Y = (p - offs) * spacingbetweenpins - vpin.Height/2;
+
+                hpin.Y = -H / 2 - hpin.Height;
+                g.FillRectangle(b, hpin);
+                hpin.Y = H / 2;
+                g.FillRectangle(b, hpin);
+
+                vpin.X = -W / 2 - vpin.Width;
+                g.FillRectangle(b, vpin);
+                vpin.X = W / 2 ;
+                g.FillRectangle(b, vpin);
+
+            }
+            float dotsize = 0.5f;
+            RectangleF dot = new RectangleF();
+            dot.X = -W / 2 + 0.2f;
+            dot.Y = H / 2 - 0.2f - dotsize; ;
+            dot.Width = dotsize;
+            dot.Height = dotsize;
+
+            g.FillEllipse(new SolidBrush(Color.FromArgb(190, 190, 190)), dot);
+
+
+        }
+        public static void RenderECap(Graphics g, float candiameter)
+        {
+            float L = candiameter;
+            float L2 = L*1.1f;
+            float L23 = L2 / 3;
+            List<PointF> polyvert = new List<PointF>();
+
+            polyvert.Add(new PointF( L2 / 2, L23 / 2));
+            polyvert.Add(new PointF( L23 / 2, L2/2));
+            polyvert.Add(new PointF( -L2  / 2, L2 / 2));
+            polyvert.Add(new PointF( -L2  / 2, -L2 / 2));
+            polyvert.Add(new PointF( L23 / 2, -L2 / 2));
+            polyvert.Add(new PointF( L2 / 2, -L23 / 2));
+
+            g.FillPolygon(new SolidBrush(Color.Gray), polyvert.ToArray());
+            g.FillEllipse(new SolidBrush(Color.FromArgb(110, 110, 110)), -L / 2, -L / 2, L, L);
+
+        }
+        private static void RenderDO214Diode(Graphics g)
+        {
+            RenderSMD2Pin(g, 3.2f * 100 / 25.4f, 1.6f * 100 / 25.4f, Color.FromArgb(60, 60, 60), Color.FromArgb(180, 180, 180), Color.FromArgb(60, 60, 60));
+        }
+
+        private static void RenderLed(Graphics g)
+        {
+            float L = 3;
+            g.FillEllipse(new SolidBrush(Color.FromArgb(200, 180, 0)), -L / 2, -L / 2, L, L);
+        }
+
+        private static void RenderTrimPot(Graphics g)
+        {
+            float L = 3.0f;
+            float W = 3.8f;
+            float extendH = 3.9f / 2;
+            g.FillRectangle(new SolidBrush(Color.FromArgb(120, 120, 120)), -L / 2, -W / 2, L, W);
+
+            g.FillEllipse(new SolidBrush(Color.FromArgb(110, 110, 110)), -L / 2, -L / 2, L, L);
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(90, 90, 90)), -L*0.6f / 2, -L * 0.1f / 2, L * 0.6f, L * 0.1f);
+            g.FillRectangle(new SolidBrush(Color.FromArgb(90, 90, 90)), -L * 0.1f / 2, -L * 0.6f / 2, L * 0.1f, L * 0.6f);
+
+            float pinspacing = 0.7f;
+            int sidepins = 6 / 2;
+            RectangleF pinrect = new RectangleF(0, 0, 0.65f, 0.1f);
+            RectangleF pinrectpad = new RectangleF(0, 0,0.65f, 0.1f);
+            float offs = (sidepins / 2);
+            if ((sidepins % 2) != 1) offs -= 0.5f;
+
+            List<bool> bottom = new List<bool>() { false, true, false };
+            List<bool> top = new List<bool>() { true, false, true };
+
+            for (int p = 0; p < sidepins; p++)
+            {
+                pinrect.X = (p - offs) * pinspacing - 0.35f;
+                pinrect.Y = -extendH;
+                if (top[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+
+                pinrectpad.X = (p - offs) * pinspacing - 0.35f;
+                pinrectpad.Y = extendH - pinrect.Height;
+                if (bottom[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrectpad);
+            }
+        }
+
+        private static void RenderSOT363(Graphics g)
+        {
+            float L = 2;
+            float W = 1.25f;
+            float extendH = 2.1f / 2;
+            g.FillRectangle(new SolidBrush(Color.FromArgb(60, 60, 60)), -L / 2, -W / 2, L, W);
+
+            float pinspacing = 0.65f;
+            int sidepins = 6 / 2;
+            RectangleF pinrect = new RectangleF(0, 0, 0.2f, extendH-W / 2);
+            float offs = (sidepins / 2);
+            if ((sidepins % 2) != 1) offs -= 0.5f;
+
+            List<bool> bottom = new List<bool>() { true , true, true };
+            List<bool> top = new List<bool>() { true, true, true };
+
+            for (int p = 0; p < sidepins; p++)
+            {
+                pinrect.X = (p - offs) * pinspacing - pinrect.Width/2;
+                pinrect.Y = -extendH;
+                if (top[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+
+                pinrect.Y = extendH - pinrect.Height;
+                if (bottom[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+            }
+        }
+
+        private static void RenderSOT223(Graphics g)
+        {
+            float L = 6.5f;
+            float W = 3.5f;
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(60, 60, 60)), -L / 2, -W / 2, L, W);
+
+            float pinspacing = 2.3f;
+            int sidepins = 6 / 2;
+            RectangleF pinrect = new RectangleF(0, 0, 0.7f, 1.75f);
+            RectangleF pinrectpad = new RectangleF(0, 0, 3, 1.75f);
+            float offs = (sidepins / 2);
+            if ((sidepins % 2) != 1) offs -= 0.5f;
+
+            List<bool> bottom = new List<bool>() { false, true, false };
+            List<bool> top = new List<bool>() { true, true, true };
+
+            for (int p = 0; p < sidepins; p++)
+            {
+                pinrect.X = (p - offs) * pinspacing - 0.35f;
+                pinrect.Y = -3.5f;
+                if (top[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+
+                pinrectpad.X = (p - offs) * pinspacing - 1.5f;
+                pinrectpad.Y = 3.5f - 1.75f;
+                if (bottom[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrectpad);
+            }
+
+        }
+
+        private static void RenderSot23(Graphics g)
+        {
+            float L = 3;
+            float W = 1.4f;
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(60, 60, 60)), -L / 2, -W / 2, L, W);
+
+            float pinspacing = 0.8f;
+            int sidepins = 6 / 2;
+            RectangleF pinrect = new RectangleF(0, 0, 0.4f, 0.4f);
+            float offs = (sidepins / 2);
+            if ((sidepins % 2) != 1) offs -= 0.5f;
+
+            List<bool> bottom = new List<bool>() { false, true, false };
+            List<bool> top = new List<bool>() { true, false, true };
+
+            for (int p = 0; p < sidepins; p++)
+            {
+                pinrect.X = (p - offs) * pinspacing - 0.2f;
+                pinrect.Y = -1.25f;
+                if (top[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+
+                pinrect.Y = 1.25f - 0.5f;
+                if (bottom[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+            }
+
+        }
+
+        private static void RenderTantalum(Graphics g)
+        {
+            RenderSMD2Pin(g, 3.2f * 100 / 25.4f, 1.6f* 100 / 25.4f, Color.FromArgb(160,100,30), Color.FromArgb(160,10,10));
+        }
+
+        private static void RenderSot323(Graphics g)
+        {
+            float L = 2;
+            float W = 1.25f;
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(60,60,60)), -L / 2, -W / 2, L, W);
+
+            float pinspacing = 0.65f;
+            int sidepins = 6 / 2;
+            RectangleF pinrect = new RectangleF(0, 0, 0.4f, 0.4f);
+            float offs = (sidepins / 2);
+            if ((sidepins % 2) != 1) offs -= 0.5f;
+
+            List<bool> bottom = new List<bool>() { false, true, false };
+            List<bool> top = new List<bool>() {true, false, true };
+
+            for (int p = 0; p < sidepins; p++)
+            {
+                pinrect.X = (p - offs) * pinspacing - 0.2f;
+                pinrect.Y = -1;
+                if (top[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+
+                pinrect.Y = 1-0.5f;
+                if (bottom[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+            }
+
+
+        }
+
+        private static void RenderBigCap(Graphics g, float L, float W, Color color)
+        {
+            g.FillRectangle(new SolidBrush(color), -L/ 2 , -W / 2, L,W);
+
+        }
+
+        public static void RenderSMD2Pin(Graphics g, float w, float h, Color BodyColor, Color ?pin1mark = null, Color? pin2mark = null)
+        {
+            w *=  25.4f/100.0f;
+            h *=  25.4f/100.0f;
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), -w / 2, -h / 2, w ,h);
+            g.FillRectangle(new SolidBrush(BodyColor), -(w*0.8f) / 2, -h / 2, (w*0.8f), h);
+
+            if (pin1mark !=null)
+            {
+                g.FillRectangle(new SolidBrush((Color)pin1mark), (-w * 0.8f) / 2, -h / 2, (w * 0.2f), h);
+            }
+
+            if (pin2mark != null)
+            {
+                g.FillRectangle(new SolidBrush((Color)pin2mark), (w * 0.4f) / 2, -h / 2, (w * 0.2f), h);
+            }
+
+        }
+        public static void RenderSOIC(Graphics g, int v)
+        {
+
+            int sidepins = v / 2;
+            float length = (sidepins - 1) * 1.27f;
+            g.FillRectangle(new SolidBrush(Color.FromArgb(60, 60, 60)), -length / 2 - 0.5f, -3.9f / 2, length + 1, 3.9f);
+            RectangleF pinrect = new RectangleF(0,0,0.4f,1);
+            float offs = (sidepins / 2) ;
+            if ((sidepins % 2) != 1) offs -= 0.5f;
+            
+            for(int p = 0;p<sidepins ;p++)
+            {
+                pinrect.X = (p - offs)  * 1.27f - 0.2f;
+                pinrect.Y = -3;
+                g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+
+                pinrect.Y = 2;
+                g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+            }
+            pinrect.X = (0 - offs) * 1.27f - 0.2f;
+            pinrect.Y = -1.4f;
+            pinrect.Width = 0.4f;
+            pinrect.Height = 0.4f;
+
+            g.FillEllipse(new SolidBrush(Color.FromArgb(190, 190, 190)), pinrect);
+
+        }
+
+        public static void RenderSSOP(Graphics g, int v, float W = 3.9f)
+        {
+
+            float pinspacing = 0.65f;
+            int sidepins = v / 2;
+            float length = (sidepins - 1) * pinspacing;
+            
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(60, 60, 60)), -length / 2 - 0.5f, -W / 2, length + 1, W);
+            RectangleF pinrect = new RectangleF(0, 0, 0.4f, 1);
+            float offs = (sidepins / 2);
+            if ((sidepins % 2) != 1) offs -= 0.5f;
+
+            for (int p = 0; p < sidepins; p++)
+            {
+                pinrect.X = (p - offs) * pinspacing - 0.2f;
+                pinrect.Y = -(W/2)-pinrect.Height;
+                g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+
+                pinrect.Y = (W / 2 );
+                g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
+            }
+
+            pinrect.X = (0 - offs) * pinspacing - 0.2f;
+            pinrect.Y = -1.4f;
+            pinrect.Width = 0.4f;
+            pinrect.Height = 0.4f;
+
+            g.FillEllipse(new SolidBrush(Color.FromArgb(190, 190, 190)), pinrect);
+
         }
     }
 
