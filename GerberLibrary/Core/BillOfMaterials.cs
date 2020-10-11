@@ -1467,18 +1467,21 @@ namespace GerberLibrary.Core
         }
 
         public static Dictionary<string, int> RotationOffsets = new Dictionary<string, int>();
+        
         public static int GetRotationOffset(string name)
         {
             if (RotationOffsets.ContainsKey(name)) return RotationOffsets[name];
             return 0;
 
         }
+        
         public static void SetRotationOffset(string name, int off)
         {
             RotationOffsets[name] = off;
         }
 
         public static string DefaultRotationFile = "RotationOffsets.txt";
+        
         public static void LoadRotationOffsets(string v = "")
         {
             if (v.Length == 0) v = DefaultRotationFile; else DefaultRotationFile = v;
@@ -1628,6 +1631,24 @@ namespace GerberLibrary.Core
                         if (rd.NameOnBoard == rdi)
                         {
                             return rd;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public BOMEntry GetBOMEntry(string rdi)
+        {
+            foreach (var t in DeviceTree)
+            {
+                foreach (var b in t.Value.Values)
+                {
+                    foreach (var rd in b.RefDes)
+                    {
+                        if (rd.NameOnBoard == rdi)
+                        {
+                            return b;
                         }
                     }
                 }
