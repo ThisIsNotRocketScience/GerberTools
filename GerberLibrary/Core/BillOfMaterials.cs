@@ -1752,6 +1752,7 @@ namespace GerberLibrary.Core
                 case "SOT363":
                     RenderSOT363(g);
                     break;
+                case "SOT-223":
                 case "SOT223":
                     RenderSOT223(g);
                     break;
@@ -1771,6 +1772,7 @@ namespace GerberLibrary.Core
                     RenderSot23(g);
                     break;
 
+                case "DO214AC":
                 case "DO-214AC":
                     RenderDO214Diode(g);
                     break;
@@ -1787,6 +1789,12 @@ namespace GerberLibrary.Core
                     break;
                 case "C0603":
                     RenderSMD2Pin(g, 6, 3, Color.FromArgb(160, 130, 60));
+                    break;
+                case "C3225":
+                    RenderSMD2Pin(g, 32*10/25.4f, 25*10/25.4f, Color.FromArgb(160, 130, 60));
+                    break;
+                case "FERRITE_1812":
+                    RenderSMD2Pin(g, 18, 12, Color.FromArgb(20, 20, 20));
                     break;
                 case "R0805":
                 case "0805":
@@ -1841,8 +1849,11 @@ namespace GerberLibrary.Core
                 case "PANASONIC_D":
                     RenderECap(g, 6);
                     break;
+                case "LMZM33606":
+                    RenderQFN(g, 10.15f, 16.15f, 9,15, 0.8f);
+                    break;
                 case "QFN50P400X400X100-25N":
-                    RenderQFN(g, 4,4,6, 0.5f);
+                    RenderQFN(g, 4,4,6,6, 0.5f);
                     break;
                 case "ALPS_POT_SQUAREHOLES":
                     RenderPot(g);
@@ -1853,6 +1864,14 @@ namespace GerberLibrary.Core
                 case "TOOLINGHOLE":
                 case "SWDPADS":
                 case "SQUAREFIDUCIAL":
+                case "JUSTATINYROCKET_DATECODE":
+                case "FENIXPOWERBACKPACK_BOARD":
+                case "FENIXPOWERBACKPACK":
+                case "POWERTESTPAD_MEDIUM":
+                case "POWERTESTPAD":
+                case "POWERTESTPAD_LARGE":
+                case "GROUNDLOOP":
+                case "3":
                     break;
                 case "3.5MM-JACK-SWITCH-13MM-NOHOLES":
                     RenderJack(g);
@@ -1983,33 +2002,41 @@ namespace GerberLibrary.Core
             g.FillRectangle(new SolidBrush(Color.FromArgb(120, 120, 120)), -W / 2, -H / 2, W, H);
         }
 
-        private static void RenderQFN(Graphics g, float W, float H, int sidepins, float spacingbetweenpins)
+        private static void RenderQFN(Graphics g, float W, float H, int wpins, int hpins, float spacingbetweenpins)
         {
 
             g.FillRectangle(new SolidBrush(Color.FromArgb(50, 50, 50)), -W / 2, -H / 2, W, H);
 
-            float offs = (sidepins / 2);
-            if ((sidepins % 2) != 1) offs -= 0.5f;
+            float woffs = (wpins/ 2);
+            if ((wpins % 2) != 1) woffs -= 0.5f;
+            float hoffs = (hpins / 2);
+            if ((hpins % 2) != 1) hoffs -= 0.5f;
             RectangleF hpin = new RectangleF(0, 0, spacingbetweenpins * 0.8f, spacingbetweenpins * 0.2f);
             RectangleF vpin = new RectangleF(0, 0, spacingbetweenpins * 0.2f, spacingbetweenpins * 0.8f);
             SolidBrush b = new SolidBrush(Color.FromArgb(160, 160, 160));
-            for (int p = 0; p < sidepins; p++)
+            for (int p = 0; p < wpins; p++)
             {
-                hpin.X = (p - offs) * spacingbetweenpins - hpin.Width/2;
-                vpin.Y = (p - offs) * spacingbetweenpins - vpin.Height/2;
+                hpin.X = (p - woffs) * spacingbetweenpins - hpin.Width/2;
 
                 hpin.Y = -H / 2 - hpin.Height;
                 g.FillRectangle(b, hpin);
                 hpin.Y = H / 2;
                 g.FillRectangle(b, hpin);
 
-                vpin.X = -W / 2 - vpin.Width;
-                g.FillRectangle(b, vpin);
-                vpin.X = W / 2 ;
-                g.FillRectangle(b, vpin);
 
             }
-            float dotsize = 0.5f;
+            for (int p = 0; p < hpins; p++)
+            {
+
+                vpin.Y = (p - hoffs) * spacingbetweenpins - vpin.Height / 2;
+            vpin.X = -W / 2 - vpin.Width;
+            g.FillRectangle(b, vpin);
+            vpin.X = W / 2;
+            g.FillRectangle(b, vpin);
+
+        }
+
+        float dotsize = 0.5f;
             RectangleF dot = new RectangleF();
             dot.X = -W / 2 + 0.2f;
             dot.Y = H / 2 - 0.2f - dotsize; ;
@@ -2022,7 +2049,7 @@ namespace GerberLibrary.Core
         }
         public static void RenderECap(Graphics g, float candiameter)
         {
-            float L = candiameter;
+            float L = candiameter*0.9f;
             float L2 = L*1.1f;
             float L23 = L2 / 3;
             List<PointF> polyvert = new List<PointF>();
@@ -2034,7 +2061,7 @@ namespace GerberLibrary.Core
             polyvert.Add(new PointF( L23 / 2, -L2 / 2));
             polyvert.Add(new PointF( L2 / 2, -L23 / 2));
 
-            g.FillPolygon(new SolidBrush(Color.Gray), polyvert.ToArray());
+            g.FillPolygon(new SolidBrush(Color.FromArgb(20,20,20)), polyvert.ToArray());
             g.FillEllipse(new SolidBrush(Color.FromArgb(110, 110, 110)), -L / 2, -L / 2, L, L);
 
         }
