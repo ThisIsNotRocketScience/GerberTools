@@ -119,6 +119,30 @@ namespace GerberLibrary.Core
 
         }
 
+        internal void FlipX()
+        {
+            foreach (var a in DisplayShapes)
+            {
+                a.FlipX();
+            }
+
+            foreach (var a in OutlineShapes)
+            {
+                a.FlipX();
+            }
+
+            foreach (var a in Shapes)
+            {
+                a.FlipX();
+            }
+            
+            foreach (var a in ZerosizePoints)
+            {
+                a.X = -a.X;
+            }
+        }
+
+
         public void DefaultShape()
         {
             Shapes.Clear();

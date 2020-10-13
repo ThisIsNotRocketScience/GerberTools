@@ -171,6 +171,14 @@ namespace GerberLibrary.Core.Primitives
             }
         }
 
+        internal void FlipX()
+        {
+            for (int i = 0; i < Vertices.Count; i++)
+            {
+                Vertices[i].X = -Vertices[i].X;
+            }
+        }
+
         public Polygon toPolygon()
         {
             Polygon P = new Polygon();

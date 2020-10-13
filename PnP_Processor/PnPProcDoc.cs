@@ -14,16 +14,23 @@ namespace PnP_Processor
     public class PnPProcDoc : ProgressLog
     {
 
+        public enum FlipMode
+        {
+            NoFlip,
+            FlipDiagonal,
+            FlipHorizontal
+
+        }
+
+
         StandardConsoleLog log;
         public string stock;
-        public string silk;
         public string pnp;
         public string bom;
-        public string outline;
         public string gerberzip;
         public bool loaded = false;
         public PointD FixOffset = new PointD();
-        public bool FlipBoard = false;
+        public FlipMode FlipBoard =  FlipMode.NoFlip;
         public int RotationAngle = 0;
 
         public PnPProcDoc()
@@ -57,13 +64,18 @@ namespace PnP_Processor
         {
             BPost = new BOM();
             BOMNumberSet s = new BOMNumberSet();
-            if (FlipBoard)
+            
+            switch(FlipBoard)
             {
-                FixOffset = new PointD(Set.BoundingBox.BottomRight.X, Set.BoundingBox.TopLeft.Y);
-            }
-            else
-            {
-                FixOffset = new PointD(Set.BoundingBox.TopLeft.X, Set.BoundingBox.TopLeft.Y);
+                case FlipMode.NoFlip:                
+                    FixOffset = new PointD(Set.BoundingBox.TopLeft.X, Set.BoundingBox.TopLeft.Y);
+                    break;
+                case FlipMode.FlipDiagonal:
+                    FixOffset = new PointD(Set.BoundingBox.TopLeft.X, Set.BoundingBox.TopLeft.Y);
+                    break;
+                case FlipMode.FlipHorizontal:
+                    FixOffset = new PointD(Set.BoundingBox.TopLeft.X, Set.BoundingBox.TopLeft.Y);
+                    break;
             }
 
             BPost.MergeBOM(B, s, 0, 0, -FixOffset.X, -FixOffset.Y, 0);
@@ -71,19 +83,25 @@ namespace PnP_Processor
             FixSet = new GerberImageCreator();
             FixSet.CopyFrom(Set);
             
-
-            if (FlipBoard)
+            switch(FlipBoard)
             {
-                FixSet.SetBottomRightToZero();
-                FixSet.FlipXY();
-                FixSet.Translate(0, FixSet.BoundingBox.Height());
-                BPost.SwapXY();
-                BPost.FlipSides();
-                BPost.Translate(0, FixSet.BoundingBox.Height());
-            }
-            else
-            {
-                FixSet.SetBottomLeftToZero();
+                case FlipMode.NoFlip:
+                    FixSet.SetBottomLeftToZero();
+                    break;
+                case FlipMode.FlipDiagonal:
+                    FixSet.SetBottomRightToZero();
+                    FixSet.FlipXY();
+                    FixSet.Translate(0, FixSet.BoundingBox.Height());
+                    BPost.SwapXY();
+                    BPost.FlipSides();
+                    BPost.Translate(0, FixSet.BoundingBox.Height());
+                    break;
+                case FlipMode.FlipHorizontal:
+                    FixSet.FlipX();
+                    FixSet.SetBottomRightToZero();
+                    BPost.FlipSides();
+                    BPost.FlipX();
+                    break;
             }
             BPost.FixupAngles(StockDoc);
         }
@@ -131,8 +149,6 @@ namespace PnP_Processor
                 else
                 {
                     Set = new GerberImageCreator();
-                    Set.AddBoardToSet(silk, log);
-                    Set.AddBoardToSet(outline, log);
                 }
                 Box = Set.BoundingBox;
 

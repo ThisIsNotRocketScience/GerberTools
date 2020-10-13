@@ -119,6 +119,17 @@ namespace GerberLibrary
             }
         }
 
+        public void FlipX()
+        {
+            BoundingBox.Reset();
+            foreach (var f in PLSs)
+            {
+                f.FlipX();
+                f.CalcPathBounds();
+                BoundingBox.AddBox(f.BoundingBox);
+            }
+        }
+
         public void SetBottomRightToZero()
         {
             double dx = this.BoundingBox.BottomRight.X;

@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using static GerberLibrary.PolyLineSet;
 
 namespace GerberLibrary.Core
@@ -39,6 +40,18 @@ namespace GerberLibrary.Core
     public static class Helpers
     {
 
+        public static float SetupMatrixForExtends(Graphics G, PictureBox P, Bounds Bb, int pixelmargin = 0, float percentmargin = 0)
+        {
+            G.TranslateTransform(G.ClipBounds.Width / 2, G.ClipBounds.Height / 2);
+
+            float S = (float)Math.Min((P.Width - pixelmargin) / (Bb.Width()), (P.Height - pixelmargin) / (Bb.Height()));
+
+            var C = Bb.Center();
+            G.ScaleTransform(S * (1 - percentmargin), -S * (1 - percentmargin));
+            G.TranslateTransform((float)-C.X, (float)-C.Y);
+
+            return S;
+        }
 
         public static Color RefractionNormalledMaxBrightnessAndSat(float Inp)
         {

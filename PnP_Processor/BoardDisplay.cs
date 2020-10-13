@@ -77,15 +77,13 @@ namespace PnP_Processor
 
         private void Render(PnPProcDoc D, Graphics G, bool after)
         {
-
-            G.TranslateTransform(G.ClipBounds.Width / 2, G.ClipBounds.Height / 2);
-
+           
             TheBox.Reset();
-            //   TheBox.FitPoint(0, 0);
-            //TheBox.AddBox(D.Box);
-
-            TheBox.FitPoint(-250, -250);
-            TheBox.FitPoint(250, 250);
+               TheBox.FitPoint(0, 0);
+            if (after) TheBox.AddBox(D.FixSet.BoundingBox); else TheBox.AddBox(D.Box); 
+            
+            //TheBox.FitPoint(-250, -250);
+            //TheBox.FitPoint(250, 250);
             if (idx > -1)
             {
                 var rd = pnp.selectedrefdes[idx % pnp.selectedrefdes.Count()];
@@ -103,16 +101,11 @@ namespace PnP_Processor
                 }
 
             }
+            var P = pictureBox1;
 
-            float S = (float)Math.Min(pictureBox1.Width / (TheBox.Width()), pictureBox1.Height / (TheBox.Height()));
+            var Bb = TheBox;
 
-
-            var C = TheBox.Center();
-            G.ScaleTransform(S * 0.8f, -S * 0.8f);
-            if (idx > -1)
-            {
-                G.TranslateTransform((float)-C.X, (float)-C.Y);
-            }
+            float S = Helpers.SetupMatrixForExtends(G, P, Bb,2);
 
             MarkPoint(G, Color.Blue, "zero", 0, 0, S);
             MarkPoint(G, Color.Green, "zero", (float)D.FixOffset.X, (float)D.FixOffset.Y, S);
@@ -124,12 +117,12 @@ namespace PnP_Processor
 
             if (pnp.bottomsilkvisible)
             {
-                RenderLayerSets(after, G, S, BoardSide.Bottom, BoardLayer.Silk, Color.FromArgb(60, 60, 60), false); ;
+                RenderLayerSets(after, G, S, BoardSide.Bottom, BoardLayer.Silk, Color.FromArgb(160, 160, 160), false); ;
                 RenderLayerSets(after, G, S, BoardSide.Bottom, BoardLayer.SolderMask, Color.FromArgb(100, 100, 10), false);
             }
             if (pnp.topsilkvisible)
             {
-                RenderLayerSets(after, G, S, BoardSide.Top, BoardLayer.Silk, Color.FromArgb(60, 60, 60), false);
+                RenderLayerSets(after, G, S, BoardSide.Top, BoardLayer.Silk, Color.FromArgb(160, 160, 160), false);
                 RenderLayerSets(after, G, S, BoardSide.Top, BoardLayer.SolderMask, Color.FromArgb(100, 100, 10), false);
             }
 
@@ -155,6 +148,7 @@ namespace PnP_Processor
             }
         }
 
+        
         private void RenderParts(PnPProcDoc D, bool after, Graphics G, BoardSide side, float S)
         {
 

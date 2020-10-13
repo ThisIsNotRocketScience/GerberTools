@@ -1701,6 +1701,22 @@ namespace GerberLibrary.Core
             }
         }
 
+        public void FlipX()
+        {
+            foreach (var t in DeviceTree)
+            {
+                foreach (var b in t.Value.Values)
+                {
+                    foreach (var rd in b.RefDes)
+                    {
+                        
+                        rd.x = -rd.x;
+                        rd.angle = -rd.angle;
+                    }
+                }
+            }
+        }
+
         public void FlipSides()
         {
             foreach (var t in DeviceTree)

@@ -23,6 +23,7 @@ namespace PnP_Processor
 
         BoardDisplay BoardDisp;
         BOMList TheBOMList;
+        Actions A1;
 
         public PnPMain(string[] args)
         {
@@ -42,7 +43,7 @@ namespace PnP_Processor
 
             dockPanel.UpdateDockWindowZOrder(DockStyle.Left, true);
 
-            Actions A1 = new Actions(this);
+             A1 = new Actions(this);
             A1.Show(dockPanel);
 
             BoardDisp = new BoardDisplay(this, false);
@@ -87,7 +88,7 @@ namespace PnP_Processor
 
         public List<string> selectedrefdes = new List<string>();
         internal bool bottomsilkvisible;
-        internal bool flipboard;
+        internal PnPProcDoc.FlipMode flipboard;
         public void RebuildPost()
         {
             if (ActiveDoc != null)
@@ -100,7 +101,7 @@ namespace PnP_Processor
         internal void UpdateBoard(List<string> refdeslist = null)
         {
             if (refdeslist != null) selectedrefdes = refdeslist;
-
+            A1.RefreshDisplay();
             BoardDisp.RefreshPic();
         }
     }
