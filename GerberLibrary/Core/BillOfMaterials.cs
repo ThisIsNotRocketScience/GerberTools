@@ -1756,7 +1756,7 @@ namespace GerberLibrary.Core
                 g.RotateTransform((float)-angle);
             }
 
-            switch(packageName)
+            switch(packageName.Trim())
             {
                 case "3MMLED":
                     RenderLed(g);
@@ -1792,9 +1792,14 @@ namespace GerberLibrary.Core
                 case "DO-214AC":
                     RenderDO214Diode(g);
                     break;
-                case "C5B4.5":                    
+                case "C5B4.5":
+                case "CAP-5.08/7.6x5":
                     RenderBigCap(g,7, 4.0f, Color.FromArgb(200, 60, 60));
                     
+                    break;
+
+                case "RES_2512":
+                    RenderSMD2Pin(g, 25, 12, Color.FromArgb(60, 60, 60));                    
                     break;
                 case "R0603":
                 case "0603":
@@ -1868,6 +1873,9 @@ namespace GerberLibrary.Core
                 case "LMZM33606":
                     RenderQFN(g, 10.15f, 16.15f, 9,15, 0.8f);
                     break;
+                case "QFN-32/5x5x0.5":
+                    RenderQFN(g, 5, 5, 8, 8, 0.5f);
+                    break;
                 case "QFN50P400X400X100-25N":
                     RenderQFN(g, 4,4,6,6, 0.5f);
                     break;
@@ -1887,7 +1895,11 @@ namespace GerberLibrary.Core
                 case "POWERTESTPAD":
                 case "POWERTESTPAD_LARGE":
                 case "GROUNDLOOP":
+                case "MINISWD-SMD":
+                case "IPSLCD1.3":
+                case "FRONTPANELSTANDOFF_SCREWONONESIDE":
                 case "3":
+                case "":
                     break;
                 case "3.5MM-JACK-SWITCH-13MM-NOHOLES":
                     RenderJack(g);
@@ -1900,6 +1912,7 @@ namespace GerberLibrary.Core
                     break;
 
                 case "SOT23-5":
+                case "SOT-23-5":
                     RenderSot23_5(g);
                     break;
                 case "HDR-1x2T/2.54/5x2":
@@ -1908,13 +1921,15 @@ namespace GerberLibrary.Core
                 case "M50-3600542":
                     RenderPinHeader(g, 5, 2, 1.27f);
                     break;
-
+                case "2X3-SHROUDED":
+                    RenderPinHeader(g, 3, 2, 2.54f, true);
+                    break;
             }
 
             g.Transform = t;
         }
 
-        private static void RenderPinHeader(Graphics g, int wpin, int hpin, float pinspacing)
+        private static void RenderPinHeader(Graphics g, int wpin, int hpin, float pinspacing, bool shroud = false)
         {
             float L = (wpin ) * pinspacing;
             float W = (hpin ) * pinspacing; ;
@@ -1939,6 +1954,13 @@ namespace GerberLibrary.Core
                     float y = (q - hoffs) * pinspacing - pinw / 2; 
                     g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 130)), x,y,pinw,pinw);
                 }
+
+            }
+            W += 5.45f;
+            L += 0.05f;
+            if (shroud)
+            {
+                g.DrawRectangle(new Pen(Color.FromArgb(40, 40, 40),1.4f), -L / 2, -W / 2, L, W);
 
             }
         }
