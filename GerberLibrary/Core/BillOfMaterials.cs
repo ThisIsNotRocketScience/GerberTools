@@ -1922,11 +1922,25 @@ namespace GerberLibrary.Core
                     RenderPinHeader(g, 5, 2, 1.27f);
                     break;
                 case "2X3-SHROUDED":
-                    RenderPinHeader(g, 3, 2, 2.54f, true);
+                    RenderPinHeader(g, 2, 3, 2.54f, true);
+                    break;
+                case "SPU0410HR5H-PB":
+                    DrawMic(g);
                     break;
             }
 
             g.Transform = t;
+        }
+
+        private static void DrawMic(Graphics g)
+        {
+            float L = 2.95f;
+            float W = 3.76f;
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(200,180, 20)), -L / 2, -W / 2, L, W);
+
+            g.FillEllipse(new SolidBrush(Color.Black), new RectangleF(-0.25f, W / 2 - 1.184f + 0.25f, 0.5f, 0.5f));
+
         }
 
         private static void RenderPinHeader(Graphics g, int wpin, int hpin, float pinspacing, bool shroud = false)
@@ -1957,7 +1971,7 @@ namespace GerberLibrary.Core
 
             }
             W += 5.45f;
-            L += 0.05f;
+            L += 0.05f+pinspacing;
             if (shroud)
             {
                 g.DrawRectangle(new Pen(Color.FromArgb(40, 40, 40),1.4f), -L / 2, -W / 2, L, W);
@@ -1977,8 +1991,8 @@ namespace GerberLibrary.Core
             float offs = (sidepins / 2);
             if ((sidepins % 2) != 1) offs -= 0.5f;
 
-            List<bool> bottom = new List<bool>() { true, true, true};
-            List<bool> top = new List<bool>() { true, false, true };
+            List<bool> top = new List<bool>() { true, true, true};
+            List<bool> bottom = new List<bool>() { true, false, true };
 
             for (int p = 0; p < sidepins; p++)
             {
@@ -1990,6 +2004,10 @@ namespace GerberLibrary.Core
                 if (bottom[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
             }
 
+            pinrect.X = (0 - offs) * pinspacing - pinrect.Width/2;
+            pinrect.Y = -0.4f;
+
+            g.FillEllipse(new SolidBrush(Color.FromArgb(190, 190, 190)), pinrect);
         }
 
         private static void RenderBigTrim(Graphics g)
@@ -2173,6 +2191,14 @@ namespace GerberLibrary.Core
                 pinrect.Y = extendH - pinrect.Height;
                 if (bottom[p]) g.FillRectangle(new SolidBrush(Color.FromArgb(160, 160, 160)), pinrect);
             }
+
+            pinrect.Width = 0.3f;
+            pinrect.Height = 0.3f;
+            pinrect.X = (0 - offs) * pinspacing - pinrect.Width / 2;
+            pinrect.Y = -0.4f;
+            
+
+            g.FillEllipse(new SolidBrush(Color.FromArgb(190, 190, 190)), pinrect);
         }
 
         private static void RenderSOT223(Graphics g)
