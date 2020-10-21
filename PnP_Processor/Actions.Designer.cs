@@ -142,7 +142,7 @@
             // 
             this.ProcessButton.Location = new System.Drawing.Point(717, 136);
             this.ProcessButton.Name = "ProcessButton";
-            this.ProcessButton.Size = new System.Drawing.Size(141, 26);
+            this.ProcessButton.Size = new System.Drawing.Size(141, 62);
             this.ProcessButton.TabIndex = 13;
             this.ProcessButton.Text = "Process!";
             this.ProcessButton.UseVisualStyleBackColor = true;

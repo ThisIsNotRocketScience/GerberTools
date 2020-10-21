@@ -75,6 +75,8 @@ namespace PnP_Processor
             }
         }
 
+        float zoomfac = 40;
+
         private void Render(PnPProcDoc D, Graphics G, bool after)
         {
            
@@ -96,8 +98,8 @@ namespace PnP_Processor
                 if (refd != null)
                 {
                     TheBox.Reset();
-                    TheBox.FitPoint(refd.x - 20, refd.y - 20);
-                    TheBox.FitPoint(refd.x + 20, refd.y + 20);
+                    TheBox.FitPoint(refd.x - zoomfac, refd.y - zoomfac);
+                    TheBox.FitPoint(refd.x + zoomfac, refd.y + zoomfac);
                 }
 
             }
@@ -288,6 +290,14 @@ namespace PnP_Processor
 
             switch (e.KeyChar)
             {
+                case '+':
+                    zoomfac = Math.Max(5, zoomfac - 5);
+
+                    break;
+                case '-':
+                    zoomfac = Math.Max(5, zoomfac + 5);
+
+                    break;
                 case 'f':
                     {
                         if (pnp.selectedrefdes.Count > 0) idx = (idx + 1) % pnp.selectedrefdes.Count; else idx = -1;

@@ -1770,8 +1770,10 @@ namespace GerberLibrary.Core
                     break;
                 case "SOT-223":
                 case "SOT223":
+                case "SOT223-4":
                     RenderSOT223(g);
                     break;
+                case "POL3528":
                 case "CASE-A_3216":
                     RenderTantalum(g);
                     break;
@@ -1791,6 +1793,9 @@ namespace GerberLibrary.Core
                 case "DO214AC":
                 case "DO-214AC":
                     RenderDO214Diode(g);
+                    break;
+                case "CAPAE-5.3x5.3h5.4":
+                    RenderECap(g, 5.3f);
                     break;
                 case "C5B4.5":
                 case "CAP-5.08/7.6x5":
@@ -1826,10 +1831,12 @@ namespace GerberLibrary.Core
                     break;
                 case "SO14":
                 case "SOIC14":
+                case "SOIC-14/150mil":
                     RenderSOIC(g, 14);
                     break;
                 case "SO16":
                 case "SOIC16":
+                case "SOIC-16/150mil":
                     RenderSOIC(g, 16);
                     break;
                 case "SO8":
@@ -1879,6 +1886,7 @@ namespace GerberLibrary.Core
                 case "QFN50P400X400X100-25N":
                     RenderQFN(g, 4,4,6,6, 0.5f);
                     break;
+                case "PTV09A":
                 case "ALPS_POT_SQUAREHOLES":
                     RenderPot(g);
                     break;
@@ -2117,7 +2125,7 @@ namespace GerberLibrary.Core
             polyvert.Add(new PointF( L23 / 2, -L2 / 2));
             polyvert.Add(new PointF( L2 / 2, -L23 / 2));
 
-            g.FillPolygon(new SolidBrush(Color.FromArgb(20,20,20)), polyvert.ToArray());
+            g.FillPolygon(new SolidBrush(Color.FromArgb(76,80,85)), polyvert.ToArray());
             g.FillEllipse(new SolidBrush(Color.FromArgb(110, 110, 110)), -L / 2, -L / 2, L, L);
 
         }
@@ -2136,7 +2144,7 @@ namespace GerberLibrary.Core
         {
             float L = 3.0f;
             float W = 3.8f;
-            float extendH = 3.9f / 2;
+            float extendH = 4.1f / 2;
             g.FillRectangle(new SolidBrush(Color.FromArgb(120, 120, 120)), -L / 2, -W / 2, L, W);
 
             g.FillEllipse(new SolidBrush(Color.FromArgb(110, 110, 110)), -L / 2, -L / 2, L, L);
@@ -2144,7 +2152,7 @@ namespace GerberLibrary.Core
             g.FillRectangle(new SolidBrush(Color.FromArgb(90, 90, 90)), -L*0.6f / 2, -L * 0.1f / 2, L * 0.6f, L * 0.1f);
             g.FillRectangle(new SolidBrush(Color.FromArgb(90, 90, 90)), -L * 0.1f / 2, -L * 0.6f / 2, L * 0.1f, L * 0.6f);
 
-            float pinspacing = 0.7f;
+            float pinspacing = 0.9f;
             int sidepins = 6 / 2;
             RectangleF pinrect = new RectangleF(0, 0, 0.65f, 0.1f);
             RectangleF pinrectpad = new RectangleF(0, 0,0.65f, 0.1f);
