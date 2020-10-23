@@ -45,6 +45,8 @@ namespace PnP_Processor
                 PnPProcDoc d = new PnPProcDoc();
                 foreach(var a in args)
                 {
+
+
                     switch(NextArgument)
                     {
                         case Argument.ZipFile: d.gerberzip = a;NextArgument = Argument.None; break;
@@ -71,10 +73,20 @@ namespace PnP_Processor
                             }
                             break;
                     }
-                }
+                } 
+                int LastIDX = 0;
 
                 d.StartLoad();
-                while (d.loaded == false) System.Threading.Thread.Sleep(4);
+                while (d.loaded == false)
+                {
+                    while (LastIDX < d.Log.Count())
+                    {
+                        Console.WriteLine(d.Log[LastIDX]);
+                        LastIDX++;
+                    }
+                    
+                    System.Threading.Thread.Sleep(4);
+                }
                 Console.WriteLine("done loading and processing!");
                 System.Windows.Forms.SendKeys.SendWait("{ENTER}");
                 Application.Exit();
