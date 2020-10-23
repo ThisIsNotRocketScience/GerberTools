@@ -174,16 +174,16 @@ namespace GerberLibrary
             {
                 FiducialBom.AddBOMItemExt("FIDUCIAL_" + a.Style.ToString(), "FIDUCIAL_" + a.Style.ToString(), a.Style.ToString(), "__FD" + (fd.ToString()), set, "Frame_" + basename, a.Pos.X + offset.X, a.Pos.Y+offset.Y, 0, a.Side);
             }
-            FiducialBom.WriteJLCCSV(targetfolder, basename + "_fiducials", false);
+            FiducialBom.WriteJLCCSV(targetfolder, basename + "_fiducials");
 
             return Files;
-
         }
 
         public void AddOutline(PolyLine pL)
         {
             Outline.AddPolyLine(pL, 0);
         }
+        
         public enum FiducialStyle
         {
             Round,

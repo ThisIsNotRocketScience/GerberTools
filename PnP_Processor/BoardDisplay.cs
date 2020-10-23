@@ -135,13 +135,22 @@ namespace PnP_Processor
             var B = D.B;
             if (after) B = D.BPost;
             int curpart = 0;
+            List<string> AllNames = new List<string>();
+            foreach (var p in B.DeviceTree)
+            {
+                foreach (var pp in p.Value.Values)
+                {
+                    AllNames.Add(pp.Combined());
+                }
+            }
+            AllNames.Sort();
 
             foreach (var p in B.DeviceTree)
             {
                 foreach (var pp in p.Value.Values)
                 {
-                    var curcol = Helpers.RefractionNormalledMaxBrightnessAndSat(curpart / p.Value.Values.Count());
-                    curpart++;
+                    int idx = AllNames.IndexOf(pp.Combined());
+                    var curcol = Helpers.RefractionNormalledMaxBrightnessAndSat(idx/(float)AllNames.Count());
                     foreach (var rf in pp.RefDes)
                     {
                         DrawMarker(curcol, G, rf, true, S, false, pnp.selectedrefdes.Contains(rf.NameOnBoard));

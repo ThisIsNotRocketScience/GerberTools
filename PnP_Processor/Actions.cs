@@ -306,7 +306,10 @@ namespace PnP_Processor
             if (pnp.selectedrefdes.Count > 0)
             {
                 var BomEntry = D.B.GetBOMEntry(pnp.selectedrefdes[0]);
-                BOM.RenderPackage(G, 0, 0, 0, BomEntry.PackageName, BoardSide.Top);
+                if (BomEntry != null)
+                {
+                    BOM.RenderPackage(G, 0, 0, 0, BomEntry.PackageName, BoardSide.Top);
+                }
             }
         }
 

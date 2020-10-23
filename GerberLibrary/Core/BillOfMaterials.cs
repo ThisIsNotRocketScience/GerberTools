@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -1371,9 +1372,16 @@ namespace GerberLibrary.Core
 
         }
         */
-        public void WriteJLCCSV(string BaseFolder, string Name, bool ellagetoo = false)
+        public void WriteJLCCSV(string BaseFolder, string Name)
         {
+            WriteJLCBom(BaseFolder, Name);
 
+            WriteJLCPnpFile(BaseFolder, Name);
+
+        }
+
+        public void WriteJLCBom(string BaseFolder, string Name)
+        {
             List<string> outlinesBOM = new List<string>();
             List<string> OutlinesRotations = new List<string>();
 
@@ -1410,6 +1418,17 @@ namespace GerberLibrary.Core
             }
             File.WriteAllLines(BaseFolder + "\\" + Name + "_BOM.csv", outlinesBOM);
 
+            foreach (var a in RotationOffsets)
+            {
+                OutlinesRotations.Add(String.Format("{0} {1}", a.Key, a.Value));
+            }
+            OutlinesRotations.Sort();
+            File.WriteAllLines(DefaultRotationFile, OutlinesRotations);
+
+        }
+
+        public void WriteJLCPnpFile(string BaseFolder, string Name)
+        {
             List<string> outlinesPNP = new List<string>();
             outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
             foreach (var ds in DeviceTree)
@@ -1432,38 +1451,6 @@ namespace GerberLibrary.Core
             }
 
             File.WriteAllLines(BaseFolder + "\\" + Name + "_PNP.csv", outlinesPNP);
-
-            List<string> EllageoutlinesPNP = new List<string>();
-            EllageoutlinesPNP.Add("Designator,Mid X mm,Mid Y mm,Layer,Rotation deg");
-            foreach (var ds in DeviceTree)
-            {
-
-                foreach (var v in ds.Value.Values)
-                {
-                    foreach (var p in v.RefDes)
-                    {
-                        int angle = (int)((p.angle + 179 + 360 + GetRotationOffset(v.Combined())) % 360) - 179;
-                        string line = String.Format("{0},{1},{2},{3},{4}",
-                        p.NameOnBoard,
-                        p.x.ToString("F2").Replace(",", "."),
-                        p.y.ToString("F2").Replace(",", "."),
-                        p.Side == BoardSide.Top ? "T" : "B",
-                           angle);
-                        EllageoutlinesPNP.Add(line);
-
-                    }
-                }
-            }
-
-            File.WriteAllLines(BaseFolder + "\\" + Name + "_Ellage_PNP.csv", EllageoutlinesPNP);
-
-
-            foreach (var a in RotationOffsets)
-            {
-                OutlinesRotations.Add(String.Format("{0} {1}", a.Key, a.Value));
-            }
-            OutlinesRotations.Sort();
-            File.WriteAllLines(DefaultRotationFile, OutlinesRotations);
         }
 
         public static Dictionary<string, int> RotationOffsets = new Dictionary<string, int>();
@@ -1510,8 +1497,15 @@ namespace GerberLibrary.Core
             }
         }
 
+        public string OriginalBasefolder = "";
+        public string OriginalPnpName = "";
+        public string OriginalBomName = "";
+        
         public void LoadJLC(string bOMFile, string pnPFile)
         {
+            OriginalBasefolder = Path.GetDirectoryName(bOMFile);
+            OriginalPnpName = Path.GetFileNameWithoutExtension(pnPFile);
+            OriginalBomName = Path.GetFileNameWithoutExtension(bOMFile);
 
             Dictionary<string, BOMEntry.RefDesc> positions = new Dictionary<string, BOMEntry.RefDesc>();
 
@@ -1674,8 +1668,8 @@ namespace GerberLibrary.Core
                         }
                         if (symmetric)
                         {
-                            rd.angle = (rd.angle + 180) % 180;
-                            if (rd.angle > 90) rd.angle -= 180;
+                            rd.angle = (rd.angle + 180.0 * 10.0) % 180;
+                            if (rd.angle >= 90) rd.angle -= 180;
                         }
 
                     }
