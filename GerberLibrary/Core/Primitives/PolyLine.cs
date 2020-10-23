@@ -137,6 +137,7 @@ namespace GerberLibrary.Core.Primitives
             //   }
             //   else
             {
+                
                 Vertices.Add(new PointD(x, y));
             }
         }
