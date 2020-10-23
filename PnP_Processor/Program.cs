@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -10,6 +11,10 @@ namespace PnP_Processor
 {
     static class Program
     {
+        [DllImport("kernel32.dll")]
+        static extern bool AttachConsole(int dwProcessId);
+        private const int ATTACH_PARENT_PROCESS = -1;
+
         enum Argument
         {
             None,
@@ -33,8 +38,8 @@ namespace PnP_Processor
 
             if (args.Count() > 0)
             {
-              
 
+                AttachConsole(ATTACH_PARENT_PROCESS);
                 Argument NextArgument = Argument.None;
                 PnPProcDoc.FlipMode Mode = PnPProcDoc.FlipMode.NoFlip;
                 PnPProcDoc d = new PnPProcDoc();
@@ -71,6 +76,8 @@ namespace PnP_Processor
                 d.StartLoad();
                 while (d.loaded == false) System.Threading.Thread.Sleep(4);
                 Console.WriteLine("done loading and processing!");
+                System.Windows.Forms.SendKeys.SendWait("{ENTER}");
+                Application.Exit();
                 return;
             }
 

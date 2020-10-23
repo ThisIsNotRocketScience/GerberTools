@@ -21,10 +21,10 @@ namespace PnP_Processor
         }
 
         StandardConsoleLog log;
-        public string stock;
-        public string pnp;
-        public string bom;
-        public string gerberzip;
+        public string stock ="";
+        public string pnp ="";
+        public string bom = "";
+        public string gerberzip = "";
         public bool loaded = false;
         public PointD FixOffset = new PointD();
         public FlipMode FlipBoard = FlipMode.NoFlip;
