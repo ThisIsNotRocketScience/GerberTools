@@ -43,23 +43,23 @@ namespace PnP_Processor
                 Argument NextArgument = Argument.None;
                 PnPProcDoc.FlipMode Mode = PnPProcDoc.FlipMode.NoFlip;
                 PnPProcDoc d = new PnPProcDoc();
-                foreach(var a in args)
+                foreach (var a in args)
                 {
-                    switch(NextArgument)
+                    switch (NextArgument)
                     {
-                        case Argument.ZipFile: d.gerberzip = a;NextArgument = Argument.None; break;
-                        case Argument.FlipMode: d.FlipBoard= PnPProcDoc.DecodeFlip(a); NextArgument = Argument.None; break;
+                        case Argument.ZipFile: d.gerberzip = a; NextArgument = Argument.None; break;
+                        case Argument.FlipMode: d.FlipBoard = PnPProcDoc.DecodeFlip(a); NextArgument = Argument.None; break;
                         case Argument.PnpFile: d.pnp = a; NextArgument = Argument.None; break;
                         case Argument.BomFile: d.bom = a; NextArgument = Argument.None; break;
                         case Argument.Stock: d.stock = a; NextArgument = Argument.None; break;
                         case Argument.None:
-                            switch(a)
+                            switch (a)
                             {
-                                case "-zip": NextArgument = Argument.ZipFile;break;
-                                case "-bom": NextArgument = Argument.BomFile;break;
-                                case "-pnp": NextArgument = Argument.PnpFile;break;
-                                case "-mode": NextArgument = Argument.FlipMode;break;
-                                case "-stock": NextArgument = Argument.Stock;break;
+                                case "-zip": NextArgument = Argument.ZipFile; break;
+                                case "-bom": NextArgument = Argument.BomFile; break;
+                                case "-pnp": NextArgument = Argument.PnpFile; break;
+                                case "-mode": NextArgument = Argument.FlipMode; break;
+                                case "-stock": NextArgument = Argument.Stock; break;
                                 case "-help":
                                 case "/?":
                                 case "-?":
