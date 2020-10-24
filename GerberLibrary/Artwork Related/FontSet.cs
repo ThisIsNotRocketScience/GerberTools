@@ -60,6 +60,18 @@ namespace GerberLibrary
 
         public static FontSet Load(string p)
         {
+            if (File.Exists(p) == false)
+            {
+                string local = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(p));
+                if (File.Exists(local))
+                {
+                    p = local;
+                }
+                else
+                {
+                    return null;
+                }
+            }
             XmlSerializer serializer = new XmlSerializer(typeof(FontSet));
 
             // Declare an object variable of the type to be deserialized.

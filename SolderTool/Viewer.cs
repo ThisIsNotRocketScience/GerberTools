@@ -96,7 +96,7 @@ namespace SolderTool
 				bool Current = SolderTool.GetCurrentPart() == i;
 				foreach (var r in v.RefDes)
 				{
-					DrawMarker(G, r, v.Soldered, S, Current);
+					DrawMarker(G, r, v.Soldered, S, Current, ActiveDes == r);
 				}
 				i++;
             }

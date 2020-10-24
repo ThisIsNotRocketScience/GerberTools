@@ -166,26 +166,45 @@ namespace GerberLibrary
             BottomCopper.Write(OutName + ".gbl", offset); Files.Add(OutName + ".gbl");
             BottomSolderMask.Write(OutName + ".gbs", offset); Files.Add(OutName + ".gbs");
 
+            BOM FiducialBom = new BOM();
+            BOMNumberSet set = new BOMNumberSet();
+            int fd = 1;
+
+            foreach(var a in Fiducials)
+            {
+                FiducialBom.AddBOMItemExt("FIDUCIAL_" + a.Style.ToString(), "FIDUCIAL_" + a.Style.ToString(), a.Style.ToString(), "__FD" + (fd.ToString()), set, "Frame_" + basename, a.Pos.X + offset.X, a.Pos.Y+offset.Y, 0, a.Side);
+            }
+            FiducialBom.WriteJLCCSV(targetfolder, basename + "_fiducials");
 
             return Files;
-
         }
 
         public void AddOutline(PolyLine pL)
         {
             Outline.AddPolyLine(pL, 0);
         }
+        
         public enum FiducialStyle
         {
             Round,
             Square
         }
+
+        class FiducialPlacement
+        {
+            public PointD Pos;
+            public FiducialStyle Style;
+            public BoardSide Side;
+        }
+
+        List<FiducialPlacement> Fiducials = new List<FiducialPlacement>();
+
         public void Fiducial(PointD pos, double copperdiameter = 1.0, double maskdiameter = 2.0, BoardSide fiducialSide = BoardSide.Top, FiducialStyle style = FiducialStyle.Square)
         {
             var coppers = GetGAW(fiducialSide, BoardLayer.Copper);
             var mask = GetGAW(fiducialSide, BoardLayer.SolderMask);
             var silk = GetGAW(fiducialSide, BoardLayer.Silk);
-
+            Fiducials.Add(new FiducialPlacement() { Pos = pos, Style = style, Side = fiducialSide });
             switch (style)
             {
 
@@ -344,6 +363,7 @@ namespace GerberLibrary
             public double innerWidth;
             public double innerHeight;
             public PointD offset = new PointD(0, 0);
+
 
             public double topEdge = 5;
             public double leftEdge = 5;
@@ -689,6 +709,11 @@ namespace GerberLibrary
 
                     PCB.Fiducial(new PointD(side + mountholediameter * 2, top), 1, 2, FS.FiducialSide, PCBWriterSet.FiducialStyle.Square);
                     PCB.Fiducial(new PointD(side + mountholediameter * 3, top), 1, 2, FS.FiducialSide, PCBWriterSet.FiducialStyle.Round);
+
+
+                    PCB.Fiducial(new PointD(OuterWidth- (side + mountholediameter * 2), top), 1, 2, FS.FiducialSide, PCBWriterSet.FiducialStyle.Square);
+                    PCB.Fiducial(new PointD(OuterWidth - (side + mountholediameter * 3), top), 1, 2, FS.FiducialSide, PCBWriterSet.FiducialStyle.Round);
+
 
                     PCB.Fiducial(new PointD(side + mountholediameter * 2, OuterHeight - top), 1, 2, FS.FiducialSide, PCBWriterSet.FiducialStyle.Round);
                     PCB.Fiducial(new PointD(side + mountholediameter * 3, OuterHeight - top), 1, 2, FS.FiducialSide, PCBWriterSet.FiducialStyle.Square);

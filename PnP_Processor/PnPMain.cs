@@ -23,6 +23,7 @@ namespace PnP_Processor
 
         BoardDisplay BoardDisp;
         BOMList TheBOMList;
+        Actions A1;
 
         public PnPMain(string[] args)
         {
@@ -41,8 +42,8 @@ namespace PnP_Processor
             TheBOMList.Show(dockPanel, DockState.DockLeft);
 
             dockPanel.UpdateDockWindowZOrder(DockStyle.Left, true);
-            
-            Actions A1 = new Actions(this);
+
+             A1 = new Actions(this);
             A1.Show(dockPanel);
 
             BoardDisp = new BoardDisplay(this, false);
@@ -51,22 +52,23 @@ namespace PnP_Processor
 
         internal void Flip()
         {
-            
+
         }
 
         internal void Rotate()
         {
-            
-        }
-       
-        List<PnPProcDoc> Docs = new List<PnPProcDoc>();
 
+        }
+
+        List<PnPProcDoc> Docs = new List<PnPProcDoc>();
+        internal bool topsilkvisible;
         public PnPProcDoc ActiveDoc = null;
         bool DocLoaded = false;
         internal void AddDoc(PnPProcDoc d)
         {
             Docs.Add(d);
             DocLoaded = false;
+            d.FlipBoard = flipboard;
             d.StartLoad();
             ActiveDoc = d;
             TheBOMList.UpdateList();
@@ -76,7 +78,7 @@ namespace PnP_Processor
         {
             if (DocLoaded == false)
             {
-                if (ActiveDoc!=null && ActiveDoc.loaded == true)
+                if (ActiveDoc != null && ActiveDoc.loaded == true)
                 {
                     DocLoaded = true;
                     TheBOMList.UpdateList();
@@ -85,9 +87,21 @@ namespace PnP_Processor
         }
 
         public List<string> selectedrefdes = new List<string>();
-        internal void UpdateBoard(List<string> refdeslist)
+        internal bool bottomsilkvisible;
+        internal PnPProcDoc.FlipMode flipboard;
+        public void RebuildPost()
         {
-            selectedrefdes = refdeslist;
+            if (ActiveDoc != null)
+            {
+                ActiveDoc.FlipBoard = flipboard;
+                ActiveDoc.BuildPostBom();
+            }
+            UpdateBoard(null);
+        }
+        internal void UpdateBoard(List<string> refdeslist = null)
+        {
+            if (refdeslist != null) selectedrefdes = refdeslist;
+            A1.RefreshDisplay();
             BoardDisp.RefreshPic();
         }
     }

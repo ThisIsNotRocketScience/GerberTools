@@ -13,17 +13,21 @@ namespace PnP_Processor
 {
     public class PnPProcDoc : ProgressLog
     {
+        public enum FlipMode
+        {
+            NoFlip,
+            FlipDiagonal,
+            FlipHorizontal
+        }
 
         StandardConsoleLog log;
-        public string stock;
-        public string silk;
-        public string pnp;
-        public string bom;
-        public string outline;
-        public string gerberzip;
+        public string stock ="";
+        public string pnp ="";
+        public string bom = "";
+        public string gerberzip = "";
         public bool loaded = false;
         public PointD FixOffset = new PointD();
-        public bool FlipBoard = false;
+        public FlipMode FlipBoard = FlipMode.NoFlip;
         public int RotationAngle = 0;
 
         public PnPProcDoc()
@@ -44,18 +48,103 @@ namespace PnP_Processor
             GerberImageCreator GIC = new GerberImageCreator();
             List<String> Files = new List<string>();
             Files.Add(v);
-            GIC.AddBoardsToSet(Files, log);
+            GIC.AddBoardsToSet(Files, log, true, false);
 
             // log.AddString(GIC.GetOutlineBoundingBox().ToString());
             log.PopActivity();
             return GIC;
         }
-        public BOM B;
-       public  GerberImageCreator Set;
+
+        internal static FlipMode DecodeFlip(string a)
+        {
+            switch (a.ToLower())
+            {
+                case "d":
+                case "diagonal":
+                    return FlipMode.FlipDiagonal;
+
+                case "horizontal":
+                case "h":
+                    return FlipMode.FlipHorizontal;
+
+            }
+            return FlipMode.NoFlip;
+        }
+
+        public BOM B = new BOM();
+        public BOM BPost = new BOM();
+
+        public void BuildPostBom()
+        {
+            BPost = new BOM();
+            BOMNumberSet s = new BOMNumberSet();
+
+            switch (FlipBoard)
+            {
+                case FlipMode.NoFlip:
+                    FixOffset = new PointD(Set.BoundingBox.TopLeft.X, Set.BoundingBox.TopLeft.Y);
+                    break;
+                case FlipMode.FlipDiagonal:
+                    FixOffset = new PointD(Set.BoundingBox.TopLeft.X, Set.BoundingBox.TopLeft.Y);
+                    break;
+                case FlipMode.FlipHorizontal:
+                    FixOffset = new PointD(Set.BoundingBox.TopLeft.X, Set.BoundingBox.TopLeft.Y);
+                    break;
+            }
+
+            BPost.MergeBOM(B, s, 0, 0, -FixOffset.X, -FixOffset.Y, 0);
+
+            FixSet = new GerberImageCreator();
+            FixSet.CopyFrom(Set);
+
+            switch (FlipBoard)
+            {
+                case FlipMode.NoFlip:
+                    FixSet.SetBottomLeftToZero();
+                    break;
+                case FlipMode.FlipDiagonal:
+                    FixSet.SetBottomRightToZero();
+                    FixSet.FlipXY();
+                    FixSet.Translate(0, FixSet.BoundingBox.Height());
+                    BPost.SwapXY();
+                    BPost.FlipSides();
+                    //                    BPost.Translate(0, FixSet.BoundingBox.Height());
+                    break;
+                case FlipMode.FlipHorizontal:
+                    FixSet.FlipX();
+                    FixSet.SetBottomRightToZero();
+                    BPost.FlipSides();
+                    BPost.FlipX();
+                    break;
+            }
+            BPost.FixupAngles(StockDoc);
+            BPost.WriteJLCPnpFile(B.OriginalBasefolder, B.OriginalPnpName + "_rotated");
+            BPost.WriteRefDesGerber(Path.Combine(B.OriginalBasefolder, B.OriginalPnpName + "_refdes.gbr"));
+        }
+
+        public GerberImageCreator Set;
+        public GerberImageCreator FixSet;
         private void LoadStuff()
         {
 
-
+            if (stock.Length > 0 && File.Exists(stock))
+            {
+                try
+                {
+                    log.PushActivity("Loading stock");
+                    StockDoc = StockDocument.Load(stock);
+                    if (StockDoc == null) StockDoc = new StockDocument();
+                }
+                catch (Exception)
+                {
+                    StockDoc = new StockDocument();
+                }
+                log.PopActivity();
+            }
+            else
+            {
+                StockDoc = new StockDocument();
+            }
             log.PushActivity("Loading document");
             B = new BOM();
 
@@ -76,17 +165,10 @@ namespace PnP_Processor
                 else
                 {
                     Set = new GerberImageCreator();
-                    Set.AddBoardToSet(silk, log);
-                    Set.AddBoardToSet(outline, log);
                 }
                 Box = Set.BoundingBox;
 
-
-                //            string OutputGerberName = fixedoutputfolder + "\\" + Path.GetFileName(boardfile);
-                //B.WriteRefDesGerber(OutputGerberName+"ORIGPLACEMENT");
-                FixOffset = new PointD(-Set.BoundingBox.TopLeft.X, -Set.BoundingBox.BottomRight.Y);
-                //                B.WriteRefDesGerber(OutputGerberName);
-                //              B.WriteJLCCSV(fixedoutputfolder, Path.GetFileName(filebase), true);
+                BuildPostBom();
 
                 log.PopActivity();
             }
@@ -95,7 +177,7 @@ namespace PnP_Processor
                 log.AddString(String.Format("pnp and bom need to be valid! bom:{0} pnp:{1}", bom, pnp));
             }
 
-            
+
             loaded = true;
             log.AddString("Done!");
             log.PopActivity();
@@ -105,6 +187,7 @@ namespace PnP_Processor
         public int Stamp = 0;
         static int MainStamp = 0;
         public Bounds Box = new Bounds();
+        private StockDocument StockDoc;
 
         public override void AddString(string text, float progress = -1)
         {

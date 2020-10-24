@@ -48,7 +48,7 @@ namespace SolderTool
             public string DispName;
             
             public int useagecount;
-            public bool soldered;
+            public bool Soldered;
             public List<BOMEntry.RefDesc> RefDes;
         }
 
@@ -61,10 +61,10 @@ namespace SolderTool
                 foreach (var v in a.Value.Values)
                 {
 
-                    L.Add(new ListItem() { soldered = v.Soldered, DispName = v.Combined(), useagecount = v.RefDes.Count(), RefDes = v.RefDes });
+                    L.Add(new ListItem() { Soldered = v.Soldered, DispName = v.Combined(), useagecount = v.RefDes.Count(), RefDes = v.RefDes });
                 }
             }
-            return L.OrderBy(x =>x.soldered).ThenByDescending(x => x.useagecount).ToList();
+            return L.OrderBy(x =>x.Soldered).ThenByDescending(x => x.useagecount).ToList();
 
         }
 
@@ -95,7 +95,7 @@ namespace SolderTool
             {
                 string count = v.useagecount.ToString();
                 Brush Br = Brushes.Red;
-                if (v.soldered) Br = Brushes.Green;
+                if (v.Soldered) Br = Brushes.Green;
                 int y = 2 + i * 14;
                 if (i == CurrentPart)
                 {
@@ -189,7 +189,7 @@ namespace SolderTool
             {
                 if (i == CurrentPart)
                 {
-                    v.soldered = !v.soldered;
+                    v.Soldered = !v.Soldered;
 
                     foreach (var a in B.DeviceTree)
                     {
@@ -197,11 +197,11 @@ namespace SolderTool
                         {
                             if (vv.Value.Combined() == v.DispName)
                             {
-                                vv.Value.Soldered = v.soldered;
+                                vv.Value.Soldered = v.Soldered;
                             }
                         }
                     }
-                    if (v.soldered)
+                    if (v.Soldered)
                     {
                         Main.SolderPart(v.DispName);
                     }
