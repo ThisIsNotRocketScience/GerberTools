@@ -53,8 +53,8 @@ namespace FrameCreatorTest
             FS.VerticalTabs = true;
             FS.InsideEdgeMode = GerberFrameWriter.FrameSettings.InsideMode.FormFitting;
             FS.PositionAround(PL);
-            
-            GerberFrameWriter.WriteSideEdgeFrame(PL, FS, Path.Combine(basepath, "frame/outtest"));
+            BOM OutFiducials = new BOM();
+            GerberFrameWriter.WriteSideEdgeFrame(PL, FS, Path.Combine(basepath, "frame/outtest"), OutFiducials);
             FS.RenderSample = true;
             GerberFrameWriter.MergeFrameIntoGerberSet(Path.Combine(basepath, "frame"), Path.Combine(basepath, "outline"), Path.Combine(basepath, "mergedoutput"),FS, new FrameCreatorTest(),"testframe");
 

@@ -124,7 +124,7 @@ namespace GerberLibrary
 
 
         }
-        public List<string> Write(string targetfolder, string basename, PointD offset = null)
+        public List<string> Write(string targetfolder, string basename,BOM inFiducialBom, PointD offset = null  )
         {
             if (offset == null)
             {
@@ -166,7 +166,9 @@ namespace GerberLibrary
             BottomCopper.Write(OutName + ".gbl", offset); Files.Add(OutName + ".gbl");
             BottomSolderMask.Write(OutName + ".gbs", offset); Files.Add(OutName + ".gbs");
 
-            BOM FiducialBom = new BOM();
+            BOM FiducialBom;
+            if (inFiducialBom != null) FiducialBom = inFiducialBom;  else FiducialBom = new BOM();
+
             BOMNumberSet set = new BOMNumberSet();
             int fd = 1;
 
@@ -175,7 +177,7 @@ namespace GerberLibrary
                 FiducialBom.AddBOMItemExt("FIDUCIAL_" + a.Style.ToString(), "FIDUCIAL_" + a.Style.ToString(), a.Style.ToString(), "__FD" + (fd.ToString()), set, "Frame_" + basename, a.Pos.X + offset.X, a.Pos.Y+offset.Y, 0, a.Side);
             }
             FiducialBom.WriteJLCCSV(targetfolder, basename + "_fiducials");
-
+            
             return Files;
         }
 
@@ -563,7 +565,7 @@ namespace GerberLibrary
         }
 
 
-        public static List<string> WriteSideEdgeFrame(PolyLine pl, FrameSettings FS, string basefile)
+        public static List<string> WriteSideEdgeFrame(PolyLine pl, FrameSettings FS, string basefile, BOM output = null)
         {
             List<string> Files = new List<string>();
 
@@ -757,7 +759,7 @@ namespace GerberLibrary
                 //PCB.CellularArt();
 
 
-                Files.AddRange(PCB.Write(Path.GetDirectoryName(basefile), Path.GetFileNameWithoutExtension(basefile), FS.offset)); ;
+                Files.AddRange(PCB.Write(Path.GetDirectoryName(basefile), Path.GetFileNameWithoutExtension(basefile), output, FS.offset)); ;
 
 
 
