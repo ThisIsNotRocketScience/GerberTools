@@ -119,6 +119,7 @@ namespace PnP_Processor
             }
             BPost.FixupAngles(StockDoc);
             BPost.WriteJLCPnpFile(B.OriginalBasefolder, B.OriginalPnpName + "_rotated");
+            BPost.WriteRefDesGerber(Path.Combine(B.OriginalBasefolder, B.OriginalPnpName + "_refdes.gbr"));
         }
 
         public GerberImageCreator Set;

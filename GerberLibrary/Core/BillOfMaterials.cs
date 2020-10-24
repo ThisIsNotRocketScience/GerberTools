@@ -527,7 +527,7 @@ namespace GerberLibrary.Core
                     foreach (var c in b.Value.RefDes)
                     {
                         GerberArtWriter dest = (c.Side == BoardSide.Top) ? Top : Bottom;
-                        dest.DrawString(new Primitives.PointD(c.x, c.y), fnt, c.NameOnBoard, 1, 0.1, StringAlign.CenterCenter, (c.Side == BoardSide.Top) ? false : true, c.angle);
+                        dest.DrawString(new Primitives.PointD(c.x, c.y), fnt, c.NameOnBoard, 1, 0.02, StringAlign.CenterCenter, (c.Side == BoardSide.Top) ? false : true, c.angle);
 
                         //               double X = c.x;
                         //             double Y = c.y;

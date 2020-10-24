@@ -2321,9 +2321,10 @@ namespace GerberLibrary
         {
 
             //text = "Test1'1234'0+!@\"#$@%#&*(";
-
+            
             if (FS == null)
             {
+
                 Console.WriteLine("DrawString called with no active fontset (\"{0}\")! Ignoring!", text);
                 return;
             }
