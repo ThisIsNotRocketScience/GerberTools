@@ -557,15 +557,18 @@ namespace GerberLibrary
 
             foreach (var a in TheSet.Instances)
             {
-                if (GerberOutlines.ContainsKey(a.GerberPath))
+                if (a.IgnoreOutline == false)
                 {
-                    bool doit = false;
-                    if (a.LastCenter == null) doit = true;
-                    if (doit || (PointD.Distance(a.Center, a.LastCenter) != 0 || a.Angle != a.LastAngle))
+                    if (GerberOutlines.ContainsKey(a.GerberPath))
                     {
-                        a.RebuildTransformed(GerberOutlines[a.GerberPath], TheSet.ExtraTabDrillDistance);
-                    }
+                        bool doit = false;
+                        if (a.LastCenter == null) doit = true;
+                        if (doit || (PointD.Distance(a.Center, a.LastCenter) != 0 || a.Angle != a.LastAngle))
+                        {
+                            a.RebuildTransformed(GerberOutlines[a.GerberPath], TheSet.ExtraTabDrillDistance);
+                        }
 
+                    }
                 }
             }
 
@@ -585,7 +588,7 @@ namespace GerberLibrary
 
             foreach (var aa in TheSet.Instances)
             {
-                aa.Tabs.Clear();
+             if (aa.IgnoreOutline == false)   aa.Tabs.Clear();
             }
             FindOutlineIntersections(log);
 
@@ -1397,7 +1400,7 @@ namespace GerberLibrary
                 t.Errors.Clear();
                 List<TabIntersection> Intersections = new List<TabIntersection>();
                 float R2 = t.Radius * t.Radius;
-                foreach (var b in TheSet.Instances)
+                foreach (var b in TheSet.Instances.Where(x => x.IgnoreOutline == false))
                 {
                     // Polygons clips = new Polygons();
                     // if (b.GerberPath.Contains("???") == false)
@@ -2136,6 +2139,9 @@ namespace GerberLibrary
 
         [System.Xml.Serialization.XmlIgnore]
         public Bounds BoundingBox = new Bounds();
+        
+        public bool IgnoreOutline = false;
+
         internal void CreateOffsetLines(double extradrilldistance)
         {
             OffsetOutlines = new List<List<PolyLine>>(TransformedOutlines.Count);
@@ -2304,7 +2310,7 @@ namespace GerberLibrary
                             }
                         }
 
-                        instanceID = AddFilesForInstance(OutputFolder, a.Center.X, a.Center.Y, a.Angle, FileList, instanceID, GeneratedFiles, outline, Logger);
+                        instanceID = AddFilesForInstance(a, OutputFolder, a.Center.X, a.Center.Y, a.Angle, FileList, instanceID, GeneratedFiles, outline, Logger);
 
 
                         instanceID++;
@@ -2338,7 +2344,7 @@ namespace GerberLibrary
         }
 
 
-        private int AddFilesForInstance(string p, double x, double y, double angle, List<string> FileList, int isntid, List<string> GeneratedFiles, GerberOutline outline, ProgressLog Logger)
+        private int AddFilesForInstance(GerberInstance inst,  string p, double x, double y, double angle, List<string> FileList, int isntid, List<string> GeneratedFiles, GerberOutline outline, ProgressLog Logger)
         {
 
             GerberImageCreator GIC = new GerberImageCreator();
@@ -2380,23 +2386,32 @@ namespace GerberLibrary
                             string Filename = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
                             string sourcefile = f;
                             string tempfile = "";
-                            if (ClipToOutlines)
+
+                            BoardSide Side = BoardSide.Unknown;
+                            BoardLayer Layer = BoardLayer.Unknown;
+                            Gerber.DetermineBoardSideAndLayer(f, out Side, out Layer);
+
+                            if (Layer == BoardLayer.Outline && inst.IgnoreOutline == true)
                             {
-                                BoardSide Side = BoardSide.Unknown;
-                                BoardLayer Layer = BoardLayer.Unknown;
-                                Gerber.DetermineBoardSideAndLayer(f, out Side, out Layer);
-                                if (Layer == BoardLayer.Silk)
-                                {
-                                    tempfile = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
-                                    GerberImageCreator GIC2 = new GerberImageCreator();
-                                    GIC2.AddBoardsToSet(FileList, new SilentLog());
-                                    GIC2.ClipBoard(f, tempfile, Logger);
-                                    sourcefile = tempfile;
-                                }
+                                Logger.AddString("Skipping outline");
                             }
-                            GerberTransposer.Transform(Logger, sourcefile, Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
-                            GeneratedFiles.Add(Filename);
-                            if (tempfile.Length > 0) File.Delete(tempfile);
+                            else
+                            {
+                                if (ClipToOutlines)
+                                {
+                                    if (Layer == BoardLayer.Silk)
+                                    {
+                                        tempfile = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
+                                        GerberImageCreator GIC2 = new GerberImageCreator();
+                                        GIC2.AddBoardsToSet(FileList, new SilentLog());
+                                        GIC2.ClipBoard(f, tempfile, Logger);
+                                        sourcefile = tempfile;
+                                    }
+                                }
+                                GerberTransposer.Transform(Logger, sourcefile, Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
+                                GeneratedFiles.Add(Filename);
+                                if (tempfile.Length > 0) File.Delete(tempfile);
+                            }
                         }
                         catch (Exception E)
                         {

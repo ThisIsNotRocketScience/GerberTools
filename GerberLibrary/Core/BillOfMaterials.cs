@@ -529,18 +529,21 @@ namespace GerberLibrary.Core
                     foreach (var c in b.Value.RefDes)
                     {
                         GerberArtWriter dest = (c.Side == BoardSide.Top) ? Top : Bottom;
-                        dest.DrawString(new Primitives.PointD(c.x, c.y), fnt, c.NameOnBoard, 1, 0.02, StringAlign.CenterCenter, (c.Side == BoardSide.Top) ? false : true, c.angle);
+                        float CX = (float)Math.Cos((c.angle * Math.PI*2.0)/360.0);
+                        float SX = (float)Math.Sin((c.angle * Math.PI * 2.0) / 360.0);
+
+                        dest.DrawString(new Primitives.PointD(c.x + CX, c.y + SX), fnt, c.NameOnBoard, 1, 0.02, StringAlign.CenterLeft, (c.Side == BoardSide.Top) ? false : true, c.angle);
                         PolyLine CrossA = new PolyLine(polyid++);
                         PolyLine CrossB = new PolyLine(polyid++);
                         CrossA.Add(c.x - 0.5, c.y - 0.5);
                         CrossA.Add(c.x + 0.5, c.y + 0.5);
                         CrossB.Add(c.x - 0.5, c.y + 0.5);
                         CrossB.Add(c.x + 0.5, c.y - 0.5);
-                        dest.AddPolyLine(CrossA);
-                        dest.AddPolyLine(CrossB);
-                        //               double X = c.x;
-                        //             double Y = c.y;
+                        dest.AddPolyLine(CrossA, 0.1);
+                        dest.AddPolyLine(CrossB, 0.1);
+                       
                     }
+
                 }
             }
 

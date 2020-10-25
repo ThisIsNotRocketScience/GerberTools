@@ -350,10 +350,14 @@ namespace GerberLibrary
             public void PositionAround(PolyLine pL)
             {
                 var B = pL.GetBounds();
+                PositionAround(B);
+            }
+
+            public void PositionAround(Bounds B)
+            {
                 offset = new PointD(B.TopLeft.X - leftEdge - margin, B.TopLeft.Y - topEdge - margin);
                 innerWidth = B.Width() + margin * 2;
                 innerHeight = B.Height() + margin * 2;
-
             }
 
             public bool RenderDirectionArrow = true;
@@ -612,7 +616,7 @@ namespace GerberLibrary
                     PCB.AddOutline(PL2);
                 }
 
-                if (FS.InsideEdgeMode == FrameSettings.InsideMode.FormFitting)
+                if (FS.InsideEdgeMode == FrameSettings.InsideMode.FormFitting && pl !=null)
                 {
                     PolyLine PP = pl.Copy();
                     PP.Translate(-FS.offset.X, -FS.offset.Y);
