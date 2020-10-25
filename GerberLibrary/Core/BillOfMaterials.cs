@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GerberLibrary.Core.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -520,6 +521,7 @@ namespace GerberLibrary.Core
             FontSet fnt = FontSet.Load("Font.xml");
             GerberArtWriter Top = new GerberArtWriter();
             GerberArtWriter Bottom = new GerberArtWriter();
+            int polyid = 0;
             foreach (var a in DeviceTree)
             {
                 foreach (var b in a.Value)
@@ -528,7 +530,14 @@ namespace GerberLibrary.Core
                     {
                         GerberArtWriter dest = (c.Side == BoardSide.Top) ? Top : Bottom;
                         dest.DrawString(new Primitives.PointD(c.x, c.y), fnt, c.NameOnBoard, 1, 0.02, StringAlign.CenterCenter, (c.Side == BoardSide.Top) ? false : true, c.angle);
-
+                        PolyLine CrossA = new PolyLine(polyid++);
+                        PolyLine CrossB = new PolyLine(polyid++);
+                        CrossA.Add(c.x - 0.5, c.y - 0.5);
+                        CrossA.Add(c.x + 0.5, c.y + 0.5);
+                        CrossB.Add(c.x - 0.5, c.y + 0.5);
+                        CrossB.Add(c.x + 0.5, c.y - 0.5);
+                        dest.AddPolyLine(CrossA);
+                        dest.AddPolyLine(CrossB);
                         //               double X = c.x;
                         //             double Y = c.y;
                     }
