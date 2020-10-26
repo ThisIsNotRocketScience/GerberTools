@@ -8,6 +8,16 @@ namespace GerberLibrary.Core.Primitives
 {
     public class GerberApertureMacroPart
     {
+
+        public override string ToString()
+        {
+            switch(Type)
+            {
+                case ApertureMacroTypes.CenterLine: return String.Format("Circle {0},{1} - {2}", Xoff, Yoff, Diameter);
+                case ApertureMacroTypes.Circle: return String.Format("Circle {0},{1} - {2}", Xoff, Yoff, Diameter);
+            }
+            return String.Format("{0}", Type);
+        }
         public enum ApertureMacroTypes
         {
             Circle = 1,
@@ -669,6 +679,8 @@ namespace GerberLibrary.Core.Primitives
         }
         public void DecodeOutline(string line, GerberNumberFormat GNF)
         {
+            Decode(line, GNF);
+            //xqetqwet
             OutlineVertices = new List< OutlineParameterPoint>();
             string[] v = line.Split(',');
 

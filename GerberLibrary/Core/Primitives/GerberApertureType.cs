@@ -249,7 +249,7 @@ namespace GerberLibrary.Core.Primitives
         public int NGonSides = 0;
         public double NGonRotation = 0;
         public bool ZeroWidth = false;
-        internal bool Polarity;
+        public bool Polarity;
 
         public List<string> GerberLines;
 
@@ -346,11 +346,11 @@ namespace GerberLibrary.Core.Primitives
                 List<PolyLine> ResPre = new List<PolyLine>();
                 List<PolyLine> ResPreNeg = new List<PolyLine>();
 
-                foreach (var a in Parts.Where(x => x.Polarity == false))
+                foreach (var a in Parts.Where(x => x.Polarity == true))
                 {
                     ResPre.AddRange(a.CreatePolyLineSet(0, 0, ShapeID, 0 , 1, GerberParserState.MirrorMode.NoMirror));
                 }
-                foreach (var a in Parts.Where(x => x.Polarity == true))
+                foreach (var a in Parts.Where(x => x.Polarity == false))
                 {
                     ResPreNeg.AddRange(a.CreatePolyLineSet(0, 0, ShapeID, 0, 1, GerberParserState.MirrorMode.NoMirror));
                 }
