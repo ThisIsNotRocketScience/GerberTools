@@ -546,9 +546,36 @@ namespace GerberLibrary
                                             LastX = x2;
                                             LastY = y2;
                                         }
+
                                         else
                                         {
-                                            if (GS.Has("X") || GS.Has("Y"))
+                                            //Deal with the repeat code
+                                            if (GS.Has("R") && (GS.Has("X") || GS.Has("Y")))
+                                            {
+                                                double repeatX = 0;
+                                                double repeatY = 0;
+
+                                                if (GS.Has("X"))
+                                                    repeatX = GNF.ScaleFileToMM(GS.Get("X") * Scaler);
+                                                if (GS.Has("Y"))
+                                                    repeatY = GNF.ScaleFileToMM(GS.Get("Y") * Scaler);
+
+                                                for (int repeatIndex = 1; repeatIndex <= GS.Get("R"); repeatIndex++)
+                                                {
+                                                    double X = LastX;
+                                                    if (GS.Has("X"))
+                                                        X += repeatX;
+
+                                                    double Y = LastY;
+                                                    if (GS.Has("Y"))
+                                                        Y += repeatY;
+
+                                                    CurrentTool.Drills.Add(new PointD(X * drillscaler, Y * drillscaler));
+                                                    LastX = X;
+                                                    LastY = Y;
+                                                }
+                                            }
+                                            else if (GS.Has("X") || GS.Has("Y"))
                                             {
                                                 double X = LastX;
                                                 if (GS.Has("X")) X = GNF.ScaleFileToMM(GS.Get("X") * Scaler);
