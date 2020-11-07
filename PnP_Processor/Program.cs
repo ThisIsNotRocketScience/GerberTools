@@ -35,7 +35,7 @@ namespace PnP_Processor
             CultureInfo ci = new CultureInfo("nl-NL");
             Thread.CurrentThread.CurrentCulture = ci;
             Thread.CurrentThread.CurrentUICulture = ci;
-
+            //Console.WriteLine(GerberLibrary.Core.BOM.EllageFormat(2.1251234, 2));
             if (args.Count() > 0)
             {
 
@@ -85,8 +85,9 @@ namespace PnP_Processor
                     
                     System.Threading.Thread.Sleep(4);
                 }
-                Console.WriteLine("done loading and processing!");
-                System.Windows.Forms.SendKeys.SendWait("{ENTER}");
+                Console.WriteLine("done loading and processing! press any key to continue");
+                Console.WriteLine("");
+                //System.Windows.Forms.SendKeys.SendWait("{ENTER}");
                 Application.Exit();
                 return;
             }

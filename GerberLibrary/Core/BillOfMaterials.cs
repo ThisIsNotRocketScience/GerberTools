@@ -1384,11 +1384,11 @@ namespace GerberLibrary.Core
 
         }
         */
-        public void WriteJLCCSV(string BaseFolder, string Name)
+        public void WriteJLCCSV(string BaseFolder, string Name, bool EllagePreference)
         {
             WriteJLCBom(BaseFolder, Name);
 
-            WriteJLCPnpFile(BaseFolder, Name);
+            WriteJLCPnpFile(BaseFolder, Name, EllagePreference);
 
         }
 
@@ -1439,10 +1439,24 @@ namespace GerberLibrary.Core
 
         }
 
-        public void WriteJLCPnpFile(string BaseFolder, string Name)
+        public static String EllageFormat(double inp, int digits = 2)
+        {
+            string fmt = "{0:F" + digits.ToString() + "}";
+            return String.Format(fmt, inp).Replace(",", ".");
+        }
+        public void WriteJLCPnpFile(string BaseFolder, string Name, bool ellagepreference)
         {
             List<string> outlinesPNP = new List<string>();
-            outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
+            if (ellagepreference)
+            {
+                outlinesPNP.Add("Designator;Mid X mm;Mid Y mm;Rotation deg");
+            }
+            else
+            {
+
+
+                outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
+            }
             foreach (var ds in DeviceTree)
             {
 
@@ -1450,13 +1464,32 @@ namespace GerberLibrary.Core
                 {
                     foreach (var p in v.RefDes)
                     {
-                        string line = String.Format("{0},{1},{2},{3},{4}",
-                        p.NameOnBoard,
-                        p.x.ToString().Replace(",", ".") + "mm",
-                        p.y.ToString().Replace(",", ".") + "mm",
-                        p.Side == BoardSide.Top ? "T" : "B",
-                           (p.angle + 360 + GetRotationOffset(v.Combined())) % 360);
-                        outlinesPNP.Add(line);
+                        if (ellagepreference)
+                        {
+
+                            double A = (p.angle + 360 + GetRotationOffset(v.Combined())) % 360;
+                            while (A > 180) A -= 360;
+                            while (A < -180) A += 360;
+                            string line = String.Format("{0};{1};{2};{3}",
+                            p.NameOnBoard,
+                            EllageFormat(p.x,2),
+                            EllageFormat(p.y,2),
+                             EllageFormat(A,0));
+                            outlinesPNP.Add(line);
+
+                        }
+                        else
+                        {
+
+
+                            string line = String.Format("{0},{1},{2},{3},{4}",
+                            p.NameOnBoard,
+                            p.x.ToString().Replace(",", ".") + "mm",
+                            p.y.ToString().Replace(",", ".") + "mm",
+                            p.Side == BoardSide.Top ? "T" : "B",
+                               (p.angle + 360 + GetRotationOffset(v.Combined())) % 360);
+                            outlinesPNP.Add(line);
+                        }
 
                     }
                 }
