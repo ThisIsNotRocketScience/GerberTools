@@ -1,4 +1,5 @@
-﻿using GerberLibrary.Core.Primitives;
+using GerberLibrary.Core;
+using GerberLibrary.Core.Primitives;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,6 +19,11 @@ namespace GerberLibrary
         {   
             public PointD Start = new PointD();
             public PointD End = new PointD();
+
+            public override string ToString()
+            {
+                return $"({Start.X:N2},{Start.Y:N2})-({End.X:N2},{End.X:N2})";
+            }
         }
         public List<SlotInfo> Slots = new List<SlotInfo>();
     };
@@ -301,6 +307,92 @@ namespace GerberLibrary
             return T;
         }
 
+        private enum CutterCompensation
+        {
+            None = 0,
+            Left,
+            Right
+        }
+
+        private List<PointD> CutCompensation(List<PointD> path, CutterCompensation compensation, double offset)
+        {
+            if (compensation == CutterCompensation.None)
+                return path;
+
+            if (path.Count < 2)
+                return path;
+
+            /* remove contiguous duplicates */
+            var unique = new List<PointD>(path.Count);
+            PointD prev = null;
+            foreach (var point in path)
+            {
+                if (prev == point)
+                    continue;
+
+                prev = point;
+                unique.Add(point);
+            }
+            path = unique;
+
+            /* create offset segments */
+            var SegmentsOffset = path.Zip(path.Skip(1), (A, B) =>
+            {
+                var angle = A.Angle(B);
+
+                if (compensation == CutterCompensation.Left)
+                    angle += Math.PI / 2;
+                else
+                    angle -= Math.PI / 2;
+
+                A += new PointD(offset * Math.Cos(angle), offset * Math.Sin(angle));
+                B += new PointD(offset * Math.Cos(angle), offset * Math.Sin(angle));
+
+                return new { A, B };
+            });
+
+            /* create segment pairs */
+            var SegmentPairs = SegmentsOffset
+                .Zip(SegmentsOffset.Skip(1), (First, Second) => new { First, Second })
+                .Zip(path.Skip(1), (pair, Center) => new { pair.First, pair.Second, Center });
+
+            var Path = new PolyLine();
+            Path.Vertices.Add(SegmentsOffset.First().A);
+
+            foreach (var segment in SegmentPairs)
+            {
+                /* segments are colinear */
+                if (segment.First.B == segment.Second.A)
+                    continue;
+
+                var intersection = Helpers.SegmentSegmentIntersect(segment.First.A, segment.First.B, segment.Second.A, segment.Second.B);
+                /* if segments intersect, */
+                if (intersection != null)
+                {
+                    /* the intersection point is what connects first and second segments */
+                    Path.Vertices.Add(intersection);
+                }
+                else
+                {
+                    /* otherwise connect segments with an arc */
+                    var Center = segment.Center - segment.First.B;
+
+                    var arc = Gerber.CreateCurvePoints(
+                        segment.First.B.X, segment.First.B.Y,
+                        segment.Second.A.X, segment.Second.A.Y,
+                        Center.X, Center.Y,
+                        compensation == CutterCompensation.Left ? InterpolationMode.ClockWise : InterpolationMode.CounterClockwise,
+                        GerberQuadrantMode.Multi);
+
+                    Path.Vertices.AddRange(arc);
+                }
+            }
+
+            Path.Vertices.Add(SegmentsOffset.Last().B);
+
+            return Path.Vertices;
+        }
+
         bool ParseExcellon(List<string> lines, double drillscaler,ProgressLog log )
         {
             var LogID = log.PushActivity("Parse Excellon");
@@ -317,6 +409,9 @@ namespace GerberLibrary
             bool NumberSpecHad = false;
             double LastX = 0;
             double LastY = 0;
+            CutterCompensation Compensation = CutterCompensation.None;
+            List<PointD> PathCompensation = new List<PointD>();
+            bool WarnIntersections = true;
             while (currentline < lines.Count)
             {
                 switch(lines[currentline])
@@ -527,6 +622,9 @@ namespace GerberLibrary
                                             if (GLS.HasAfter("G", "X")) { x1 = GNF.ScaleFileToMM(GLS.GetAfter("G", "X") * Scaler); LastX = x1; }
                                             if (GLS.HasAfter("G", "Y")) { y1 = GNF.ScaleFileToMM(GLS.GetAfter("G", "Y") * Scaler); LastY = y1; }
 
+                                            /* cancel cutter compensation */
+                                            Compensation = CutterCompensation.None;
+                                            PathCompensation.Clear();
                                         }
                                         else if (GS.Has("G") && GS.Get("G") == 01 && (GS.Has("X") || GS.Has("Y")))
                                         {
@@ -540,11 +638,63 @@ namespace GerberLibrary
 
                                             if (GLS.HasAfter("G", "X")) { x2 = GNF.ScaleFileToMM(GLS.GetAfter("G", "X") * Scaler); LastX = x2; }
                                             if (GLS.HasAfter("G", "Y")) { y2 = GNF.ScaleFileToMM(GLS.GetAfter("G", "Y") * Scaler); LastY = y2; }
-
-                                            CurrentTool.Slots.Add(new ExcellonTool.SlotInfo() { Start = new PointD(x1 * drillscaler, y1 * drillscaler), End = new PointD(x2 * drillscaler, y2 * drillscaler) });
+                                            if (Compensation == CutterCompensation.None)
+                                                CurrentTool.Slots.Add(new ExcellonTool.SlotInfo() { Start = new PointD(x1 * drillscaler, y1 * drillscaler), End = new PointD(x2 * drillscaler, y2 * drillscaler) });
+                                            else
+                                                PathCompensation.Add(new PointD(x2 * drillscaler, y2 * drillscaler));
 
                                             LastX = x2;
                                             LastY = y2;
+                                        }
+                                        else if (GS.Has("G") && GS.Get("G") == 40) /* cutter compensation off */
+                                        {
+                                            var comp = CutCompensation(PathCompensation, Compensation, CurrentTool.Radius * drillscaler);
+
+                                            if (WarnIntersections)
+                                            {
+                                                /* warn about path intersections */
+                                                for (int i = 0; i < comp.Count - 1; i++)
+                                                {
+                                                    for (int j = i + 2; j < comp.Count - 1; j++)
+                                                    {
+                                                        var intersection = Helpers.SegmentSegmentIntersect(comp[i], comp[i + 1], comp[j], comp[j + 1]);
+                                                        if (intersection != null)
+                                                        {
+                                                            log.AddString("Path with intersections found on cut compensation! Inspect output for accuracy!");
+                                                            WarnIntersections = false;
+                                                            break;
+                                                        }
+                                                    }
+
+                                                    if (!WarnIntersections)
+                                                        break;
+                                                }
+                                            }
+
+                                            /* create line segments from set of points */
+                                            var array = comp.Zip(comp.Skip(1), Tuple.Create);
+                                            CurrentTool.Slots.AddRange(array.Select(i => new ExcellonTool.SlotInfo() { Start = i.Item1, End = i.Item2 }));
+
+                                            Compensation = CutterCompensation.None;
+                                            PathCompensation.Clear();
+                                        }
+                                        else if (GS.Has("G") && GS.Get("G") == 41) /* cutter compensation left: offset of the cutter radius is to the LEFT of contouring direction */
+                                        {
+                                            if (Compensation != CutterCompensation.None)
+                                                log.AddString("Unterminated cutter compensation block found! Inspect output for accuracy!");
+
+                                            Compensation = CutterCompensation.Left;
+                                            PathCompensation.Clear();
+                                            PathCompensation.Add(new PointD(LastX * drillscaler, LastY * drillscaler));
+                                        }
+                                        else if (GS.Has("G") && GS.Get("G") == 42) /* cutter compensation right: offset of the cutter radius is to the RIGHT of contouring direction */
+                                        {
+                                            if (Compensation != CutterCompensation.None)
+                                                log.AddString("Unterminated cutter compensation block found! Inspect output for accuracy!");
+
+                                            Compensation = CutterCompensation.Right;
+                                            PathCompensation.Clear();
+                                            PathCompensation.Add(new PointD(LastX * drillscaler, LastY * drillscaler));
                                         }
                                         else
                                         {
@@ -554,7 +704,10 @@ namespace GerberLibrary
                                                 if (GS.Has("X")) X = GNF.ScaleFileToMM(GS.Get("X") * Scaler);
                                                 double Y = LastY;
                                                 if (GS.Has("Y")) Y = GNF.ScaleFileToMM(GS.Get("Y") * Scaler);
-                                                CurrentTool.Drills.Add(new PointD(X * drillscaler, Y * drillscaler));
+                                                if (Compensation == CutterCompensation.None)
+                                                    CurrentTool.Drills.Add(new PointD(X * drillscaler, Y * drillscaler));
+                                                else
+                                                    PathCompensation.Add(new PointD(X * drillscaler, Y * drillscaler));
                                                 LastX = X;
                                                 LastY = Y;
                                             }
