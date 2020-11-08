@@ -563,7 +563,7 @@ namespace GerberLibrary.Core
                         double Y = c.y;
                         Helpers.Transform(dx, dy, cx, cy, angle, ref X, ref Y);
                         OptionalOut<BOMEntry> bom = new OptionalOut<BOMEntry>();
-                        AddBOMItemInt(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle + angle) % 360, c.Side, bom);
+                        AddBOMItemInt(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle - angle) % 360, c.Side, bom);
                         bom.Result.SetCombined(b.Value.Combined());
                     }
                 }
@@ -1175,10 +1175,10 @@ namespace GerberLibrary.Core
 
             string diptracefolder = Path.Combine(gerberPath, "diptraceasc");
 
-            if (Directory.Exists(ultiboardfolder))
+            if (Directory.Exists(diptracefolder))
             {
                 BOM R = new BOM();
-                var F = Directory.GetFiles(ultiboardfolder, "*.asc");
+                var F = Directory.GetFiles(diptracefolder, "*.asc");
 
                 foreach (var a in F)
                 {
@@ -2140,7 +2140,26 @@ namespace GerberLibrary.Core
 
             //outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #");
             var regex = new Regex("(?<=^|,)(\"(?:[^\"]|\"\")*\"|[^,]*)");
+            
+            int RefdesIdx = 0;
+            int Xidx = 1;
+            int Yidx = 2;
+            int Sideidx = 3;
+            int Angleidx = 4;
 
+            var Headers = pnplines[0].Split(',');
+            for(int i =0;i<Headers.Count();i++)
+            {
+                var H = StripCSV( Headers[i].ToLower());
+                switch (H)
+                {
+                    case "x": Xidx = i;break;
+                    case "y": Yidx = i; break;
+                    case "refdes": RefdesIdx = i; break;
+                    case "side": Sideidx = i; break;
+                    case "angle": Angleidx = i;break;
+                }
+            }
 
             //outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
             for (int i = 1; i < pnplines.Count(); i++)
@@ -2152,11 +2171,11 @@ namespace GerberLibrary.Core
                     items.Add(m.Value);
                 }
 
-                var rd = items[0];
-                var X = ConvertDimension(items[1]);
-                var Y = ConvertDimension(items[2]);
-                var Side = items[3] == "T" ? BoardSide.Top : BoardSide.Bottom;
-                var Angle = Double.Parse(items[4]);
+                var rd = StripCSV(items[RefdesIdx]);
+                var X = ConvertDimension(items[Xidx]);
+                var Y = ConvertDimension(items[Yidx]);
+                var Side = GetSide(StripCSV(items[Sideidx]));
+                var Angle = Double.Parse(StripCSV(items[Angleidx]));
 
                 positions[rd] = new BOMEntry.RefDesc() { angle = Angle, x = X, y = Y, OriginalName = rd, NameOnBoard = rd, SourceBoard = bOMFile, Side = Side };
             }
@@ -2170,7 +2189,7 @@ namespace GerberLibrary.Core
                 List<string> items = new List<string>();
                 foreach (Match m in regex.Matches(s))
                 {
-                    items.Add(m.Value.Trim());
+                    items.Add(StripCSV(m.Value.Trim()));
                 }
 
                 var refdesc = items[1].Trim(); ;
@@ -2209,6 +2228,29 @@ namespace GerberLibrary.Core
 
         }
 
+        private string StripCSV(string H)
+        {
+            if (H.Length > 2 && H[0] == '"' && H[H.Length - 1] == '"')
+            {
+                return H.Substring(1, H.Length - 2);
+            }
+            return H;
+        }
+
+        private BoardSide GetSide(string v)
+        {
+            switch (v.ToLower())
+            {
+                case "t":
+                case "top":
+                    return BoardSide.Top;
+                case "b":
+                case "bottom":
+                    return BoardSide.Bottom;
+            }
+            return BoardSide.Unknown;
+        }
+
         private double ConvertDimension(string v)
         {
             v = v.Trim();
@@ -2217,7 +2259,10 @@ namespace GerberLibrary.Core
                 v = v.Substring(0, v.Length - 2).Trim(); ;
 
             }
-
+            if (v[0] == '"' && v[v.Length -1] == '"')
+            {
+                v = v.Substring(1, v.Length - 2);
+            }
             return double.Parse(v.Replace('.', ','));
         }
 
@@ -2432,6 +2477,9 @@ namespace GerberLibrary.Core
                 case "L0805":
                     RenderSMD2Pin(g, 8, 5, Color.FromArgb(60, 70, 80));
                     break;
+                case "0402":
+                    RenderSMD2Pin(g, 4, 2, Color.FromArgb(160, 130, 60));
+                    break;
                 case "C0603":
                     RenderSMD2Pin(g, 6, 3, Color.FromArgb(160, 130, 60));
                     break;
@@ -2441,6 +2489,7 @@ namespace GerberLibrary.Core
                 case "FERRITE_1812":
                     RenderSMD2Pin(g, 18, 12, Color.FromArgb(20, 20, 20));
                     break;
+                case "RES_0805":
                 case "R0805":
                 case "0805":
                     RenderSMD2Pin(g, 8, 5, Color.FromArgb(60, 60, 60));
