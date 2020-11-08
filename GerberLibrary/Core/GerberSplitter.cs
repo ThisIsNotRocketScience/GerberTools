@@ -15,7 +15,7 @@ namespace GerberLibrary
 
         public void Parse(string running, GerberNumberFormat form, bool hasdecimalpoint = false)
         {
-            if (Command == "G" || Command == "D" || Command == "M")
+            if (Command == "G" || Command == "D" || Command == "M" || Command == "R")
             {
                 Number = (double)Int32.Parse(running);
             }
