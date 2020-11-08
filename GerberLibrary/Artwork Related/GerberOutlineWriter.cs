@@ -393,7 +393,13 @@ namespace GerberLibrary
 
         public static void MergeFrameIntoGerberSet(string FrameFolder, string OutlineFolder, string OutputFolder, FrameSettings FS, ProgressLog log, string basename)
         {
+
+
             log.PushActivity("MergeFrame");
+            log.AddString(".....");
+            if (Directory.Exists(FrameFolder) == false) log.AddString(String.Format("Framefolder {0} does not exist?", FrameFolder));
+            if (Directory.Exists(OutlineFolder) == false) log.AddString(String.Format("OutlineFolder {0} does not exist?", OutlineFolder));
+            if (Directory.Exists(OutputFolder) == false) log.AddString(String.Format("OutputFolder {0} does not exist?", OutputFolder));
             GerberPanel PNL = new GerberPanel();
             PNL.AddGerberFolder(log, FrameFolder);
             PNL.AddGerberFolder(log, OutlineFolder);
