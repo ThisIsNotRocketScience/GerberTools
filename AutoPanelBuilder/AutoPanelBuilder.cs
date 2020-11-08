@@ -129,7 +129,7 @@ namespace AutoPanelBuilder
                 string basepath = args[args.Count() - 1];
                 Directory.CreateDirectory(Path.Combine(basepath, "output"));
                 GP.SaveFile(Path.Combine(basepath, "panel.gerberset"));
-                GP.SaveOutlineTo(basepath, "paneloutline");
+                GP.SaveOutlineTo(basepath, "paneloutline", new StandardConsoleLog());
 
                 GAW.Write(Path.Combine(basepath, "delaunay.gbr"));
                 GAW2.Write(Path.Combine(basepath, "points.gbr"));
