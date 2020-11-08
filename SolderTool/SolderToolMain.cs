@@ -41,7 +41,7 @@ namespace SolderTool
         {
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-
+                //LoadDocument(fol)
             }
         }
 
@@ -72,6 +72,7 @@ namespace SolderTool
 
                 {
                     CurrentDocument = i;
+                    Parts.UpdateCurrentPart();
                     Parts.InvalidatePicture();
                     return;
                 }
@@ -113,6 +114,11 @@ namespace SolderTool
             }
         }
 
+        internal List<PartList.ListItem> GetPartList()
+        {
+            return Parts.GetPartList();
+        }
+
         internal void RepaintCurrent()
         {
             Documents[CurrentDocument].InvalidatePicture();
@@ -125,9 +131,9 @@ namespace SolderTool
 
         private void SolderToolMain_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            switch(e.KeyCode)
+            switch (e.KeyCode)
             {
-                case Keys.Up: Parts.Up();break;
+                case Keys.Up: Parts.Up(); break;
                 case Keys.Down: Parts.Down(); break;
                 case Keys.Enter: Parts.Enter(); break;
             }
@@ -141,6 +147,15 @@ namespace SolderTool
         internal void SolderPart(string v)
         {
             Documents[CurrentDocument].Solder(v);
+        }
+
+        private void OpenZipfileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                LoadDocument(openFileDialog1.FileName);
+
+            }
         }
     }
 }

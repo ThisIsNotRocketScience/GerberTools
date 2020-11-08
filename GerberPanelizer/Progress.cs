@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace GerberCombinerBuilder
 {
-    public partial class Progress : Form, ProgressLog
+    public partial class Progress : Form
     {
         public GerberPanelize MyPanelize;
         public Progress(GerberPanelize Parent)

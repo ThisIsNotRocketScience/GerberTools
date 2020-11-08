@@ -39,11 +39,11 @@ namespace GerberMover
                     foreach(var a in Directory.GetFiles(args[0]))
                     {
                         var newfile = Path.Combine(args[1], Path.GetFileName(a));
-                        RotateFile(a, newfile, args);
+                        RotateFile(new StandardConsoleLog(), a, newfile, args);
                         Files.Add(newfile);
                     }
                     GerberImageCreator GIC = new GerberImageCreator();
-                    GIC.AddBoardsToSet(Files);
+                    GIC.AddBoardsToSet(Files, new StandardConsoleLog());
                     GIC.WriteImageFiles(args[1]+"\\render");
                 }
                 else
@@ -54,14 +54,14 @@ namespace GerberMover
             }
             else
             {
-                RotateFile(args[0],args[1], args);
+                RotateFile(new StandardConsoleLog(),args[0],args[1], args);
             }
 
             Console.WriteLine("Press any key to continue..");
             Console.ReadKey();
         }
 
-        private static void RotateFile(string filename, string outfile, string[] args)
+        private static void RotateFile(ProgressLog log,  string filename, string outfile, string[] args)
         {
             double dx = 0;
             double dy = 0;
@@ -78,7 +78,7 @@ namespace GerberMover
             if (T == BoardFileType.Drill)
             {
                 ExcellonFile EF = new ExcellonFile();
-                EF.Load(filename);
+                EF.Load(log, filename);
                 EF.Write(outfile, dx, dy, cx, cy, angle);
             }
             else
@@ -87,12 +87,12 @@ namespace GerberMover
                 BoardLayer Layer;
                 Gerber.DetermineBoardSideAndLayer(args[0], out Side, out Layer);
                 
-                GerberTransposer.Transform(filename, outfile, dx, dy, cx, cy, angle);
+                GerberTransposer.Transform(log, filename, outfile, dx, dy, cx, cy, angle);
 
                var  lines = PolyLineSet.SanitizeInputLines(System.IO.File.ReadAllLines(args[0]).ToList());
                 System.IO.File.WriteAllLines(args[0] + "sanit.txt", lines);
 
-                Gerber.SaveGerberFileToImage(outfile, outfile + "_render.png", 200, Color.Black, Color.White);
+                Gerber.SaveGerberFileToImage(log, outfile, outfile + "_render.png", 200, Color.Black, Color.White);
 
             }
         }

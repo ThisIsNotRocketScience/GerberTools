@@ -60,12 +60,24 @@ namespace GerberLibrary
 
         public static FontSet Load(string p)
         {
+            if (File.Exists(p) == false)
+            {
+                string local = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(p));
+                if (File.Exists(local))
+                {
+                    p = local;
+                }
+                else
+                {
+                    return null;
+                }
+            }
             XmlSerializer serializer = new XmlSerializer(typeof(FontSet));
 
             // Declare an object variable of the type to be deserialized.
             FontSet i;
 
-            using (Stream reader = new FileStream(p, FileMode.Open))
+            using (Stream reader = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 // Call the Deserialize method to restore the object's state.
                 i = (FontSet)serializer.Deserialize(reader);
@@ -81,7 +93,26 @@ namespace GerberLibrary
             writer.Close();
         
         }
+        public double StringWidth(string text, double size= 1.0)
+        {
+            double W = 0;
+            double Scaler = size / CapsHeight; ;
 
+            for (int i = 0; i < text.Length; i++)
+            {
+                char t = text[i];
+                var R = GetChar(t);
+                if (R != null)
+                {
+                    W += R.Advance * Scaler;
+                }
+                else
+                {
+                    W += size;
+                }
+            }
+            return W;
+        }
         public LineSet GetChar(char t)
         {
             foreach(var ls in TheChars)

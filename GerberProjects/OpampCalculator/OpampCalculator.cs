@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -71,6 +72,7 @@ namespace OpampCalculator
 
         double GetNum(string T)
         {
+            CultureInfo.CurrentCulture = new CultureInfo("nl-NL", false);
             T = T.Trim().Replace(".", ",");
             try
             {
@@ -88,13 +90,13 @@ namespace OpampCalculator
             double inMax = GetNum(InVoltMax.Text);
             double outMin = GetNum(OutVoltMin.Text);
             double outMax = GetNum(OutvoltMax.Text);
-            double inputoffset= GetNum(OffsetVoltage.Text);
+            double inputoffset = GetNum(OffsetVoltage.Text);
             double safemargin = GetNum(SafetyMargin.Text);
 
             double indiff = Math.Abs(inMax - inMin) + Math.Abs(safemargin * 2);
             double outdiff = Math.Abs(outMax - outMin);
             double scalar = indiff / outdiff;
-            double offset = (inMin + inMax)/2 ;
+            double offset = (inMin + inMax) / 2;
             double outoffset = (outMin + outMax) / 2;
             var offsetshift = outoffset - offset;
 
@@ -139,7 +141,7 @@ namespace OpampCalculator
 
         double inputresistor;
         double feedbackresistor;
-         double offsetresistor;
+        double offsetresistor;
 
 
 
@@ -159,9 +161,9 @@ namespace OpampCalculator
         private void SetResistorComboTo(ComboBox Comb, double feedbackresistor)
         {
             int current = 0;
-            foreach(ResistorComboItem a in Comb.Items)
+            foreach (ResistorComboItem a in Comb.Items)
             {
-                if (Math.Abs(a.range * a.baseval - feedbackresistor)<0.1)
+                if (Math.Abs(a.range * a.baseval - feedbackresistor) < 0.1)
                 {
                     Comb.SelectedIndex = current;
                     return;

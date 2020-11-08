@@ -1,4 +1,5 @@
-﻿using GerberLibrary.Core.Primitives;
+﻿using GerberLibrary;
+using GerberLibrary.Core.Primitives;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -103,7 +104,7 @@ namespace AutoPanelBuilder
             {
                 foreach (var a in File.ReadAllLines(InputFile))
                 {
-                   var A = GP.AddGerberFolder(a);
+                   var A = GP.AddGerberFolder(new StandardConsoleLog(), a);
                     GP.AddInstance(a, new GerberLibrary.Core.Primitives.PointD(0, 0));
                 }
             }
@@ -122,13 +123,13 @@ namespace AutoPanelBuilder
                 GerberLibrary.GerberArtWriter GAW2 = new GerberLibrary.GerberArtWriter();
                 GerberLibrary.GerberArtWriter GAW = new GerberLibrary.GerberArtWriter();
 
-                GP.BuildAutoTabs(GAW, GAW2);
+                GP.BuildAutoTabs(new StandardConsoleLog(), GAW, GAW2);
                 
 
                 string basepath = args[args.Count() - 1];
                 Directory.CreateDirectory(Path.Combine(basepath, "output"));
                 GP.SaveFile(Path.Combine(basepath, "panel.gerberset"));
-                GP.SaveOutlineTo(basepath, "paneloutline");
+                GP.SaveOutlineTo(basepath, "paneloutline", new StandardConsoleLog());
 
                 GAW.Write(Path.Combine(basepath, "delaunay.gbr"));
                 GAW2.Write(Path.Combine(basepath, "points.gbr"));

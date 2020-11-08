@@ -29,7 +29,7 @@ namespace GerberViewer
         internal float MouseY;
         internal float MouseX;
 
-        public void AddFileStream(MemoryStream S, string origfilename, double drillscaler = 1.0)
+        public void AddFileStream(ProgressLog log, MemoryStream S, string origfilename, double drillscaler = 1.0)
         {
             var FileType = Gerber.FindFileTypeFromStream(new StreamReader( S), origfilename);
 
@@ -47,7 +47,7 @@ namespace GerberViewer
             if (FileType == BoardFileType.Drill)
             {
                 if (Gerber.ExtremelyVerbose) Console.WriteLine("Log: Drill file: {0}", origfilename);
-                PLS = PolyLineSet.LoadExcellonDrillFileFromStream( new StreamReader(S), origfilename, false, drillscaler);
+                PLS = PolyLineSet.LoadExcellonDrillFileFromStream(log, new StreamReader(S), origfilename, false, drillscaler);
                 S.Seek(0, SeekOrigin.Begin);
 
                 // ExcellonFile EF = new ExcellonFile();
@@ -69,7 +69,7 @@ namespace GerberViewer
                 State.PreCombinePolygons = precombinepolygons;
                
 
-                PLS = PolyLineSet.LoadGerberFileFromStream(new StreamReader(S),origfilename, forcezerowidth, false, State);
+                PLS = PolyLineSet.LoadGerberFileFromStream(log, new StreamReader(S),origfilename, forcezerowidth, false, State);
                 S.Seek(0, SeekOrigin.Begin);
 
                 PLS.Side = Side;
@@ -80,7 +80,7 @@ namespace GerberViewer
 
         }
 
-        public void AddFile(string filename, double drillscaler = 1.0)
+        public void AddFile(ProgressLog log, string filename, double drillscaler = 1.0)
         {
 
             string[] filesplit = filename.Split('.');
@@ -96,7 +96,7 @@ namespace GerberViewer
                         {
                             e.Extract(MS);
                             MS.Seek(0, SeekOrigin.Begin);
-                            AddFileStream(MS, e.FileName, drillscaler);
+                            AddFileStream(log, MS, e.FileName, drillscaler);
                         }
                     }
                 }
@@ -109,7 +109,7 @@ namespace GerberViewer
             FileStream FS = File.OpenRead(filename);
             FS.CopyTo(MS2);
             MS2.Seek(0, SeekOrigin.Begin);
-            AddFileStream(MS2, filename, drillscaler);
+            AddFileStream(log, MS2, filename, drillscaler);
 
         }
     }

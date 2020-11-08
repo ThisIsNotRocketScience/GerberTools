@@ -64,9 +64,21 @@ namespace GerberLibrary
         public PolyLine ThinLine;
         internal bool GenerateGeometry = true;
 
+        public bool MirrorA = false;
+        public bool MirrorB = false;
+        public enum AxisName
+        { 
+            X,
+            Y
+        }
+        
+        public AxisName AAxis = AxisName.X;
+        public AxisName BAxis = AxisName.Y;
+
         public double FlashRotation = 0;
         public double FlashScale = 1.0;
         public MirrorMode FlashMirror = MirrorMode.NoMirror;
+        public List<PointD> ZerosizePoints = new List<PointD>();
 
         public enum MirrorMode
         {
@@ -217,7 +229,7 @@ namespace GerberLibrary
             return Res;
         }
 
-        public static ParsedGerber LoadExcellonDrillFileFromStream(StreamReader s, string origfilename, bool Precombine = false, double drillscaler = 1.0)
+        public static ParsedGerber LoadExcellonDrillFileFromStream(ProgressLog log,  StreamReader s, string origfilename, bool Precombine = false, double drillscaler = 1.0)
         {
             ParsedGerber Gerb = new ParsedGerber();
             Gerb.Name = origfilename;
@@ -231,7 +243,7 @@ namespace GerberLibrary
             };
 
             ExcellonFile EF = new ExcellonFile();
-            EF.Load(s, drillscaler);
+            EF.Load(log, s, drillscaler);
             foreach (var T in EF.Tools)
             {
                 var Tool = T.Value;
@@ -289,7 +301,7 @@ namespace GerberLibrary
 
         }
 
-        public static ParsedGerber LoadExcellonDrillFile(string drillfile, bool Precombine = false, double drillscaler = 1.0)
+        public static ParsedGerber LoadExcellonDrillFile(ProgressLog log, string drillfile, bool Precombine = false, double drillscaler = 1.0)
         {
             ParsedGerber Gerb = new ParsedGerber();
             Gerb.Name = drillfile;
@@ -303,7 +315,7 @@ namespace GerberLibrary
             };
 
             ExcellonFile EF = new ExcellonFile();
-            EF.Load(drillfile, drillscaler);
+            EF.Load(log, drillfile, drillscaler);
             foreach (var T in EF.Tools)
             {
                 var Tool = T.Value;
@@ -361,7 +373,7 @@ namespace GerberLibrary
 
         }
 
-        public static ParsedGerber LoadGerberFile(string gerberfile, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
+        public static ParsedGerber LoadGerberFile(ProgressLog log, string gerberfile, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
         {
             if (State == null) State = new GerberParserState();
 
@@ -369,20 +381,20 @@ namespace GerberLibrary
 
             using (StreamReader sr = new StreamReader(gerberfile))
             {
-                return ProcessStream(gerberfile, forcezerowidth, writesanitized, State, sr);
+                return ProcessStream(log, gerberfile, forcezerowidth, writesanitized, State, sr);
             }
         }
 
-        public static ParsedGerber LoadGerberFileFromStream(StreamReader sr, string originalfilename, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
+        public static ParsedGerber LoadGerberFileFromStream(ProgressLog log, StreamReader sr, string originalfilename, bool forcezerowidth = false, bool writesanitized = false, GerberParserState State = null)
         {
             if (State == null) State = new GerberParserState();
 
             Gerber.DetermineBoardSideAndLayer(originalfilename, out State.Side, out State.Layer);
-            return ProcessStream(originalfilename, forcezerowidth, writesanitized, State, sr);
+            return ProcessStream(log, originalfilename, forcezerowidth, writesanitized, State, sr);
 
         }
 
-        public static ParsedGerber ParseGerber274x(List<String> inputlines, bool parseonly, bool forcezerowidth = false, GerberParserState State = null)
+        public static ParsedGerber ParseGerber274x(ProgressLog log, List<String> inputlines, bool parseonly, bool forcezerowidth = false, GerberParserState State = null)
         {
             if (State == null) State = new GerberParserState();
 
@@ -452,7 +464,7 @@ namespace GerberLibrary
                 shapelist.Add(new PathDefWithClosed() { Vertices = State.NewThinShapes[i].Vertices, Width = State.NewThinShapes[i].Width });
             }
 
-            var shapeslinked = Helpers.LineSegmentsToPolygons(shapelist);
+            var shapeslinked = Helpers.LineSegmentsToPolygons(log, shapelist);
 
             foreach (var a in shapeslinked)
             {
@@ -505,7 +517,7 @@ namespace GerberLibrary
 
                 }
             }
-
+            Gerb.ZerosizePoints.AddRange(State.ZerosizePoints);
             Gerb.CalcPathBounds();
             Gerb.State = State;
             return Gerb;
@@ -964,6 +976,35 @@ namespace GerberLibrary
             string FinalLine = Line.Replace("%", "").Replace("*", "").Trim();
             switch (FinalLine)
             {
+                case "MIA0":
+                    State.MirrorA = false;
+                    break;
+                case "MIA1":
+                    State.MirrorA = true;
+                    break;
+                case "MIB0":
+                    State.MirrorB = false;
+                    break;
+                case "MIB1":
+                    State.MirrorB = true;
+                    break;
+                case "MIA0B0":
+                    State.MirrorA = false;
+                    State.MirrorB = false;
+                    break;
+                case "MIA1B0":
+                    State.MirrorA = true;
+                    State.MirrorB = false;
+                    break;
+                case "MIA0B1":
+                    State.MirrorA = false;
+                    State.MirrorB = true;
+                    break;
+                case "MIA1B1":
+                    State.MirrorA = true;
+                    State.MirrorB = true;
+                    break;
+
                 case "G90": State.CoordinateFormat.Relativemode = false; break;
                 case "G91": State.CoordinateFormat.Relativemode = true; break;
                 case "G71": State.CoordinateFormat.SetMetricMode(); break;
@@ -1154,7 +1195,7 @@ namespace GerberLibrary
                                         case 'S':
                                             if (GCC.charcommands[2] == 'R')
                                             {
-                                                if (Gerber.ShowProgress) Console.Write("Setting up step and repeat ");
+                                                if (Gerber.ShowProgress) Console.WriteLine("Setting up step and repeat ");
                                                 GerberSplitter GS2 = new GerberSplitter();
                                                 GS2.Split(GCC.originalline, State.CoordinateFormat);
                                                 if (GCC.numbercommands.Count == 0)
@@ -1169,8 +1210,10 @@ namespace GerberLibrary
                                                     int Ycount = (int)GCC.numbercommands[1];
                                                     double Xoff = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[2]);
                                                     double Yoff = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[3]);
-
-                                                    SetupRepeater(State, Xcount, Ycount, Xoff, Yoff);
+                                                    if (Xcount > 1 || Ycount > 1)
+                                                    {
+                                                        SetupRepeater(State, Xcount, Ycount, Xoff, Yoff);
+                                                    }
                                                 }
                                             }
                                             break;
@@ -1634,6 +1677,25 @@ namespace GerberLibrary
                                     {
                                         double X = State.LastX;
                                         double Y = State.LastY;
+
+                                        if (State.MirrorA)
+                                        {
+                                            switch (State.AAxis)
+                                            {
+                                                case GerberParserState.AxisName.X: X = -X; break;
+                                                case GerberParserState.AxisName.Y: Y = -Y; break;
+                                            }
+                                        }
+
+                                        if (State.MirrorB)
+                                        {
+                                            switch (State.BAxis)
+                                            {
+                                                case GerberParserState.AxisName.X: X = -X; break;
+                                                case GerberParserState.AxisName.Y: Y = -Y; break;
+                                            }
+                                        }
+
                                         double I = 0;
                                         double J = 0;
                                         if (State.CoordinateFormat.Relativemode)
@@ -1655,6 +1717,25 @@ namespace GerberLibrary
                                         if (GS.Has("Y"))
                                         {
                                             Y = State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
+                                        }
+
+
+                                        if (State.MirrorA)
+                                        {
+                                            switch(State.AAxis)
+                                            {
+                                                case GerberParserState.AxisName.X: X = -X;break;
+                                                case GerberParserState.AxisName.Y: Y = -Y; break;
+                                            }
+                                        }
+
+                                        if (State.MirrorB)
+                                        {
+                                            switch (State.BAxis)
+                                            {
+                                                case GerberParserState.AxisName.X: X = -X; break;
+                                                case GerberParserState.AxisName.Y: Y = -Y; break;
+                                            }
                                         }
 
                                         if (State.CoordinateFormat.Relativemode)
@@ -1719,6 +1800,9 @@ namespace GerberLibrary
                                                 if (Gerber.ShowProgress)
                                                 {
                                                     Console.WriteLine("ignoring moves with zero width or empty aperture");
+                                                    State.ZerosizePoints.Add(new PointD(X, Y));
+                                                    // adding to bounding box anyway!
+
                                                 }
                                             }
                                             else
@@ -1849,7 +1933,7 @@ namespace GerberLibrary
             }
         }
 
-        private static ParsedGerber ProcessStream(string gerberfile, bool forcezerowidth, bool writesanitized, GerberParserState State, StreamReader sr)
+        private static ParsedGerber ProcessStream(ProgressLog log, string gerberfile, bool forcezerowidth, bool writesanitized, GerberParserState State, StreamReader sr)
         {
             List<String> lines = new List<string>();
             while (sr.EndOfStream == false)
@@ -1866,7 +1950,7 @@ namespace GerberLibrary
                 State.SanitizedFile = gerberfile + ".sanitized.gerber";
             };
 
-            var G = ParseGerber274x(lines, false, forcezerowidth, State); ;
+            var G = ParseGerber274x(log, lines, false, forcezerowidth, State); ;
             G.Name = gerberfile;
             return G;
         }

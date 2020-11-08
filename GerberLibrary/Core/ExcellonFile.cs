@@ -1,4 +1,5 @@
-﻿using GerberLibrary.Core.Primitives;
+using GerberLibrary.Core;
+using GerberLibrary.Core.Primitives;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,33 +19,42 @@ namespace GerberLibrary
         {   
             public PointD Start = new PointD();
             public PointD End = new PointD();
+
+            public override string ToString()
+            {
+                return $"({Start.X:N2},{Start.Y:N2})-({End.X:N2},{End.X:N2})";
+            }
         }
         public List<SlotInfo> Slots = new List<SlotInfo>();
     };
 
     public class ExcellonFile
     {
-        public void Load(string filename, double drillscaler = 1.0)
+        public void Load(ProgressLog log, string filename, double drillscaler = 1.0)
         {
+            var Load = log.PushActivity("Loading Excellon");
             var lines = File.ReadAllLines(filename);
-            ParseExcellon(lines.ToList(), drillscaler);
+            ParseExcellon(lines.ToList(), drillscaler,log);
+            log.PopActivity(Load);
         }
 
-        public void Load(StreamReader stream, double drillscaler = 1.0)
+        public void Load(ProgressLog log, StreamReader stream, double drillscaler = 1.0)
         {
             List<string> lines = new List<string>();
             while (!stream.EndOfStream)
             {
                 lines.Add(stream.ReadLine());
             }
-            ParseExcellon(lines, drillscaler);
+            ParseExcellon(lines, drillscaler, log);
         }
 
         public static void MergeAll(List<string> Files, string output, ProgressLog Log)
         {
+            var LogDepth = Log.PushActivity("Excellon MergeAll");
             if (Files.Count >= 2)
             {
                 MultiMerge(Files[0], Files.Skip(1).ToList(), output, Log);
+                Log.PopActivity(LogDepth);
                 return;
 
             }
@@ -52,14 +62,15 @@ namespace GerberLibrary
             {
                 if (Files.Count == 1)
                 {
-                    Console.WriteLine("Merging 1 file is copying... doing so...");
+                    Log.AddString("Merging 1 file is copying... doing so...");
                     if (File.Exists(output)) File.Delete(output);
                     File.Copy(Files[0], output);
                 }
                 else
                 {
-                    Console.WriteLine("Need files to do anything??");
+                    Log.AddString("Need files to do anything??");
                 }
+                Log.PopActivity(LogDepth);
                 return;
             }
 
@@ -80,34 +91,38 @@ namespace GerberLibrary
             {
                 File.Delete(s);
             }
+            Log.PopActivity(LogDepth);
         }
 
         private static void MultiMerge(string file1, List<string> otherfiles, string output, ProgressLog Log)
         {
+            int MM = Log.PushActivity("Excellon MultiMerge");
             if (File.Exists(file1) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", file1);
+                Log.AddString(String.Format("{0} not found! stopping process!", file1));
+                Log.PopActivity(MM);
                 return;
             }
             foreach (var otherfile in otherfiles)
             {
                 if (File.Exists(otherfile) == false)
                 {
-                    Console.WriteLine("{0} not found! stopping process!", otherfile);
+                    Log.AddString(String.Format("{0} not found! stopping process!", otherfile));
+                    Log.PopActivity(MM);
                     return;
                 }
             }
 
-            Console.WriteLine("*** Reading {0}:", file1);
+            Log.AddString(String.Format("Reading {0}:", file1));
             ExcellonFile File1Parsed = new ExcellonFile();
-            File1Parsed.Load(file1);
+            File1Parsed.Load(Log, file1);
             List<ExcellonFile> OtherFilesParsed = new List<ExcellonFile>();
             foreach (var otherfile in otherfiles)
             {
 
-                Console.WriteLine("*** Reading {0}:", otherfile);
+                Log.AddString(String.Format("Reading {0}:", otherfile));
                 ExcellonFile OtherFileParsed = new ExcellonFile();
-                OtherFileParsed.Load(otherfile);
+                OtherFileParsed.Load(Log, otherfile);
                 OtherFilesParsed.Add(OtherFileParsed);
             }
             int MaxID = 0;
@@ -125,6 +140,8 @@ namespace GerberLibrary
                 }
             }
             File1Parsed.Write(output, 0, 0, 0, 0);
+
+            Log.PopActivity(MM);
         }
 
         private void AddToolWithHoles(ExcellonTool d)
@@ -158,24 +175,29 @@ namespace GerberLibrary
 
         public static void Merge(string file1, string file2, string outputfile, ProgressLog Log)
         {
+            Log.PushActivity("Excellon Merge");
             if (File.Exists(file1) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", file1);
+                Log.AddString(String.Format("{0} not found! stopping process!", file1));
+                Log.PopActivity();
                 return;
             }
+
             if (File.Exists(file2) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", file2);
+                Log.AddString(String.Format("{0} not found! stopping process!", file2));
+                Log.PopActivity();
                 return;
             }
-            Log.AddString(String.Format("*** Merging {0} with {1}", file1, file2));
 
-            Console.WriteLine("*** Reading {0}:", file1);
+            Log.AddString(String.Format("Reading {0}:", file1));
             ExcellonFile File1Parsed = new ExcellonFile();
-            File1Parsed.Load(file1);
-            Console.WriteLine("*** Reading {0}:", file2);
+            File1Parsed.Load(Log, file1);
+            Log.AddString(String.Format("Reading {0}:", file2));
             ExcellonFile File2Parsed = new ExcellonFile();
-            File2Parsed.Load(file2);
+            File2Parsed.Load(Log, file2);
+
+            Log.AddString(String.Format("Merging {0} with {1}", file1, file2));
 
             int MaxID = 0;
             foreach (var D in File1Parsed.Tools)
@@ -190,6 +212,9 @@ namespace GerberLibrary
             }
 
             File1Parsed.Write(outputfile, 0, 0, 0, 0);
+
+            Log.PopActivity();
+
         }
 
         public void Write(string filename, double DX, double DY, double DXp, double DYp, double AngleInDeg = 0)
@@ -282,8 +307,95 @@ namespace GerberLibrary
             return T;
         }
 
-        bool ParseExcellon(List<string> lines, double drillscaler )
+        private enum CutterCompensation
         {
+            None = 0,
+            Left,
+            Right
+        }
+
+        private List<PointD> CutCompensation(List<PointD> path, CutterCompensation compensation, double offset)
+        {
+            if (compensation == CutterCompensation.None)
+                return path;
+
+            if (path.Count < 2)
+                return path;
+
+            /* remove contiguous duplicates */
+            var unique = new List<PointD>(path.Count);
+            PointD prev = null;
+            foreach (var point in path)
+            {
+                if (prev == point)
+                    continue;
+
+                prev = point;
+                unique.Add(point);
+            }
+            path = unique;
+
+            /* create offset segments */
+            var SegmentsOffset = path.Zip(path.Skip(1), (A, B) =>
+            {
+                var angle = A.Angle(B);
+
+                if (compensation == CutterCompensation.Left)
+                    angle += Math.PI / 2;
+                else
+                    angle -= Math.PI / 2;
+
+                A += new PointD(offset * Math.Cos(angle), offset * Math.Sin(angle));
+                B += new PointD(offset * Math.Cos(angle), offset * Math.Sin(angle));
+
+                return new { A, B };
+            });
+
+            /* create segment pairs */
+            var SegmentPairs = SegmentsOffset
+                .Zip(SegmentsOffset.Skip(1), (First, Second) => new { First, Second })
+                .Zip(path.Skip(1), (pair, Center) => new { pair.First, pair.Second, Center });
+
+            var Path = new PolyLine();
+            Path.Vertices.Add(SegmentsOffset.First().A);
+
+            foreach (var segment in SegmentPairs)
+            {
+                /* segments are colinear */
+                if (segment.First.B == segment.Second.A)
+                    continue;
+
+                var intersection = Helpers.SegmentSegmentIntersect(segment.First.A, segment.First.B, segment.Second.A, segment.Second.B);
+                /* if segments intersect, */
+                if (intersection != null)
+                {
+                    /* the intersection point is what connects first and second segments */
+                    Path.Vertices.Add(intersection);
+                }
+                else
+                {
+                    /* otherwise connect segments with an arc */
+                    var Center = segment.Center - segment.First.B;
+
+                    var arc = Gerber.CreateCurvePoints(
+                        segment.First.B.X, segment.First.B.Y,
+                        segment.Second.A.X, segment.Second.A.Y,
+                        Center.X, Center.Y,
+                        compensation == CutterCompensation.Left ? InterpolationMode.ClockWise : InterpolationMode.CounterClockwise,
+                        GerberQuadrantMode.Multi);
+
+                    Path.Vertices.AddRange(arc);
+                }
+            }
+
+            Path.Vertices.Add(SegmentsOffset.Last().B);
+
+            return Path.Vertices;
+        }
+
+        bool ParseExcellon(List<string> lines, double drillscaler,ProgressLog log )
+        {
+            var LogID = log.PushActivity("Parse Excellon");
             Tools.Clear();
             bool headerdone = false;
             int currentline = 0;
@@ -297,27 +409,30 @@ namespace GerberLibrary
             bool NumberSpecHad = false;
             double LastX = 0;
             double LastY = 0;
+            CutterCompensation Compensation = CutterCompensation.None;
+            List<PointD> PathCompensation = new List<PointD>();
+            bool WarnIntersections = true;
             while (currentline < lines.Count)
             {
                 switch(lines[currentline])
                 {
                     //  case "M70":  GNF.Multiplier = 25.4; break; // inch mode
                     case "INCH":
-                        if (Gerber.ExtremelyVerbose) Console.WriteLine("Out of header INCH found!");
+                        if (Gerber.ExtremelyVerbose) log.AddString("Out of header INCH found!");
                         GNF.SetImperialMode();
 
                         break; // inch mode
                     case "METRIC":
-                        if (Gerber.ExtremelyVerbose) Console.WriteLine("Out of header METRIC found!");
+                        if (Gerber.ExtremelyVerbose) log.AddString("Out of header METRIC found!");
 
                         GNF.SetMetricMode();
                         break;
                     case "M72":
-                        if (Gerber.ExtremelyVerbose) Console.WriteLine("Out of header M72 found!");
+                        if (Gerber.ExtremelyVerbose) log.AddString("Out of header M72 found!");
                         GNF.SetImperialMode();
                         break; // inch mode
                     case "M71":
-                        if (Gerber.ExtremelyVerbose) Console.WriteLine("Out of header M71 found!");
+                        if (Gerber.ExtremelyVerbose) log.AddString("Out of header M71 found!");
                         GNF.SetMetricMode();
                         break; // metric mode
 
@@ -370,7 +485,7 @@ namespace GerberLibrary
                                             for (int i = 1; i < S.Count(); i++)
                                             {if (S[i][0] == '0')
                                             {
-                                                Console.WriteLine("Number spec reading!: {0}", S[i]);
+                                                    log.AddString(String.Format("Number spec reading!: {0}", S[i]));
                                                 var A = S[i].Split('.');
                                                 if (A.Length == 2)
                                                 {
@@ -394,7 +509,7 @@ namespace GerberLibrary
                                     {
                                         if (lines[currentline][0] == ';')
                                         {
-                                            if (Gerber.ShowProgress) Console.WriteLine(lines[currentline]);
+                                            if (Gerber.ShowProgress) log.AddString(lines[currentline]);
 
                                             if (lines[currentline].Contains(";FILE_FORMAT="))
                                             {
@@ -507,6 +622,9 @@ namespace GerberLibrary
                                             if (GLS.HasAfter("G", "X")) { x1 = GNF.ScaleFileToMM(GLS.GetAfter("G", "X") * Scaler); LastX = x1; }
                                             if (GLS.HasAfter("G", "Y")) { y1 = GNF.ScaleFileToMM(GLS.GetAfter("G", "Y") * Scaler); LastY = y1; }
 
+                                            /* cancel cutter compensation */
+                                            Compensation = CutterCompensation.None;
+                                            PathCompensation.Clear();
                                         }
                                         else if (GS.Has("G") && GS.Get("G") == 01 && (GS.Has("X") || GS.Has("Y")))
                                         {
@@ -520,21 +638,102 @@ namespace GerberLibrary
 
                                             if (GLS.HasAfter("G", "X")) { x2 = GNF.ScaleFileToMM(GLS.GetAfter("G", "X") * Scaler); LastX = x2; }
                                             if (GLS.HasAfter("G", "Y")) { y2 = GNF.ScaleFileToMM(GLS.GetAfter("G", "Y") * Scaler); LastY = y2; }
-
-                                            CurrentTool.Slots.Add(new ExcellonTool.SlotInfo() { Start = new PointD(x1 * drillscaler, y1 * drillscaler), End = new PointD(x2 * drillscaler, y2 * drillscaler) });
+                                            if (Compensation == CutterCompensation.None)
+                                                CurrentTool.Slots.Add(new ExcellonTool.SlotInfo() { Start = new PointD(x1 * drillscaler, y1 * drillscaler), End = new PointD(x2 * drillscaler, y2 * drillscaler) });
+                                            else
+                                                PathCompensation.Add(new PointD(x2 * drillscaler, y2 * drillscaler));
 
                                             LastX = x2;
                                             LastY = y2;
                                         }
+                                        else if (GS.Has("G") && GS.Get("G") == 40) /* cutter compensation off */
+                                        {
+                                            var comp = CutCompensation(PathCompensation, Compensation, CurrentTool.Radius * drillscaler);
+
+                                            if (WarnIntersections)
+                                            {
+                                                /* warn about path intersections */
+                                                for (int i = 0; i < comp.Count - 1; i++)
+                                                {
+                                                    for (int j = i + 2; j < comp.Count - 1; j++)
+                                                    {
+                                                        var intersection = Helpers.SegmentSegmentIntersect(comp[i], comp[i + 1], comp[j], comp[j + 1]);
+                                                        if (intersection != null)
+                                                        {
+                                                            log.AddString("Path with intersections found on cut compensation! Inspect output for accuracy!");
+                                                            WarnIntersections = false;
+                                                            break;
+                                                        }
+                                                    }
+
+                                                    if (!WarnIntersections)
+                                                        break;
+                                                }
+                                            }
+
+                                            /* create line segments from set of points */
+                                            var array = comp.Zip(comp.Skip(1), Tuple.Create);
+                                            CurrentTool.Slots.AddRange(array.Select(i => new ExcellonTool.SlotInfo() { Start = i.Item1, End = i.Item2 }));
+
+                                            Compensation = CutterCompensation.None;
+                                            PathCompensation.Clear();
+                                        }
+                                        else if (GS.Has("G") && GS.Get("G") == 41) /* cutter compensation left: offset of the cutter radius is to the LEFT of contouring direction */
+                                        {
+                                            if (Compensation != CutterCompensation.None)
+                                                log.AddString("Unterminated cutter compensation block found! Inspect output for accuracy!");
+
+                                            Compensation = CutterCompensation.Left;
+                                            PathCompensation.Clear();
+                                            PathCompensation.Add(new PointD(LastX * drillscaler, LastY * drillscaler));
+                                        }
+                                        else if (GS.Has("G") && GS.Get("G") == 42) /* cutter compensation right: offset of the cutter radius is to the RIGHT of contouring direction */
+                                        {
+                                            if (Compensation != CutterCompensation.None)
+                                                log.AddString("Unterminated cutter compensation block found! Inspect output for accuracy!");
+
+                                            Compensation = CutterCompensation.Right;
+                                            PathCompensation.Clear();
+                                            PathCompensation.Add(new PointD(LastX * drillscaler, LastY * drillscaler));
+                                        }
                                         else
                                         {
-                                            if (GS.Has("X") || GS.Has("Y"))
+                                            //Deal with the repeat code
+                                            if (GS.Has("R") && (GS.Has("X") || GS.Has("Y")))
+                                            {
+                                                double repeatX = 0;
+                                                double repeatY = 0;
+
+                                                if (GS.Has("X"))
+                                                    repeatX = GNF.ScaleFileToMM(GS.Get("X") * Scaler);
+                                                if (GS.Has("Y"))
+                                                    repeatY = GNF.ScaleFileToMM(GS.Get("Y") * Scaler);
+
+                                                for (int repeatIndex = 1; repeatIndex <= GS.Get("R"); repeatIndex++)
+                                                {
+                                                    double X = LastX;
+                                                    if (GS.Has("X"))
+                                                        X += repeatX;
+
+                                                    double Y = LastY;
+                                                    if (GS.Has("Y"))
+                                                        Y += repeatY;
+
+                                                    CurrentTool.Drills.Add(new PointD(X * drillscaler, Y * drillscaler));
+                                                    LastX = X;
+                                                    LastY = Y;
+                                                }
+                                            }
+                                            else if (GS.Has("X") || GS.Has("Y"))
                                             {
                                                 double X = LastX;
                                                 if (GS.Has("X")) X = GNF.ScaleFileToMM(GS.Get("X") * Scaler);
                                                 double Y = LastY;
                                                 if (GS.Has("Y")) Y = GNF.ScaleFileToMM(GS.Get("Y") * Scaler);
-                                                CurrentTool.Drills.Add(new PointD(X * drillscaler, Y * drillscaler));
+                                                if (Compensation == CutterCompensation.None)
+                                                    CurrentTool.Drills.Add(new PointD(X * drillscaler, Y * drillscaler));
+                                                else
+                                                    PathCompensation.Add(new PointD(X * drillscaler, Y * drillscaler));
                                                 LastX = X;
                                                 LastY = Y;
                                             }
@@ -547,23 +746,26 @@ namespace GerberLibrary
                 }
                 currentline++;
             }
+            log.PopActivity(LogID);
             return headerdone;
         }
 
 
         public static void WriteContainedOnly(string inputfile, PolyLine Boundary, string outputfilename, ProgressLog Log)
         {
+            Log.PushActivity("Excellon Clipper");
             if (File.Exists(inputfile) == false)
             {
-                Console.WriteLine("{0} not found! stopping process!", Path.GetFileName(inputfile));
+                Log.AddString(String.Format("{0} not found! stopping process!", Path.GetFileName(inputfile)));
+                Log.PopActivity();
                 return;
             }
             Log.AddString(String.Format("Clipping {0} to {1}", Path.GetFileName(inputfile), Path.GetFileName(outputfilename)));
 
             ExcellonFile EF = new ExcellonFile();
-            EF.Load(inputfile);
+            EF.Load(Log, inputfile);
             EF.WriteContained(Boundary, outputfilename, Log);
-
+            Log.PopActivity();
         }
 
         private void WriteContained(PolyLine boundary, string outputfilename, ProgressLog log)

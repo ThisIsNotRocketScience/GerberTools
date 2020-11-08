@@ -13,8 +13,9 @@ using System.IO;
 
 namespace CaseBuilder
 {
-    public partial class CaseBuilder : Form, ProgressLog
+    public partial class CaseBuilder : Form
     {
+       
         public CaseBuilder()
         {
             InitializeComponent();
@@ -47,7 +48,7 @@ namespace CaseBuilder
 
         private void LoadGerberFolder(List<string> list)
         {
-            Box.AddBoardsToSet(list, true, this);
+            Box.AddBoardsToSet(list, true, new StandardConsoleLog());
             double offset = (double)offsetbox.Value;
             double holediam = (double)holediamBox.Value;
             
@@ -67,17 +68,7 @@ namespace CaseBuilder
             }
         }
 
-        public void AddString(string text, float progress = -1F)
-        {
-            if (progress > -1)
-            {
-                Console.WriteLine("Progress: {0:N1}: {1}", progress * 100.0f, text);
-            }
-            else
-            {
-                Console.WriteLine("Progress: {0}", text);
-            }
-        }       
+       
     }
 }
 

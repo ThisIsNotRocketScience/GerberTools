@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GerberLibrary;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -21,9 +22,10 @@ namespace GerberViewer
         private Button addNewRowButton = new Button();
         private Button deleteRowButton = new Button();
         private Button clearButton = new Button();
+        private Button save2ImgButton = new Button();
+        private ProgressLog _log;
 
-
-        public LayerList(GerberViewerMainForm parent,  LoadedStuff doc)
+        public LayerList(GerberViewerMainForm parent,  LoadedStuff doc,ProgressLog log)
         {
 
             ParentGerberViewerForm = parent;
@@ -36,6 +38,7 @@ namespace GerberViewer
          
             CloseButton = false;
             CloseButtonVisible = false;
+            _log = log;
 
             Init();
         }
@@ -55,23 +58,68 @@ namespace GerberViewer
             clearButton.Location = new Point(100, 10);
             clearButton.Click += new EventHandler(ClearAllButtonClick);
 
+            save2ImgButton.Text = "Save Selected File To Image";
+            save2ImgButton.Location = new Point(200, 10);
+            save2ImgButton.AutoSize = true;
+            save2ImgButton.Click += new EventHandler(SaveSelectedFile2Img);
+
             buttonPanel.Controls.Add(addNewRowButton);
             buttonPanel.Controls.Add(deleteRowButton);
             buttonPanel.Controls.Add(clearButton);
+            buttonPanel.Controls.Add(save2ImgButton);
             buttonPanel.Height = 50;
             buttonPanel.Dock = DockStyle.Bottom;
 
             this.Controls.Add(this.buttonPanel);
         }
 
+        private void SaveSelectedFile2Img(object sender, EventArgs e)
+        {
+            if (_curRowIndex >= 0)
+            {
+                string filepath = Document.Gerbers[_curRowIndex].File.Name;
+                string savepath = CreateImageForSingleFile(filepath, Color.Black, Color.White, _log);
+                MessageBox.Show("Image saved: " + savepath);
+            }
+            MessageBox.Show("Please choose a file first !");
+        }
+
+        private string CreateImageForSingleFile(string arg, Color Foreground, Color Background,ProgressLog log)
+        {
+            string savePath = string.Empty;
+            int dpi = 720;
+            if (arg.ToLower().EndsWith(".png") == true) return null;
+            GerberImageCreator.AA = false;
+            //Gerber.Verbose = true;
+            if (Gerber.ThrowExceptions)
+            {
+                Gerber.SaveGerberFileToImageUnsafe(log, arg, arg + "_render.png", dpi, Foreground, Background);
+                savePath = arg + "_render.png";
+            }
+            else
+            {
+                Gerber.SaveGerberFileToImage(log, arg, arg + "_render.png", dpi, Foreground, Background);
+                savePath = arg + "_render.png";
+            }
+
+            if (Gerber.SaveDebugImageOutput)
+            {
+                Gerber.SaveDebugImage(arg, arg + "_debugviz.png", dpi, Foreground, Background, log);
+                savePath = arg + "_debugviz.png";
+            }
+            return savePath;
+        }
         private void RemoveGerberFile(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            MessageBox.Show("Sorry, this feature has not been implemented yet.");
         }
 
         private void AddGerberFile(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            MessageBox.Show("Sorry, this feature has not been implemented yet."+Environment.NewLine
+                + "You can directly drag files to the list area on the left to add files.");
         }
 
         public void Init()
@@ -129,11 +177,13 @@ namespace GerberViewer
          //   dataGridView1.CellFormatting += new DataGridViewCellFormattingEventHandler(songsDataGridView_CellFormatting);
         }
 
+        private int _curRowIndex = -1;
         private void DataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex>= 0)
             {
                 ParentGerberViewerForm.ActivateTab(e.RowIndex);
+                _curRowIndex = e.RowIndex;
             }
         }
 

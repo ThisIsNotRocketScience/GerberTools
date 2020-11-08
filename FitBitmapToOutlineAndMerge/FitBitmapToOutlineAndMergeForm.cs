@@ -15,7 +15,7 @@ using System.Globalization;
 
 namespace FitBitmapToOutlineAndMerge
 {
-    public partial class FitBitmapToOutlineAndMergeForm : Form, ProgressLog
+    public partial class FitBitmapToOutlineAndMergeForm : Form
     {
         public FitBitmapToOutlineAndMergeForm()
         {
@@ -80,7 +80,7 @@ namespace FitBitmapToOutlineAndMerge
             string OutlineFile = OutlineFileBox.Text;
 
             ParsedGerber PLS = null;
-            PLS = PolyLineSet.LoadGerberFile(OutlineFile);
+            PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), OutlineFile);
 
             string SilkFile = SilkFileTopBox.Text;
             string BitmapFile = BitmapFileTopBox.Text;
@@ -94,7 +94,7 @@ namespace FitBitmapToOutlineAndMerge
             statustext = "processing top!"; 
             CreateStuff(DPI, PLS, OutlineFile, SilkFile, BitmapFile, Flipped, Invert, CopperFile, soldermaskfile);
             statustext = "processing bottom!";
-            CreateStuff(DPI, PLS, OutlineFile, SilkFileBottomBox.Text, BitmapFileBottomBox.Text, FlippedBottom, InvertBottom, CopperFile, soldermaskfile);
+            CreateStuff(DPI, PLS, OutlineFile, SilkFileBottomBox.Text, BitmapFileBottomBox.Text, FlippedBottom, InvertBottom, "", "");
 
             BGThread = null;
             statustext = "done!";
@@ -162,11 +162,17 @@ namespace FitBitmapToOutlineAndMerge
             if (UseSilkFile)
             {
                 // merge things!
-                GerberLibrary.GerberMerger.Merge(OutSilk, SilkFile, Path.Combine(output, Path.GetFileName(SilkFile )), this);
+                GerberLibrary.GerberMerger.Merge(OutSilk, SilkFile, Path.Combine(output, Path.GetFileName(SilkFile )), new StandardConsoleLog());
             }
             else
             {
-                File.Copy(OutSilk, Path.Combine(output, Path.GetFileName(SilkFile)), true);
+                if (!Directory.Exists(Path.Combine(output, Path.GetFileName(SilkFile))))
+                {
+                    File.Copy(OutSilk, Path.Combine(output, Path.GetFileName(SilkFile)), true);
+                }
+                else
+                {
+                }
             }
             
 
@@ -186,7 +192,7 @@ namespace FitBitmapToOutlineAndMerge
             {
                 return;
             }
-            PLS = PolyLineSet.LoadGerberFile(OutlineFile);
+            PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), OutlineFile);
 
             sizebox.Text = String.Format("{0}x{1}mm", PLS.BoundingBox.Width(), PLS.BoundingBox.Height());
 

@@ -41,11 +41,22 @@ namespace GerberLibrary
             }
         }
 
-        public void AddPolyLine(PolyLine a)
+        public void AddPolyLine(PolyLine a, double expansion = 0)
         {
-            foreach (var r in a.Vertices)
+            if (expansion == 0)
             {
-                FitPoint(new PointD(r.X, r.Y));
+                foreach (var r in a.Vertices)
+                {
+                    FitPoint(new PointD(r.X, r.Y));
+                }
+            }
+            else
+            {
+                foreach (var r in a.Vertices)
+                {
+                    FitPoint(new PointD(r.X+expansion, r.Y + expansion));
+                    FitPoint(new PointD(r.X-expansion, r.Y- expansion));
+                }
             }
         }
 
@@ -113,6 +124,11 @@ namespace GerberLibrary
             return new PointD((TopLeft.X + BottomRight.X) * 0.5, (TopLeft.Y + BottomRight.Y) * 0.5);
         }
 
+        public PointD Center()
+        {
+            return Middle();
+        }
+
         public void Reset()
         {
             TopLeft.X = 10000;
@@ -127,6 +143,7 @@ namespace GerberLibrary
         {
             return String.Format("({0:N2}, {1:N2}) - ({2:N2}, {3:N2}) -> {4:N2} x {5:N2} mm", TopLeft.X, TopLeft.Y, BottomRight.X, BottomRight.Y, Width(), Height());
         }
+
         public double Width()
         {
             if (!Valid) return 0;

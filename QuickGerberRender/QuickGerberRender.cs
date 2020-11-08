@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GerberLibrary;
+using GerberLibrary.Core;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -47,6 +49,7 @@ namespace WindowsFormsApplication1
             DPIBox.Items.Add("200");
             DPIBox.Items.Add("300");
             DPIBox.Items.Add("400");
+            DPIBox.Items.Add("800");
             ReDoColor();
         }
 
@@ -90,26 +93,46 @@ namespace WindowsFormsApplication1
 
         private void LoadGerberFolder(List<string> s)
         {
-            Progress P = new Progress(s, SolderMaskColor.Text, SilkScreenColor.Text, CopperColor.Text, TracesBox.Text, DPIBox.Text);
+            Progress P = new Progress(s, SolderMaskColor.Text, SilkScreenColor.Text, CopperColor.Text, TracesBox.Text, DPIBox.Text, XRayOut.Checked, PCBOut.Checked);
             P.Show();
             P.StartThread();
         }
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-            e.Graphics.Clear(GerberLibrary.Gerber.ParseColor(SolderMaskColor.Text));
-            var padcolor = GerberLibrary.Gerber.ParseColor(CopperColor.Text);
-            var tracecolor = GerberLibrary.Gerber.ParseColor(TracesBox.Text);
+
             int H = pictureBox1.Height;
             int W = pictureBox1.Width;
+            e.Graphics.Clear(Color.Black);
+            e.Graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+
+            int Y1 = H / 2 + 40;
+            int Y2 = H / 2 - 40;
+            int XL = W / 2 + (-6) * 30;
+            int XR = W / 2 + (6) * 30;
+
+            e.Graphics.FillRectangle(new SolidBrush(GerberLibrary.Gerber.ParseColor(SolderMaskColor.Text)), new RectangleF(XL, Y2-10, XR - XL, Y1-Y2+20));
+            
+            
+         
+            var padcolor = GerberLibrary.Gerber.ParseColor(CopperColor.Text);
+            var tracecolor = GerberLibrary.Gerber.ParseColor(TracesBox.Text);
+            
+          
             StringFormat SF = new StringFormat();
             SF.Alignment = StringAlignment.Center;
             SF.LineAlignment = StringAlignment.Center;
             e.Graphics.DrawString("Drop your gerber folder here!", new Font("Arial", 20), new SolidBrush(GerberLibrary.Gerber.ParseColor(SilkScreenColor.Text)), W / 2.0f, H / 2.0f, SF);
-            int Y1 = H / 2 + 20;
-            int Y2 = H / 2 - 20;
-            e.Graphics.DrawLine(new Pen(tracecolor, 4), W / 4, Y1, (W * 3) / 4, Y1);
-            e.Graphics.DrawLine(new Pen(tracecolor, 4), W / 4,Y2, (W * 3) / 4, Y2);
+           
+                XL = W / 2 + (-4) * 30;
+            XR = W / 2 + ( 4) * 30;
+            
+            
+            e.Graphics.DrawLine(new Pen(tracecolor, 4), XL, Y1, XR, Y1);
+            e.Graphics.DrawLine(new Pen(tracecolor, 4), XL, Y2, XR, Y2);
+
 
             for (int i =0;i< 10;i++)
             {

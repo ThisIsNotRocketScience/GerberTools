@@ -3,6 +3,7 @@ using GerberLibrary.Core.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +17,24 @@ namespace GerberLibrary
         public double Height;
         public double X;
         public double Y;
+        
+        public RectangleD()
+        {
+
+        }
+        public RectangleD(Bounds bounds)
+        {
+            X = bounds.TopLeft.X;
+            Y = bounds.TopLeft.Y;
+            Width = bounds.Width();
+            Height = bounds.Height();
+        }
+
+        internal bool ContainsPoint(double x, double y)
+        {
+            if (x >= X && y >= Y && x < (X + Width) && y < (Y + Height)) return true;
+            return false;
+        }
     }
 
     public class RectanglePackerObject : RectangleD

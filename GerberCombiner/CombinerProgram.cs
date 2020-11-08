@@ -9,10 +9,11 @@ using GerberLibrary.Core;
 
 namespace GerberCombiner
 {
-    class CombinerProgram: ProgressLog
+    class CombinerProgram
     {
         static void Main(string[] args)
         {
+            
 
             GerberSplitter GS = new GerberSplitter();
             GS.Split("G03*", new GerberLibrary.Core.Primitives.GerberNumberFormat());
@@ -58,24 +59,17 @@ namespace GerberCombiner
             {
                 List<string> ExcellonFiles = new List<string>();
                 ExcellonFiles.AddRange(args.Skip(1));
-                ExcellonFile.MergeAll(ExcellonFiles, args[0], new CombinerProgram());
+                ExcellonFile.MergeAll(ExcellonFiles, args[0], new StandardConsoleLog());
             }
             else
             {
                 List<string> GerberFiles = new List<string>();
                 GerberFiles.AddRange(args.Skip(1));
-                GerberMerger.MergeAll(GerberFiles, args[0], new CombinerProgram());
+                GerberMerger.MergeAll(GerberFiles, args[0], new StandardConsoleLog());
             }
       //      Console.WriteLine("Press any key to continue..");
        //     Console.ReadKey();
         }
-        
-        public static float fProgress;
-        
-        public void AddString(string text, float progress = -1)
-        {
-            if (progress>-1) fProgress = progress;
-            //Console.WriteLine(String.Format("{0} %: {1}", (fProgress * 100).ToString("D2"), text));
-        }
+                
     }
 }

@@ -16,7 +16,7 @@ namespace GerberToDXF
         static void ConvertFile(string from, string to, bool displayshapes, bool outlineshapes)
         {
 
-            ParsedGerber PLS = PolyLineSet.LoadGerberFile(from,true, State: new GerberParserState() {  PreCombinePolygons = true });
+            ParsedGerber PLS = PolyLineSet.LoadGerberFile(new StandardConsoleLog(), from,true, State: new GerberParserState() {  PreCombinePolygons = true });
 
 
 

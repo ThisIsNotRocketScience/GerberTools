@@ -173,7 +173,7 @@ namespace ProductionFrame
                 Files.Add(OutName + ".gbl");
                 Files.Add(OutName + ".gbs");
                 GerberImageCreator GIC = new GerberImageCreator();
-                GIC.AddBoardsToSet(Files);
+                GIC.AddBoardsToSet(Files, new StandardConsoleLog());
                 
                 GIC.WriteImageFiles(OutName, 50 );
                 // Gerber.SaveGerberFileToImage(OutName + ".gko", OutName + ".gko.png", 200, Color.Black, Color.White);

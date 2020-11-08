@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GerberClipper
 {
-    class GerberClipper: ProgressLog
+    class GerberClipper
     {
         static void Main(string[] args)
         {
@@ -22,14 +22,10 @@ namespace GerberClipper
             string outputfile = args[2];
 
             GerberImageCreator GIC = new GerberImageCreator();
-            GIC.AddBoardsToSet(new List<string>() { outline, infile }, true, new GerberClipper());
-
-            GIC.ClipBoard(infile, outputfile, new GerberClipper());
+            GIC.AddBoardsToSet(new List<string>() { outline, infile }, new StandardConsoleLog(),true);
+            GIC.ClipBoard(infile, outputfile, new StandardConsoleLog());
         }
 
-        public void AddString(string text, float progress = -1F)
-        {
-            Console.WriteLine("{0}", text);
-        }
+        
     }
 }

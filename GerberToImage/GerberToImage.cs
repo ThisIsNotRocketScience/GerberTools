@@ -11,13 +11,79 @@ using System.Windows.Forms;
 
 namespace GerberToImage
 {
-    class GerberToImage: ProgressLog
+    class GerberToImage
     {
+        enum Arguments
+        {
+            dpi,
+            noxray,
+            nonormal,
+            silk,
+            mask,
+            trace,
+            copper, 
+            None
+        }
+
         [STAThread]
         static void Main(string[] args)
         {
+            if (args.Count() < 1)
+            {
+                Console.WriteLine("need files to render...");
+                Console.WriteLine("GerberToImage <files> [--dpi N] [--noxray] [--nopcb] [--silk color] [--trace color] [--copper color] [--mask color]");
+                return;
+            }
+         
+            int dpi = 400;
+            Arguments NextArg = Arguments.None;
+            bool xray = true;
+            bool normal = true;
+            string pcbcolor = "green";
+            string silkcolor = "white";
+            string tracecolor = "auto";
+            string coppercolor = "gold";
+            List<string> RestList = new List<string>();
+            for (int i = 0; i < args.Count() ; i++)
+            {
+                switch (NextArg)
+                {
 
-            if (args.Count() == 1 && File.Exists(args[0]))
+                    case Arguments.dpi: dpi = Int32.Parse(args[i]); NextArg = Arguments.None; break;
+                    case Arguments.silk: silkcolor = args[i];NextArg = Arguments.None;break;
+                    case Arguments.mask: pcbcolor = args[i]; NextArg = Arguments.None; break;
+                    case Arguments.trace: tracecolor = args[i]; NextArg = Arguments.None; break;
+                    case Arguments.copper: coppercolor= args[i]; NextArg = Arguments.None; break;
+                    case Arguments.None:
+                        switch (args[i].ToLower())
+                        {
+                            case "-dpi":
+                            case "--dpi": NextArg = Arguments.dpi; break;
+                            case "-silk": 
+                            case "--silk": NextArg = Arguments.silk;break;
+                            case "-trace":
+                            case "--trace": NextArg = Arguments.trace; break;
+                            case "-copper":
+                            case "--copper": NextArg = Arguments.copper; break;
+                            case "-mask":
+                            case "--mask": NextArg = Arguments.mask; break;
+                            case "-noxray":
+                            case "--noxray": xray = false; NextArg = Arguments.None; break;
+                            case "-nopcb":
+                            case "--nopcb": normal = false; NextArg = Arguments.None; break;
+
+                            default:
+                                RestList.Add(args[i]);break;
+                        }
+                        break;
+                }
+            }
+
+
+            Gerber.SaveIntermediateImages = false;
+            Gerber.ShowProgress = false;
+
+            if (RestList.Count() == 1 && File.Exists(RestList[0]) && Path.GetExtension(RestList[0]).ToLower()!= ".zip")
             {
               //  Gerber.WriteSanitized = true;
                 Gerber.ExtremelyVerbose = false;
@@ -25,7 +91,7 @@ namespace GerberToImage
                 Gerber.WaitForKey = true;
                 Gerber.ShowProgress = true;
 
-               CreateImageForSingleFile(args[0], Color.Black, Color.White);
+               CreateImageForSingleFile(new StandardConsoleLog(),RestList[0], Color.Black, Color.White);
                 if (Gerber.WaitForKey)
                 {
                     Console.WriteLine("Press any key to continue");
@@ -36,47 +102,24 @@ namespace GerberToImage
             
             GerberImageCreator GIC = new GerberImageCreator();
             string TargetFileBaseName = "";
-            if (args.Count() >= 1) TargetFileBaseName = args[0];
+            if (RestList.Count() >= 1) TargetFileBaseName = RestList[0];
+            
             List<String> FileList = new List<string>();
-            if (args.Count() <= 1 || Directory.Exists(args[1]))
-            {
-                foreach(var a in Directory.GetFiles(args[1])){
-                    try{
-                     //   Console.WriteLine("Building layer image for: {0}", Path.GetFileName(a));
-                      //  CreateImageForSingleFile(a);
-                    }
-                    catch(Exception E){
-                        Console.WriteLine("Error while writing image for {0}: {1}", Path.GetFileName(a), E.Message);
-                    };
-                }
 
-                if (args.Count() == 0)
+            foreach(var a in RestList)
+            { 
+                if (Directory.Exists(a))
                 {
-                    System.Windows.Forms.SaveFileDialog OFD = new System.Windows.Forms.SaveFileDialog();
-                    OFD.DefaultExt = "";
-                    if (OFD.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
-                    TargetFileBaseName = OFD.FileName;
-                }
-
-                string foldername = "";
-
-                if (args.Count() < 2)
-                {
-                    FolderBrowserDialog FBD = new FolderBrowserDialog();
-                    if (FBD.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
-                    foldername = FBD.SelectedPath;
+                    FileList.AddRange(Directory.GetFiles(a, "*.*"));
                 }
                 else
                 {
-                    foldername = args[1];
+                    if (File.Exists(a))
+                     {
+                        FileList.Add(a);
+                    }
                 }
 
-                FileList.AddRange(Directory.GetFiles(foldername, "*.*"));
-
-            }
-            else
-            {
-                FileList.AddRange(args.Skip(1));
             }
 
             for (int i = 0; i < FileList.Count; i++)
@@ -86,13 +129,20 @@ namespace GerberToImage
                     FileList[i] = Path.GetDirectoryName(FileList[i]);
                 }
             }
-            GIC.AddBoardsToSet(FileList);
-            GIC.WriteImageFiles(TargetFileBaseName, 200, Gerber.DirectlyShowGeneratedBoardImages, new GerberToImage());
+            var L = new GerberToImage( Path.GetFileNameWithoutExtension(TargetFileBaseName));
+            GIC.AddBoardsToSet(FileList,new StandardConsoleLog(),  true);
+            BoardRenderColorSet colors = new BoardRenderColorSet();
+
+            if (pcbcolor == "") pcbcolor = "black";
+            colors.SetupColors(pcbcolor, silkcolor, tracecolor, coppercolor);
+
+
+            GIC.SetColors(colors);
+            GIC.WriteImageFiles(TargetFileBaseName, dpi, false, xray, normal, new StandardConsoleLog());
             Console.WriteLine("Done writing {0}", TargetFileBaseName);
-           Console.ReadKey();
         }
 
-        private static void CreateImageForSingleFile(string arg, Color Foreground, Color Background)
+        private static void CreateImageForSingleFile(ProgressLog log, string arg, Color Foreground, Color Background)
         {
             
             if (arg.ToLower().EndsWith(".png") == true) return;
@@ -100,22 +150,23 @@ namespace GerberToImage
             //Gerber.Verbose = true;
             if (Gerber.ThrowExceptions)
             {
-                Gerber.SaveGerberFileToImageUnsafe(arg, arg + "_render.png", 1000, Foreground, Background);
+                Gerber.SaveGerberFileToImageUnsafe(log, arg, arg + "_render.png", 1000, Foreground, Background);
             }
             else
             {
-                Gerber.SaveGerberFileToImage(arg, arg + "_render.png", 1000, Foreground, Background);
+                Gerber.SaveGerberFileToImage(log, arg, arg + "_render.png", 1000, Foreground, Background);
             }
 
             if (Gerber.SaveDebugImageOutput)
             {
-                Gerber.SaveDebugImage(arg, arg + "_debugviz.png", 1000, Foreground, Background);
+                Gerber.SaveDebugImage(arg, arg + "_debugviz.png", 1000, Foreground, Background, new StandardConsoleLog());
             }
         }
 
-        public void AddString(string text, float progress = -1)
+        public string TheName;
+        GerberToImage(string name)
         {
-            Console.WriteLine(text);
+            TheName = name;
         }
     }
 }
