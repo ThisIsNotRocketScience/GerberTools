@@ -1676,7 +1676,7 @@ namespace GerberLibrary
             return R;
         }
 
-        public List<String> SaveGerbersToFolder(string BaseName, string targetfolder, ProgressLog Logger, bool SaveOutline = true, bool GenerateImages = true, bool DeleteGenerated = true, string combinedfilename = "combined")
+        public List<String> SaveGerbersToFolder(string BaseName, string targetfolder, ProgressLog Logger, bool OutlineToTopSilkscreen = false, bool SaveOutline = true, bool GenerateImages = true, bool DeleteGenerated = true, string combinedfilename = "combined")
         {
             var logcheck = Logger.PushActivity("SaveGerbersToFolder");
             Logger.AddString("Starting export to " + targetfolder);
@@ -1693,6 +1693,11 @@ namespace GerberLibrary
 
             Dictionary<string, List<string>> FilesPerExt = new Dictionary<string, List<string>>();
             Dictionary<string, BoardFileType> FileTypePerExt = new Dictionary<string, BoardFileType>();
+            if (OutlineToTopSilkscreen)
+            {
+                FilesPerExt[".gto"] = new List<string>();
+            }
+
             foreach (var s in GeneratedFiles)
             {
                 string ext = Path.GetExtension(s).ToLower(); ;
@@ -1713,6 +1718,12 @@ namespace GerberLibrary
                 if (FilesPerExt.ContainsKey(ext) == false)
                 {
                     FilesPerExt[ext] = new List<string>();
+                }
+
+                if (OutlineToTopSilkscreen)
+                {
+                    if (ext == ".gko")
+                        FilesPerExt[".gto"].Add(s);
                 }
 
                 FileTypePerExt[ext] = Gerber.FindFileType(s);
@@ -2228,6 +2239,7 @@ namespace GerberLibrary
 
         public bool DoNotGenerateMouseBites = false;
         public bool MergeFileTypes = false;
+        public bool CopyOutlineToTopSilkscreen = false;
 
         public GerberOutline GetOutline(Dictionary<string, GerberOutline> GerberOutlines, string gerberPath)
         {

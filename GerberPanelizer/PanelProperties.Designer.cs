@@ -53,6 +53,7 @@
             this.ClipToOutlines = new System.Windows.Forms.CheckBox();
             this.noMouseBites = new System.Windows.Forms.CheckBox();
             this.mergebyfiletypebox = new System.Windows.Forms.CheckBox();
+            this.copyOutlineToTopSilkscreen = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.WidthBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MarginBox)).BeginInit();
@@ -397,6 +398,16 @@
             this.mergebyfiletypebox.UseVisualStyleBackColor = true;
             this.mergebyfiletypebox.CheckedChanged += new System.EventHandler(this.CheckBox1_CheckedChanged_1);
             // 
+            // copyOutlineToTopSilkscreen
+            // 
+            this.copyOutlineToTopSilkscreen.AutoSize = true;
+            this.copyOutlineToTopSilkscreen.Location = new System.Drawing.Point(39, 682);
+            this.copyOutlineToTopSilkscreen.Name = "copyOutilineToTopSilkscreen";
+            this.copyOutlineToTopSilkscreen.Size = new System.Drawing.Size(520, 36);
+            this.copyOutlineToTopSilkscreen.TabIndex = 27;
+            this.copyOutlineToTopSilkscreen.Text = "Copy outline to top silkscreen";
+            this.copyOutlineToTopSilkscreen.UseVisualStyleBackColor = true;
+            // 
             // PanelProperties
             // 
             this.AcceptButton = this.button1;
@@ -404,6 +415,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.button2;
             this.ClientSize = new System.Drawing.Size(750, 868);
+            this.Controls.Add(this.copyOutlineToTopSilkscreen);
             this.Controls.Add(this.mergebyfiletypebox);
             this.Controls.Add(this.noMouseBites);
             this.Controls.Add(this.ClipToOutlines);
@@ -469,5 +481,6 @@
         private System.Windows.Forms.CheckBox ClipToOutlines;
         private System.Windows.Forms.CheckBox noMouseBites;
         private System.Windows.Forms.CheckBox mergebyfiletypebox;
+        private System.Windows.Forms.CheckBox copyOutlineToTopSilkscreen;
     }
 }
