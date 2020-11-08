@@ -537,7 +537,7 @@ namespace GerberLibrary
             try
             {
                 Directory.CreateDirectory(OutputFolder);
-                var PNLFiles = PNL.SaveGerbersToFolder("MergedFrame", OutputFolder, log, true, false, true, basename);
+                var PNLFiles = PNL.SaveGerbersToFolder("MergedFrame", OutputFolder, log, false, true, false, true, basename);
             }
             catch(Exception E)
             {
