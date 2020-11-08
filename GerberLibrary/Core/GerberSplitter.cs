@@ -24,6 +24,11 @@ namespace GerberLibrary
                 Number = form.Decode(running, hasdecimalpoint);
             }
         }
+
+        public override string ToString()
+        {
+            return $"{Command}{Number}";
+        }
     }
 
     public class GerberNumberPairList

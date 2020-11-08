@@ -563,7 +563,7 @@ namespace GerberLibrary.Core
                         double Y = c.y;
                         Helpers.Transform(dx, dy, cx, cy, angle, ref X, ref Y);
                         OptionalOut<BOMEntry> bom = new OptionalOut<BOMEntry>();
-                        AddBOMItemInt(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle + angle) % 360, c.Side, bom);
+                        AddBOMItemInt(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle - angle) % 360, c.Side, bom);
                         bom.Result.SetCombined(b.Value.Combined());
                     }
                 }
@@ -1145,7 +1145,7 @@ namespace GerberLibrary.Core
             return partcount;
         }
 
-        internal static BOM ScanFolderForBoms(string gerberPath)
+        internal static BOM ScanFolderForBoms(string gerberPath, ProgressLog Log)
         {
             string ultiboardfolder = Path.Combine(gerberPath, "ultiboard");
 
@@ -1173,8 +1173,588 @@ namespace GerberLibrary.Core
                 return R;
             }
 
+            string diptracefolder = Path.Combine(gerberPath, "diptraceasc");
+
+            if (Directory.Exists(diptracefolder))
+            {
+                BOM R = new BOM();
+                var F = Directory.GetFiles(diptracefolder, "*.asc");
+
+                foreach (var a in F)
+                {
+                    R.LoadDiptraceASC(a, Log);
+                    return R;
+                }
+
+            }
             return null;
 
+
+        }
+
+        public class SNode
+        {
+            public override string ToString()
+            {
+                return Name + String.Format(" ({0} children)", Children.Count);
+            }
+            public string Print(int tab = 0)
+            {
+                var res = tab.ToString() + " ";
+                for (int i = 0; i < tab; i++)
+                {
+                    res += "  ";
+                }
+                res += String.Format("{0}", Name) + "\n";
+                foreach (var a in Children)
+                {
+                    res += a.Print(tab + 1);
+                }
+                return res;
+            }
+            public void Load(string s)
+            {
+                Children = ReadExpression(s);
+            }
+            public void Read(string s)
+            {
+                int R = FindWhiteSpace(s);
+                if (R == -1) R = s.Length - 1;
+                int start = 0;
+                while (s[start] == '(') start++;
+                Name = s.Substring(start, R - start).Trim();
+
+                int i = s.LastIndexOf(')');
+                Load(s.Substring(R, i - R));
+
+
+            }
+
+            private int FindWhiteSpace(string s)
+            {
+
+                int idx = 0;
+                while (idx < s.Length)
+                {
+                    if (char.IsWhiteSpace(s[idx])) return idx;
+                    idx++;
+                }
+                return idx;
+            }
+
+            public string Name;
+            public List<SNode> Children = new List<SNode>();
+            string currenttoken = "";
+            int owntokens = 0;
+
+            public int Read(string s, int start)
+            {
+                int P = start;
+                bool quoted = false;
+                bool escaped = false;
+                int depth = 1;
+                while (P < s.Length && depth > 0)
+                {
+                    switch (s[P])
+                    {
+                        case '"':
+                            if (quoted)
+                            {
+
+
+                                if (escaped)
+                                {
+                                    currenttoken += s[P];
+                                    escaped = false;
+                                }
+                                else
+                                {
+                                    quoted = false;
+                                    CheckTokenAndConsume();
+
+                                }
+                            }
+                            else
+                            {
+                                quoted = true;
+                                escaped = false;
+                            }
+                            P++;
+                            break;
+                        case '\r':
+                        case '\n':
+                        case '\t':
+                        case ' ':
+                            if (quoted)
+                            {
+                                currenttoken += s[P];
+                            }
+                            else
+                            {
+                                CheckTokenAndConsume();
+
+                            }
+                            P++;
+                            break;
+                        case '(':
+                            CheckTokenAndConsume();
+                            SNode child = new SNode();
+                            P = child.Read(s, P + 1);
+                            Children.Add(child);
+                            break;
+                        case ')':
+                            CheckTokenAndConsume();
+
+                            return P + 1;
+
+
+                        default:
+                            currenttoken += s[P];
+                            P++;
+                            break;
+
+                    }
+
+                }
+
+                return P;
+            }
+
+            private void CheckTokenAndConsume()
+            {
+                if (currenttoken.Length > 0)
+                {
+                    if (owntokens == 0)
+                    {
+                        Name = currenttoken;
+
+                    }
+                    else
+                    {
+                        Children.Add(new SNode() { Name = currenttoken });
+                    }
+
+                    owntokens++;
+                    currenttoken = "";
+                }
+            }
+
+            public static List<SNode> ReadExpression(string s)
+            {
+                List<SNode> res = new List<SNode>();
+                string currenttoken = "";
+                int R = 0;
+                while (R < s.Length)
+                {
+                    switch (s[R])
+                    {
+                        case '\r':
+                        case '\n':
+                        case '\t':
+                        case ' ':
+                            currenttoken = "";
+
+                            R++;
+                            break;
+                        default:
+                            currenttoken += s[R];
+                            R++;
+                            break;
+                        case '(':
+                            {
+                                SNode child = new SNode();
+                                R = child.Read(s, R + 1);
+                                res.Add(child);
+                            }
+                            break;
+                    }
+                }
+                return res;
+
+            }
+            public static List<SNode> aReadExpression(string s)
+            {
+                List<SNode> res = new List<SNode>();
+
+                int R = 0;
+
+                while (R < s.Length)
+                {
+                    switch (s[R])
+                    {
+                        case '\r':
+                        case '\n':
+                        case '\t':
+                        case ' ':
+                            R++;
+                            break;
+                        default:
+                            {
+                                int E = R + 1;
+                                while (E < s.Length && digits(s[E]))
+                                {
+                                    E++;
+                                }
+
+                                SNode c = new SNode();
+                                c.Name = s.Substring(R, E - R);
+                                res.Add(c);
+                                R = E + 1;
+
+                            }
+
+                            break;
+
+                        case '(':
+                            {
+                                int depth = 1;
+                                int pos = R + 1;
+                                while (depth > 0 && pos < s.Length)
+                                {
+                                    if (s[pos] == '(')
+                                    {
+                                        depth++;
+                                    }
+                                    if (s[pos] == ')')
+                                    {
+                                        depth--;
+                                    }
+                                    pos++;
+                                }
+                                int E = pos + 1;
+
+
+
+                                SNode c = new SNode();
+                                c.Read(s.Substring(R, E - R - 1));
+                                res.Add(c);
+
+                                R = E + 1;
+                            }
+                            break;
+                        case '"':
+                            {
+                                int E = R + 1;
+                                while (s[E] != '"')
+                                {
+                                    E++;
+                                }
+
+                                SNode c = new SNode();
+                                c.Name = s.Substring(R + 1, E - R - 1);
+                                res.Add(c);
+                                R = E + 1;
+
+                            }
+                            break;
+                    }
+                }
+                // Name = s.Substring(1, R);
+
+
+
+                return res;
+            }
+
+            private static bool digits(char v)
+            {
+                if (char.IsWhiteSpace(v)) return false;
+
+                return true;
+            }
+
+            public List<SNode> Find(string v, bool recurse = true)
+            {
+                List<SNode> R = new List<SNode>();
+                foreach (var a in Children)
+                {
+                    if (a.Name == v)
+                    {
+                        R.Add(a);
+                    }
+                    if (recurse) R.AddRange(a.Find(v, true));
+                }
+                return R;
+            }
+        }
+
+        static void DipRotateAndAdjust(double X, double Y, double OriginX, double OriginY, double Angle, int Orientation, int PatternOrientation, bool flipped, BOMEntry.RefDesc RD, double fileoriginX, double fileoriginY, double UnitMult)
+        {
+            if (flipped) OriginX = -OriginX;
+
+            double pat_rot = ((Orientation) * 90) * 3.141592654 / 180.0;
+            double r_orig_x = 0;
+
+            double r_orig_y = 0;
+
+            if (flipped)
+            {
+                r_orig_x = OriginX * Math.Cos(pat_rot) - OriginY * Math.Sin(pat_rot);
+                r_orig_y = -OriginX * Math.Sin(pat_rot) - OriginY * Math.Cos(pat_rot);
+            }
+            else
+            {
+                r_orig_x = -OriginX * Math.Cos(pat_rot) - OriginY * Math.Sin(pat_rot);
+                r_orig_y = OriginX * Math.Sin(pat_rot) - OriginY * Math.Cos(pat_rot);
+            }
+
+            double p_x = (X - r_orig_x);
+            double p_y = (Y - r_orig_y);
+
+            //     p_y = -p_y;
+            double p_angle = ((Orientation) * 90) + Angle;
+
+            if (flipped) //: # maybe this should check BottomSide instead
+            {
+                p_angle = 360 - p_angle;
+            }
+
+            p_angle = (p_angle + 10 * 360) % 360;
+
+            RD.x = (p_x - fileoriginX) * UnitMult;
+            RD.y = -(p_y - fileoriginY) * UnitMult;
+            RD.angle = -p_angle;
+
+        }
+
+
+        private void LoadDiptraceASC(string InputFile, ProgressLog Log)
+        {
+                Log.PushActivity("DIPTrace BOM Loader");
+
+                Log.AddString(String.Format("Loading Diptrace module: {0}", Path.GetFileNameWithoutExtension(InputFile)));
+
+                string S = System.IO.File.ReadAllText(InputFile);
+                S = S.Replace("\n", "");
+                var Root = new SNode();
+                Root.Load(S);
+                var Src = Root.Find("Source");
+                float AngleMult = 1.0f;
+                if (Src.Count > 0)
+                {
+                    if (Src.First().Children[0].Name == "DipTrace-PCBN")
+                    {
+                        Log.AddString("New Dip Asc");
+                        AngleMult = 360.0f / ((float)Math.PI * 2.0f);
+                    }
+                    else
+                    {
+                        if (Src.First().Children[0].Name == "DipTrace-PCB")
+                        {
+                            Log.AddString("Old Dip Asc");
+                            AngleMult = 1.0f;
+                        }
+                    }
+                }
+                //    string Out = Root.Print();
+                float UnitMult = 10.0f / 25.4f;
+                UnitMult = 10.0f / 30.0f;
+
+                var C = Root.Find("Board", false).First().Find("Components", false);
+                var Shapes = Root.Find("Board", false).First().Find("Shapes", false);
+
+
+                float originx = 0;
+                float originy = 0;
+                var ox = Root.Find("OriginX");
+                var oy = Root.Find("OriginY");
+                if (ox.Count > 0)
+                {
+                    originx = float.Parse(ox.First().Children[0].Name.Replace('.', ','));
+                }
+                if (oy.Count > 0)
+                {
+                    originy = float.Parse(oy.First().Children[0].Name.Replace('.', ','));
+                }
+                var Um = Root.Find("mm");
+                if (Um.Count > 0) UnitMult = 10.0f / 30.0f;
+                var Umil = Root.Find("mil");
+                if (Umil.Count > 0) UnitMult = 10.0f / 30.0f;
+
+/*                var Pts = Root.Find("Board", false).First().Find("Points", false);
+                
+                List<PointF> Outline = new List<PointF>();
+                foreach (var p in Pts.First().Children)
+                {
+                    Outline.Add(new PointF((float.Parse(p.Children[0].Name.Replace('.', ',')) - originx) * UnitMult, -(float.Parse(p.Children[1].Name.Replace('.', ',')) - originy) * UnitMult));
+
+                }
+                for (int i = 0; i < Outline.Count; i++)
+                {
+                    int idx2 = (i + 1) % Outline.Count;
+                    AddWire(Outline[i].X, Outline[i].Y, Outline[idx2].X, Outline[idx2].Y);
+                }
+
+
+
+                foreach (var s in Shapes[0].Children)
+                {
+                    var ShapeNmae = s.Find("Name", false).FirstOrDefault();
+                    if (ShapeNmae != null)
+                    {
+                        if (ShapeNmae.Children[0].Name == "Panel Area")
+                        {
+
+                            var pts = s.Find("Points", false);
+                            if (pts != null && pts[0].Children.Count == 2)
+                            {
+
+                                var c1 = pts[0].Children[0];
+                                var c2 = pts[0].Children[1];
+                                var x1 = (float.Parse(c1.Children[0].Name.Replace('.', ',')) - originx) * UnitMult;
+                                var y1 = -(float.Parse(c1.Children[1].Name.Replace('.', ',')) - originy) * UnitMult;
+                                var x2 = (float.Parse(c2.Children[0].Name.Replace('.', ',')) - originx) * UnitMult;
+                                var y2 = -(float.Parse(c2.Children[1].Name.Replace('.', ',')) - originy) * UnitMult;
+                                this.HasGrid = true;
+                                this.GridOffset = new vec2(Math.Min(x1, x2), Math.Max(y1, y2));
+                                this.HasEnd = true;
+                                this.EndPos = new vec2(Math.Max(x1, x2), Math.Min(y1, y2));
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                */
+
+                foreach (var a in C[0].Children)
+                {
+
+
+                    float partoriginx = 0;
+                    float partoriginy = 0;
+                    var pox = a.Find("OriginX");
+                    var poy = a.Find("OriginY");
+                    if (pox.Count > 0)
+                    {
+                        partoriginx = float.Parse(pox.First().Children[0].Name.Replace('.', ','));
+                    }
+                    if (poy.Count > 0)
+                    {
+                        partoriginy = float.Parse(poy.First().Children[0].Name.Replace('.', ','));
+                    }
+
+
+                    float x = -1;
+                    float y = -1;
+                    string name = "unknown";
+                    string id = "id";
+                    // try
+                    {
+                        name = a.Children[0].Name;
+                        id = a.Children[1].Name;
+                        string descattrib = "";
+                        string sizeattrib = "";
+                        string value = "";
+                        var vV = a.Find("Value", false).FirstOrDefault();
+                        var pP = a.Find("Pattern", false).FirstOrDefault();
+
+
+                        if (vV != null && vV.Children.Count > 0)
+                        {
+                            descattrib = vV.Children[0].Name;
+                            value = vV.Children[0].Name;
+                        }
+
+                        BoardSide side = BoardSide.Top;
+                        var BottomSide = a.Find("BottomSide", false).FirstOrDefault();
+                        if (BottomSide != null && BottomSide.Children.Count > 0)
+                        {
+                            string V = BottomSide.Children[0].Name;
+                            if (V == "Y") side = BoardSide.Bottom;
+                        }
+
+                       
+                        string pattern = "";
+
+                        if (pP != null && pP.Children.Count > 0)
+                        {
+                            pattern = pP.Children[0].Name;
+                        }
+                        var X = a.Find("X", false).FirstOrDefault();
+                        if (X != null && X.Children.Count > 0)
+                        {
+                            string V = X.Children[0].Name;
+                            if (V[0] == '.') V = "0" + V;
+                            V = V.Replace('.', ',');
+                            x = float.Parse(V);
+
+                        }
+                        var Y = a.Find("Y", false).FirstOrDefault();
+                        if (Y != null && Y.Children.Count > 0)
+                        {
+                            string V = Y.Children[0].Name;
+                            if (V[0] == '.') V = "0" + V;
+                            V = V.Replace('.', ',');
+
+                            y = float.Parse(V);
+                        }
+                        float angle = 0;
+                        float orientangle = 0;
+                        int orientidx = 0;
+                        var O = a.Find("Orientation", false).FirstOrDefault();
+                        if (O != null && O.Children.Count > 0)
+                        {
+                            string V = O.Children[0].Name;
+                            if (V[0] == '0') { orientangle = 0; orientidx = 0; };
+                            if (V[0] == '1') { orientangle = 90; orientidx = 1; };
+                            if (V[0] == '2') { orientangle = 180; orientidx = 2; };
+                            if (V[0] == '3') { orientangle = 270; orientidx = 3; };
+                        }
+                        float pangle = 0;
+                        int partorientidx = 0;
+                        var PO = a.Find("PatternOrientation", false).FirstOrDefault();
+                        if (PO != null && PO.Children.Count > 0)
+                        {
+                            string V = PO.Children[0].Name;
+                            if (V[0] == '0') { pangle = 0; partorientidx = 0; }
+                            if (V[0] == '1') { pangle = 90; partorientidx = 1; }
+                            if (V[0] == '2') { pangle = 180; partorientidx = 2; }
+                            if (V[0] == '3') { pangle = 270; partorientidx = 3; }
+
+                        }
+
+
+                        var A = a.Find("Angle", false).FirstOrDefault();
+                        if (A != null && A.Children.Count > 0)
+                        {
+                            angle = float.Parse(A.Children[0].Name.Replace('.', ',')) * AngleMult;
+                        }
+
+                        bool Flipped = false;
+                        var nFlipped = a.Find("Flipped", false).FirstOrDefault();
+                        if (nFlipped != null && BottomSide.Children.Count > 0)
+                        {
+                            string V = nFlipped.Children[0].Name;
+                            if (V == "Y")
+                            {
+                                Flipped = true;
+                            }
+                        }
+
+                        var placement = AddBOMItemExt(pattern, name, value, id, null, System.IO.Path.GetFileNameWithoutExtension(InputFile), 0, 0, 0, side);
+                        var BE = GetBOMEntry(placement);
+                    float DipComp = 0;// DipCompensationAngle(BE.Combined(), side);
+
+                        // orientangle += DipComp;
+                        var RD = GetRefDes(placement);
+
+                        DipRotateAndAdjust(x, y, partoriginx, partoriginy, angle, orientidx, partorientidx, Flipped, RD, originx, originy, UnitMult);
+                        if (side == BoardSide.Bottom) RD.angle = -RD.angle;
+                        RD.angle += DipComp;
+                        if (id == "C10")
+                        {
+                            Console.WriteLine(RD);
+                        }
+                       
+                        
+                        
+                    }
+
+                }
+                Log.PopActivity();
 
         }
 
@@ -1384,11 +1964,11 @@ namespace GerberLibrary.Core
 
         }
         */
-        public void WriteJLCCSV(string BaseFolder, string Name)
+        public void WriteJLCCSV(string BaseFolder, string Name, bool EllagePreference)
         {
             WriteJLCBom(BaseFolder, Name);
 
-            WriteJLCPnpFile(BaseFolder, Name);
+            WriteJLCPnpFile(BaseFolder, Name, EllagePreference);
 
         }
 
@@ -1439,10 +2019,24 @@ namespace GerberLibrary.Core
 
         }
 
-        public void WriteJLCPnpFile(string BaseFolder, string Name)
+        public static String EllageFormat(double inp, int digits = 2)
+        {
+            string fmt = "{0:F" + digits.ToString() + "}";
+            return String.Format(fmt, inp).Replace(",", ".");
+        }
+        public void WriteJLCPnpFile(string BaseFolder, string Name, bool ellagepreference)
         {
             List<string> outlinesPNP = new List<string>();
-            outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
+            if (ellagepreference)
+            {
+                outlinesPNP.Add("Designator;Mid X mm;Mid Y mm;Rotation deg");
+            }
+            else
+            {
+
+
+                outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
+            }
             foreach (var ds in DeviceTree)
             {
 
@@ -1450,13 +2044,32 @@ namespace GerberLibrary.Core
                 {
                     foreach (var p in v.RefDes)
                     {
-                        string line = String.Format("{0},{1},{2},{3},{4}",
-                        p.NameOnBoard,
-                        p.x.ToString().Replace(",", ".") + "mm",
-                        p.y.ToString().Replace(",", ".") + "mm",
-                        p.Side == BoardSide.Top ? "T" : "B",
-                           (p.angle + 360 + GetRotationOffset(v.Combined())) % 360);
-                        outlinesPNP.Add(line);
+                        if (ellagepreference)
+                        {
+
+                            double A = (p.angle + 360 + GetRotationOffset(v.Combined())) % 360;
+                            while (A > 180) A -= 360;
+                            while (A < -180) A += 360;
+                            string line = String.Format("{0};{1};{2};{3}",
+                            p.NameOnBoard,
+                            EllageFormat(p.x,2),
+                            EllageFormat(p.y,2),
+                             EllageFormat(A,0));
+                            outlinesPNP.Add(line);
+
+                        }
+                        else
+                        {
+
+
+                            string line = String.Format("{0},{1},{2},{3},{4}",
+                            p.NameOnBoard,
+                            p.x.ToString().Replace(",", ".") + "mm",
+                            p.y.ToString().Replace(",", ".") + "mm",
+                            p.Side == BoardSide.Top ? "T" : "B",
+                               (p.angle + 360 + GetRotationOffset(v.Combined())) % 360);
+                            outlinesPNP.Add(line);
+                        }
 
                     }
                 }
@@ -1527,7 +2140,26 @@ namespace GerberLibrary.Core
 
             //outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #");
             var regex = new Regex("(?<=^|,)(\"(?:[^\"]|\"\")*\"|[^,]*)");
+            
+            int RefdesIdx = 0;
+            int Xidx = 1;
+            int Yidx = 2;
+            int Sideidx = 3;
+            int Angleidx = 4;
 
+            var Headers = pnplines[0].Split(',');
+            for(int i =0;i<Headers.Count();i++)
+            {
+                var H = StripCSV( Headers[i].ToLower());
+                switch (H)
+                {
+                    case "x": Xidx = i;break;
+                    case "y": Yidx = i; break;
+                    case "refdes": RefdesIdx = i; break;
+                    case "side": Sideidx = i; break;
+                    case "angle": Angleidx = i;break;
+                }
+            }
 
             //outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
             for (int i = 1; i < pnplines.Count(); i++)
@@ -1539,11 +2171,11 @@ namespace GerberLibrary.Core
                     items.Add(m.Value);
                 }
 
-                var rd = items[0];
-                var X = ConvertDimension(items[1]);
-                var Y = ConvertDimension(items[2]);
-                var Side = items[3] == "T" ? BoardSide.Top : BoardSide.Bottom;
-                var Angle = Double.Parse(items[4]);
+                var rd = StripCSV(items[RefdesIdx]);
+                var X = ConvertDimension(items[Xidx]);
+                var Y = ConvertDimension(items[Yidx]);
+                var Side = GetSide(StripCSV(items[Sideidx]));
+                var Angle = Double.Parse(StripCSV(items[Angleidx]));
 
                 positions[rd] = new BOMEntry.RefDesc() { angle = Angle, x = X, y = Y, OriginalName = rd, NameOnBoard = rd, SourceBoard = bOMFile, Side = Side };
             }
@@ -1557,7 +2189,7 @@ namespace GerberLibrary.Core
                 List<string> items = new List<string>();
                 foreach (Match m in regex.Matches(s))
                 {
-                    items.Add(m.Value.Trim());
+                    items.Add(StripCSV(m.Value.Trim()));
                 }
 
                 var refdesc = items[1].Trim(); ;
@@ -1596,6 +2228,29 @@ namespace GerberLibrary.Core
 
         }
 
+        private string StripCSV(string H)
+        {
+            if (H.Length > 2 && H[0] == '"' && H[H.Length - 1] == '"')
+            {
+                return H.Substring(1, H.Length - 2);
+            }
+            return H;
+        }
+
+        private BoardSide GetSide(string v)
+        {
+            switch (v.ToLower())
+            {
+                case "t":
+                case "top":
+                    return BoardSide.Top;
+                case "b":
+                case "bottom":
+                    return BoardSide.Bottom;
+            }
+            return BoardSide.Unknown;
+        }
+
         private double ConvertDimension(string v)
         {
             v = v.Trim();
@@ -1604,7 +2259,10 @@ namespace GerberLibrary.Core
                 v = v.Substring(0, v.Length - 2).Trim(); ;
 
             }
-
+            if (v[0] == '"' && v[v.Length -1] == '"')
+            {
+                v = v.Substring(1, v.Length - 2);
+            }
             return double.Parse(v.Replace('.', ','));
         }
 
@@ -1819,6 +2477,9 @@ namespace GerberLibrary.Core
                 case "L0805":
                     RenderSMD2Pin(g, 8, 5, Color.FromArgb(60, 70, 80));
                     break;
+                case "0402":
+                    RenderSMD2Pin(g, 4, 2, Color.FromArgb(160, 130, 60));
+                    break;
                 case "C0603":
                     RenderSMD2Pin(g, 6, 3, Color.FromArgb(160, 130, 60));
                     break;
@@ -1828,6 +2489,7 @@ namespace GerberLibrary.Core
                 case "FERRITE_1812":
                     RenderSMD2Pin(g, 18, 12, Color.FromArgb(20, 20, 20));
                     break;
+                case "RES_0805":
                 case "R0805":
                 case "0805":
                     RenderSMD2Pin(g, 8, 5, Color.FromArgb(60, 60, 60));

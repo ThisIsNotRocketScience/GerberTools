@@ -118,7 +118,7 @@ namespace PnP_Processor
                     break;
             }
             BPost.FixupAngles(StockDoc);
-            BPost.WriteJLCPnpFile(B.OriginalBasefolder, B.OriginalPnpName + "_rotated");
+            BPost.WriteJLCPnpFile(B.OriginalBasefolder, B.OriginalPnpName + "_rotated", true);
             BPost.WriteRefDesGerber(Path.Combine(B.OriginalBasefolder, B.OriginalPnpName + "_refdes.gbr"));
         }
 

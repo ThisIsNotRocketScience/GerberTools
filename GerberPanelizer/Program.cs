@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,9 +16,9 @@ namespace GerberCombinerBuilder
         [STAThread]
         static void Main()
         {
-            //string myCulture = "en-US";
-            //Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo(myCulture);
-            //Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo(myCulture);
+            CultureInfo ci = new CultureInfo("nl-NL");
+            Thread.CurrentThread.CurrentCulture = ci;
+            Thread.CurrentThread.CurrentUICulture = ci;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

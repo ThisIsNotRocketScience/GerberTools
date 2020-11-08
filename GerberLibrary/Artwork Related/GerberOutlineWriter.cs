@@ -176,7 +176,7 @@ namespace GerberLibrary
             {
                 FiducialBom.AddBOMItemExt("FIDUCIAL_" + a.Style.ToString(), "FIDUCIAL_" + a.Style.ToString(), a.Style.ToString(), "__FD" + (fd.ToString()), set, "Frame_" + basename, a.Pos.X + offset.X, a.Pos.Y+offset.Y, 0, a.Side);
             }
-            FiducialBom.WriteJLCCSV(targetfolder, basename + "_fiducials");
+            FiducialBom.WriteJLCCSV(targetfolder, basename + "_fiducials", false);
             
             return Files;
         }
@@ -393,7 +393,13 @@ namespace GerberLibrary
 
         public static void MergeFrameIntoGerberSet(string FrameFolder, string OutlineFolder, string OutputFolder, FrameSettings FS, ProgressLog log, string basename)
         {
+
+
             log.PushActivity("MergeFrame");
+           // log.AddString(".....");
+            if (Directory.Exists(FrameFolder) == false) log.AddString(String.Format("Framefolder {0} does not exist?", FrameFolder));
+            if (Directory.Exists(OutlineFolder) == false) log.AddString(String.Format("OutlineFolder {0} does not exist?", OutlineFolder));
+            if (Directory.Exists(OutputFolder) == false) log.AddString(String.Format("OutputFolder {0} does not exist?", OutputFolder));
             GerberPanel PNL = new GerberPanel();
             PNL.AddGerberFolder(log, FrameFolder);
             PNL.AddGerberFolder(log, OutlineFolder);
@@ -527,15 +533,28 @@ namespace GerberLibrary
 
 
             PNL.UpdateShape(log);
-
-            Directory.CreateDirectory(OutputFolder);
-            var PNLFiles = PNL.SaveGerbersToFolder("MergedFrame", OutputFolder, log, true, false, true, basename);
-
-            if (FS.RenderSample)
+            log.AddString("postupdateshape");
+            try
             {
-                GerberImageCreator GIC = new GerberImageCreator();
-                GIC.AddBoardsToSet(Directory.GetFiles(OutputFolder).ToList(), new SilentLog());
-                GIC.WriteImageFiles(basename, 200, true, false, true, null);
+                Directory.CreateDirectory(OutputFolder);
+                var PNLFiles = PNL.SaveGerbersToFolder("MergedFrame", OutputFolder, log, true, false, true, basename);
+            }
+            catch(Exception E)
+            {
+                log.AddString("save gerbers to folder Exceptions: " + E.ToString());
+            }
+            try
+            {
+                if (FS.RenderSample)
+                {
+                    GerberImageCreator GIC = new GerberImageCreator();
+                    GIC.AddBoardsToSet(Directory.GetFiles(OutputFolder).ToList(), new SilentLog());
+                    GIC.WriteImageFiles(basename, 200, true, false, true, null);
+                }
+            }
+            catch (Exception E)
+            {
+                log.AddString("GIC Exceptions: " + E.ToString());
             }
 
             log.PopActivity();
