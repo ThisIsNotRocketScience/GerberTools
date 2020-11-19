@@ -92,6 +92,7 @@ namespace PnP_Processor
             var curcol = Helpers.RefractionNormalledMaxBrightnessAndSat((float)e.Index / (float)BOM.Items.Count);
 
             e.Graphics.FillRectangle(new SolidBrush(curcol), e.Bounds);
+
             if ((e.State & DrawItemState.Focus) != DrawItemState.Focus)
             {
                 e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(150,Color.Black)), e.Bounds);
@@ -99,7 +100,6 @@ namespace PnP_Processor
             else
             {
                 e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(50, Color.Black)), e.Bounds);
-
             }
             
 //            e.Graphics.DrawLine(new Pen(Color.FromArgb(200, curcol), 2), e.Bounds.X, e.Bounds.Y + e.Bounds.Height-2, e.Bounds.X + e.Bounds.Width, e.Bounds.Y + e.Bounds.Height - 2);

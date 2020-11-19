@@ -1518,7 +1518,8 @@ namespace GerberLibrary.Core
         }
 
 
-        private void LoadDiptraceASC(string InputFile, ProgressLog Log)
+
+        public void LoadDiptraceASC(string InputFile, ProgressLog Log)
         {
                 Log.PushActivity("DIPTrace BOM Loader");
 
