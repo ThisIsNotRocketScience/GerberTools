@@ -508,7 +508,98 @@ namespace GerberLibrary.Core.Primitives
         internal void SetThermal(double Xoff, double Yoff, double OuterDiameter, double InnerDiameter, double GapWidth, double Rotation)
         {
             Shape.Vertices.Clear();
-            Console.WriteLine("TODO! Generate Thermal geometry for further processing!! ");
+            GerberApertureType sector1 = new GerberApertureType();
+            sector1.Shape.Vertices.Clear();
+            GerberApertureType sector2 = new GerberApertureType();
+            sector2.Shape.Vertices.Clear();
+            GerberApertureType sector3 = new GerberApertureType();
+            sector3.Shape.Vertices.Clear();
+            GerberApertureType sector4 = new GerberApertureType();
+            sector4.Shape.Vertices.Clear();
+            int sides =(int)Math.Floor(10 * Math.Max(18.0, OuterDiameter/2));
+            // draw outer arc
+            {
+                double radius = OuterDiameter / 2;
+                double padd = 0;// -rotation * Math.PI * 2.0 / 360;
+                for (int i = 0; i < sides; i++)
+                {
+                    double P = i / (double)sides * Math.PI * 2.0 + padd;
+                    double x = (double)(Xoff + Math.Sin(P) * radius);
+                    double y = (double)(Yoff + Math.Cos(P) * radius);
+                    if ((y < Yoff - GapWidth / 2) && (x < Xoff - GapWidth / 2))
+                    {
+                        if(i == 0)
+                            sector1.Shape.Add(Xoff - GapWidth / 2, Yoff - GapWidth / 2);
+                        sector1.Shape.Add(x, y);
+                    }
+                    if ((y < Yoff - GapWidth / 2)&& (x >= Xoff + GapWidth / 2))
+                    {
+                        if (i == 0)
+                            sector2.Shape.Add(Xoff + GapWidth / 2, Yoff - GapWidth / 2);
+                        sector2.Shape.Add(x, y);
+                    }
+                    if ((y >= Yoff + GapWidth / 2) && (x >= Xoff + GapWidth / 2))
+                    {
+                        if (i == 0)
+                            sector3.Shape.Add(Xoff + GapWidth / 2, Yoff + GapWidth / 2);
+                        sector3.Shape.Add(x, y);
+                    }
+                    if ((y >= Yoff + GapWidth / 2) && (x < Xoff - GapWidth / 2))
+                    {
+                        if (i == 0)
+                            sector4.Shape.Add(Xoff - GapWidth / 2, Yoff + GapWidth / 2);
+                        sector4.Shape.Add(x, y);
+                    }
+                }
+            }
+
+            // draw inner arc
+            {
+                double radius = InnerDiameter / 2;
+                double padd = 0;// -rotation * Math.PI * 2.0 / 360;
+                for (int i = sides - 1; i >= 0; i--)
+                {
+                    double P = i / (double)sides * Math.PI * 2.0 + padd;
+                    double x = (double)(Xoff + Math.Sin(P) * radius);
+                    double y = (double)(Yoff + Math.Cos(P) * radius);
+                    if ((y < Yoff - GapWidth / 2) && (x < Xoff - GapWidth / 2))
+                    {
+                        if (i == 0)
+                            sector1.Shape.Add(Xoff - GapWidth / 2, Yoff - GapWidth / 2);
+                        sector1.Shape.Add(x, y);
+                    }
+                    if ((y < Yoff - GapWidth / 2) && (x >= Xoff + GapWidth / 2))
+                    {
+                        if (i == 0)
+                            sector2.Shape.Add(Xoff + GapWidth / 2, Yoff - GapWidth / 2);
+                        sector2.Shape.Add(x, y);
+                    }
+                    if ((y >= Yoff + GapWidth / 2) && (x >= Xoff + GapWidth / 2))
+                    {
+                        if (i == 0)
+                            sector3.Shape.Add(Xoff + GapWidth / 2, Yoff + GapWidth / 2);
+                        sector3.Shape.Add(x, y);
+                    }
+                    if ((y >= Yoff + GapWidth / 2) && (x < Xoff - GapWidth / 2))
+                    {
+                        if (i == 0)
+                            sector4.Shape.Add(Xoff - GapWidth / 2, Yoff + GapWidth / 2);
+                        sector4.Shape.Add(x, y);
+                    }
+                }
+            }
+            sector1.Shape.Close();
+            sector1.Shape.RotateDegrees(Rotation);
+            sector2.Shape.Close();
+            sector2.Shape.RotateDegrees(Rotation);
+            sector3.Shape.Close();
+            sector3.Shape.RotateDegrees(Rotation);
+            sector4.Shape.Close();
+            sector4.Shape.RotateDegrees(Rotation);
+            Parts.Add(sector1);
+            Parts.Add(sector2);
+            Parts.Add(sector3);
+            Parts.Add(sector4);
         }
         internal void SetMoire(double Xoff, double Yoff, double OuterDiameter, double Width, double RingGap, int MaxRings, double CrossHairThickness, double CrossHairLength, double Rotation)
         {
