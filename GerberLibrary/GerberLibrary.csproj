@@ -124,7 +124,7 @@
     <Compile Include="Core\SickOfBeige.cs" />
     <Compile Include="Deprecated\OldCNCRelated.cs" />
     <Compile Include="External\clipper.cs" />
-    <Compile Include="Factory.cs" />
+    <Compile Include="Core\Factory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\PackingAlgos\RectanglePacker.cs" />
     <Compile Include="Artwork Related\V3.cs" />
