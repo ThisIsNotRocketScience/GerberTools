@@ -1,0 +1,401 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xs:element name="wire">
+    <xs:complexType>
+      <xs:attribute name="x1" type="xs:string" />
+      <xs:attribute name="y1" type="xs:string" />
+      <xs:attribute name="x2" type="xs:string" />
+      <xs:attribute name="y2" type="xs:string" />
+      <xs:attribute name="width" type="xs:string" />
+      <xs:attribute name="layer" type="xs:string" />
+      <xs:attribute name="curve" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="text" nillable="true">
+    <xs:complexType>
+      <xs:simpleContent msdata:ColumnName="text_Text" msdata:Ordinal="7">
+        <xs:extension base="xs:string">
+          <xs:attribute name="x" type="xs:string" />
+          <xs:attribute name="y" type="xs:string" />
+          <xs:attribute name="size" type="xs:string" />
+          <xs:attribute name="layer" type="xs:string" />
+          <xs:attribute name="ratio" type="xs:string" />
+          <xs:attribute name="font" type="xs:string" />
+          <xs:attribute name="rot" type="xs:string" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="eagle">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="drawing" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="settings" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="setting" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="alwaysvectorfont" type="xs:string" />
+                        <xs:attribute name="verticaltext" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="grid" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="distance" type="xs:string" />
+                  <xs:attribute name="unitdist" type="xs:string" />
+                  <xs:attribute name="unit" type="xs:string" />
+                  <xs:attribute name="style" type="xs:string" />
+                  <xs:attribute name="multiple" type="xs:string" />
+                  <xs:attribute name="display" type="xs:string" />
+                  <xs:attribute name="altdistance" type="xs:string" />
+                  <xs:attribute name="altunitdist" type="xs:string" />
+                  <xs:attribute name="altunit" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="layers" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="layer" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="number" type="xs:string" />
+                        <xs:attribute name="name" type="xs:string" />
+                        <xs:attribute name="color" type="xs:string" />
+                        <xs:attribute name="fill" type="xs:string" />
+                        <xs:attribute name="visible" type="xs:string" />
+                        <xs:attribute name="active" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="schematic" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="attributes" type="xs:string" minOccurs="0" msdata:Ordinal="1" />
+                    <xs:element name="variantdefs" type="xs:string" minOccurs="0" msdata:Ordinal="2" />
+                    <xs:element name="libraries" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="library" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="description" type="xs:string" minOccurs="0" msdata:Ordinal="0" />
+                                <xs:element name="packages" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="package" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element name="description" type="xs:string" minOccurs="0" msdata:Ordinal="0" />
+                                            <xs:element ref="wire" minOccurs="0" maxOccurs="unbounded" />
+                                            <xs:element name="smd" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="name" type="xs:string" />
+                                                <xs:attribute name="x" type="xs:string" />
+                                                <xs:attribute name="y" type="xs:string" />
+                                                <xs:attribute name="dx" type="xs:string" />
+                                                <xs:attribute name="dy" type="xs:string" />
+                                                <xs:attribute name="layer" type="xs:string" />
+                                                <xs:attribute name="roundness" type="xs:string" />
+                                                <xs:attribute name="rot" type="xs:string" />
+                                                <xs:attribute name="cream" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element ref="text" minOccurs="0" maxOccurs="unbounded" />
+                                            <xs:element name="rectangle" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="x1" type="xs:string" />
+                                                <xs:attribute name="y1" type="xs:string" />
+                                                <xs:attribute name="x2" type="xs:string" />
+                                                <xs:attribute name="y2" type="xs:string" />
+                                                <xs:attribute name="layer" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="circle" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="x" type="xs:string" />
+                                                <xs:attribute name="y" type="xs:string" />
+                                                <xs:attribute name="radius" type="xs:string" />
+                                                <xs:attribute name="width" type="xs:string" />
+                                                <xs:attribute name="layer" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="pad" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="name" type="xs:string" />
+                                                <xs:attribute name="x" type="xs:string" />
+                                                <xs:attribute name="y" type="xs:string" />
+                                                <xs:attribute name="drill" type="xs:string" />
+                                                <xs:attribute name="diameter" type="xs:string" />
+                                                <xs:attribute name="shape" type="xs:string" />
+                                                <xs:attribute name="rot" type="xs:string" />
+                                                <xs:attribute name="thermals" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="hole" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="x" type="xs:string" />
+                                                <xs:attribute name="y" type="xs:string" />
+                                                <xs:attribute name="drill" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="polygon" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:sequence>
+                                                  <xs:element name="vertex" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:attribute name="x" type="xs:string" />
+                                                      <xs:attribute name="y" type="xs:string" />
+                                                      <xs:attribute name="curve" type="xs:string" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                </xs:sequence>
+                                                <xs:attribute name="width" type="xs:string" />
+                                                <xs:attribute name="layer" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                          </xs:sequence>
+                                          <xs:attribute name="name" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name="symbols" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="symbol" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element ref="wire" minOccurs="0" maxOccurs="unbounded" />
+                                            <xs:element name="pin" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:attribute name="name" type="xs:string" />
+                                                <xs:attribute name="x" type="xs:string" />
+                                                <xs:attribute name="y" type="xs:string" />
+                                                <xs:attribute name="visible" type="xs:string" />
+                                                <xs:attribute name="length" type="xs:string" />
+                                                <xs:attribute name="rot" type="xs:string" />
+                                                <xs:attribute name="direction" type="xs:string" />
+                                                <xs:attribute name="swaplevel" type="xs:string" />
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element ref="text" minOccurs="0" maxOccurs="unbounded" />
+                                          </xs:sequence>
+                                          <xs:attribute name="name" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name="devicesets" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="deviceset" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element name="description" type="xs:string" minOccurs="0" msdata:Ordinal="0" />
+                                            <xs:element name="gates" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:sequence>
+                                                  <xs:element name="gate" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:attribute name="name" type="xs:string" />
+                                                      <xs:attribute name="symbol" type="xs:string" />
+                                                      <xs:attribute name="x" type="xs:string" />
+                                                      <xs:attribute name="y" type="xs:string" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                </xs:sequence>
+                                              </xs:complexType>
+                                            </xs:element>
+                                            <xs:element name="devices" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:sequence>
+                                                  <xs:element name="device" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:sequence>
+                                                        <xs:element name="connects" minOccurs="0" maxOccurs="unbounded">
+                                                          <xs:complexType>
+                                                            <xs:sequence>
+                                                              <xs:element name="connect" minOccurs="0" maxOccurs="unbounded">
+                                                                <xs:complexType>
+                                                                  <xs:attribute name="gate" type="xs:string" />
+                                                                  <xs:attribute name="pin" type="xs:string" />
+                                                                  <xs:attribute name="pad" type="xs:string" />
+                                                                </xs:complexType>
+                                                              </xs:element>
+                                                            </xs:sequence>
+                                                          </xs:complexType>
+                                                        </xs:element>
+                                                        <xs:element name="technologies" minOccurs="0" maxOccurs="unbounded">
+                                                          <xs:complexType>
+                                                            <xs:sequence>
+                                                              <xs:element name="technology" minOccurs="0" maxOccurs="unbounded">
+                                                                <xs:complexType>
+                                                                  <xs:sequence>
+                                                                    <xs:element name="attribute" minOccurs="0" maxOccurs="unbounded">
+                                                                      <xs:complexType>
+                                                                        <xs:attribute name="name" type="xs:string" />
+                                                                        <xs:attribute name="value" type="xs:string" />
+                                                                        <xs:attribute name="constant" type="xs:string" />
+                                                                      </xs:complexType>
+                                                                    </xs:element>
+                                                                  </xs:sequence>
+                                                                  <xs:attribute name="name" type="xs:string" />
+                                                                </xs:complexType>
+                                                              </xs:element>
+                                                            </xs:sequence>
+                                                          </xs:complexType>
+                                                        </xs:element>
+                                                      </xs:sequence>
+                                                      <xs:attribute name="name" type="xs:string" />
+                                                      <xs:attribute name="package" type="xs:string" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                </xs:sequence>
+                                              </xs:complexType>
+                                            </xs:element>
+                                          </xs:sequence>
+                                          <xs:attribute name="name" type="xs:string" />
+                                          <xs:attribute name="prefix" type="xs:string" />
+                                          <xs:attribute name="uservalue" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                              <xs:attribute name="name" type="xs:string" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="classes" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="class" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:attribute name="number" type="xs:string" />
+                              <xs:attribute name="name" type="xs:string" />
+                              <xs:attribute name="width" type="xs:string" />
+                              <xs:attribute name="drill" type="xs:string" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="parts" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="part" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:attribute name="name" type="xs:string" />
+                              <xs:attribute name="library" type="xs:string" />
+                              <xs:attribute name="deviceset" type="xs:string" />
+                              <xs:attribute name="device" type="xs:string" />
+                              <xs:attribute name="value" type="xs:string" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="sheets" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="sheet" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="plain" type="xs:string" minOccurs="0" />
+                                <xs:element name="busses" type="xs:string" minOccurs="0" />
+                                <xs:element name="instances" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="instance" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:attribute name="part" type="xs:string" />
+                                          <xs:attribute name="gate" type="xs:string" />
+                                          <xs:attribute name="x" type="xs:string" />
+                                          <xs:attribute name="y" type="xs:string" />
+                                          <xs:attribute name="rot" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                                <xs:element name="nets" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="net" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element name="segment" minOccurs="0" maxOccurs="unbounded">
+                                              <xs:complexType>
+                                                <xs:sequence>
+                                                  <xs:element name="pinref" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:attribute name="part" type="xs:string" />
+                                                      <xs:attribute name="gate" type="xs:string" />
+                                                      <xs:attribute name="pin" type="xs:string" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                  <xs:element ref="wire" minOccurs="0" maxOccurs="unbounded" />
+                                                  <xs:element name="junction" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:attribute name="x" type="xs:string" />
+                                                      <xs:attribute name="y" type="xs:string" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                  <xs:element name="label" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                      <xs:attribute name="x" type="xs:string" />
+                                                      <xs:attribute name="y" type="xs:string" />
+                                                      <xs:attribute name="size" type="xs:string" />
+                                                      <xs:attribute name="layer" type="xs:string" />
+                                                    </xs:complexType>
+                                                  </xs:element>
+                                                </xs:sequence>
+                                              </xs:complexType>
+                                            </xs:element>
+                                          </xs:sequence>
+                                          <xs:attribute name="name" type="xs:string" />
+                                          <xs:attribute name="class" type="xs:string" />
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="xreflabel" type="xs:string" />
+                  <xs:attribute name="xrefpart" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="wire" />
+        <xs:element ref="text" />
+        <xs:element ref="eagle" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
