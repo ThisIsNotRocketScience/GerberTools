@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,6 +59,7 @@ namespace PnP_Processor
             {
 
                 G.DrawLine(Pens.White, pictureBox1.Width / 2, 0, pictureBox1.Width / 2, pictureBox1.Height);
+               
                 G.DrawString("Before", F2, Brushes.White, new RectangleF(0, pictureBox1.Height - 40, pictureBox1.Width / 2, 40), new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Far });
                 G.DrawString("After", F2, Brushes.White, new RectangleF(pictureBox1.Width / 2, pictureBox1.Height - 40, pictureBox1.Width / 2, 40), new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Far });
                 var T = G.Transform.Clone();
@@ -71,7 +73,14 @@ namespace PnP_Processor
                 G.TranslateTransform(pictureBox1.Width / 2, 0);
                 Render(D, G, true);
 
-
+                G.Transform = T;
+                G.SetClip(new Rectangle(0, 0, pictureBox1.Width, pictureBox1.Height));
+                    
+                if (idx > -1)
+                {
+                    var rd = pnp.selectedrefdes[idx % pnp.selectedrefdes.Count()];
+                    G.DrawString(rd, F2, Brushes.White, 2, 2);
+                }
             }
         }
 
@@ -144,6 +153,7 @@ namespace PnP_Processor
                 }
             }
             AllNames.Sort();
+            Font F = new Font("Arial", 3);
 
             foreach (var p in B.DeviceTree)
             {
@@ -153,13 +163,38 @@ namespace PnP_Processor
                     var curcol = Helpers.RefractionNormalledMaxBrightnessAndSat(idx/(float)AllNames.Count());
                     foreach (var rf in pp.RefDes)
                     {
-                        DrawMarker(curcol, G, rf, true, S, false, pnp.selectedrefdes.Contains(rf.NameOnBoard));
+                        bool active = pnp.selectedrefdes.Contains(rf.NameOnBoard); 
+                        DrawMarker(curcol, G, rf, true, S, false, active);
+                        if (active)
+                        {
+                            DrawText(G, rf.NameOnBoard, new PointF((float)rf.x, (float)rf.y), new RectangleF(0, 0, 50, 20));
+                        }
                     }
                 }
             }
         }
+        private void DrawText(Graphics g, string text, PointF ptStart, RectangleF extent)
+        {
+            
+            var gs = g.Save();
+            g.TranslateTransform(ptStart.X, ptStart.Y);
+            g.ScaleTransform(1.0f, -1.0f, MatrixOrder.Prepend);
+            float fontSize = 1.4f;
 
-        
+            Font fnt;
+            fnt = new Font("Arial", fontSize , FontStyle.Regular, GraphicsUnit.Pixel);
+
+
+
+            var stringFormat = new StringFormat()
+            {
+                Alignment = StringAlignment.Near,
+                LineAlignment = StringAlignment.Center
+            };
+            g.DrawString(text, fnt, Brushes.White, new PointF(0.5f,0), stringFormat);
+            g.Restore(gs);
+        }
+
         private void RenderParts(PnPProcDoc D, bool after, Graphics G, BoardSide side, float S)
         {
 

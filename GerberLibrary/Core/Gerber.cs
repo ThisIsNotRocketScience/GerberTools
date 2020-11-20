@@ -1,4 +1,4 @@
-﻿using ClipperLib;
+using ClipperLib;
 using GerberLibrary.Core.Primitives;
 using System;
 using System.Collections.Generic;
@@ -545,6 +545,7 @@ namespace GerberLibrary
 
                 case "l2":
                 case "gl1":
+                case "g1":
                     Side = BoardSide.Internal1;
                     Layer = BoardLayer.Copper;
                     break;
@@ -566,6 +567,7 @@ namespace GerberLibrary
 
                 case "l3":
                 case "gl2":
+                case "g2":
                     Side = BoardSide.Internal2;
                     Layer = BoardLayer.Copper;
                     break;
@@ -682,6 +684,8 @@ namespace GerberLibrary
                 case "drl":
                 case "drill":
                 case "drillnpt":
+                case "rou":
+                case "sco":
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Drill;
                     break;

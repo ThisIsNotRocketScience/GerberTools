@@ -111,14 +111,15 @@ namespace PnP_Processor
                     //                    BPost.Translate(0, FixSet.BoundingBox.Height());
                     break;
                 case FlipMode.FlipHorizontal:
-                    FixSet.FlipX();
                     FixSet.SetBottomRightToZero();
+                    FixSet.FlipX();
                     BPost.FlipSides();
                     BPost.FlipX();
+                    BPost.Translate(FixSet.BoundingBox.Width(), 0);
                     break;
             }
             BPost.FixupAngles(StockDoc);
-            BPost.WriteJLCPnpFile(B.OriginalBasefolder, B.OriginalPnpName + "_rotated");
+            BPost.WriteJLCPnpFile(B.OriginalBasefolder, B.OriginalPnpName + "_rotated", true);
             BPost.WriteRefDesGerber(Path.Combine(B.OriginalBasefolder, B.OriginalPnpName + "_refdes.gbr"));
         }
 

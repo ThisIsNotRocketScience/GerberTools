@@ -64,6 +64,17 @@ namespace GerberLibrary
         public PolyLine ThinLine;
         internal bool GenerateGeometry = true;
 
+        public bool MirrorA = false;
+        public bool MirrorB = false;
+        public enum AxisName
+        { 
+            X,
+            Y
+        }
+        
+        public AxisName AAxis = AxisName.X;
+        public AxisName BAxis = AxisName.Y;
+
         public double FlashRotation = 0;
         public double FlashScale = 1.0;
         public MirrorMode FlashMirror = MirrorMode.NoMirror;
@@ -965,6 +976,35 @@ namespace GerberLibrary
             string FinalLine = Line.Replace("%", "").Replace("*", "").Trim();
             switch (FinalLine)
             {
+                case "MIA0":
+                    State.MirrorA = false;
+                    break;
+                case "MIA1":
+                    State.MirrorA = true;
+                    break;
+                case "MIB0":
+                    State.MirrorB = false;
+                    break;
+                case "MIB1":
+                    State.MirrorB = true;
+                    break;
+                case "MIA0B0":
+                    State.MirrorA = false;
+                    State.MirrorB = false;
+                    break;
+                case "MIA1B0":
+                    State.MirrorA = true;
+                    State.MirrorB = false;
+                    break;
+                case "MIA0B1":
+                    State.MirrorA = false;
+                    State.MirrorB = true;
+                    break;
+                case "MIA1B1":
+                    State.MirrorA = true;
+                    State.MirrorB = true;
+                    break;
+
                 case "G90": State.CoordinateFormat.Relativemode = false; break;
                 case "G91": State.CoordinateFormat.Relativemode = true; break;
                 case "G71": State.CoordinateFormat.SetMetricMode(); break;
@@ -1637,6 +1677,25 @@ namespace GerberLibrary
                                     {
                                         double X = State.LastX;
                                         double Y = State.LastY;
+
+                                        if (State.MirrorA)
+                                        {
+                                            switch (State.AAxis)
+                                            {
+                                                case GerberParserState.AxisName.X: X = -X; break;
+                                                case GerberParserState.AxisName.Y: Y = -Y; break;
+                                            }
+                                        }
+
+                                        if (State.MirrorB)
+                                        {
+                                            switch (State.BAxis)
+                                            {
+                                                case GerberParserState.AxisName.X: X = -X; break;
+                                                case GerberParserState.AxisName.Y: Y = -Y; break;
+                                            }
+                                        }
+
                                         double I = 0;
                                         double J = 0;
                                         if (State.CoordinateFormat.Relativemode)
@@ -1658,6 +1717,25 @@ namespace GerberLibrary
                                         if (GS.Has("Y"))
                                         {
                                             Y = State.CoordinateFormat.ScaleFileToMM(GS.Get("Y"));
+                                        }
+
+
+                                        if (State.MirrorA)
+                                        {
+                                            switch(State.AAxis)
+                                            {
+                                                case GerberParserState.AxisName.X: X = -X;break;
+                                                case GerberParserState.AxisName.Y: Y = -Y; break;
+                                            }
+                                        }
+
+                                        if (State.MirrorB)
+                                        {
+                                            switch (State.BAxis)
+                                            {
+                                                case GerberParserState.AxisName.X: X = -X; break;
+                                                case GerberParserState.AxisName.Y: Y = -Y; break;
+                                            }
                                         }
 
                                         if (State.CoordinateFormat.Relativemode)

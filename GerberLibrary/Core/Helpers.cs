@@ -42,6 +42,7 @@ namespace GerberLibrary.Core
 
         public static float SetupMatrixForExtends(Graphics G, PictureBox P, Bounds Bb, int pixelmargin = 0, float percentmargin = 0)
         {
+            if (Bb.Height() == 0 || Bb.Width() == 0) return 1;
             G.TranslateTransform(G.ClipBounds.Width / 2, G.ClipBounds.Height / 2);
 
             float S = (float)Math.Min((P.Width - pixelmargin) / (Bb.Width()), (P.Height - pixelmargin) / (Bb.Height()));

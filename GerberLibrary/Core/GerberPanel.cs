@@ -557,15 +557,18 @@ namespace GerberLibrary
 
             foreach (var a in TheSet.Instances)
             {
-                if (GerberOutlines.ContainsKey(a.GerberPath))
+                if (a.IgnoreOutline == false)
                 {
-                    bool doit = false;
-                    if (a.LastCenter == null) doit = true;
-                    if (doit || (PointD.Distance(a.Center, a.LastCenter) != 0 || a.Angle != a.LastAngle))
+                    if (GerberOutlines.ContainsKey(a.GerberPath))
                     {
-                        a.RebuildTransformed(GerberOutlines[a.GerberPath], TheSet.ExtraTabDrillDistance);
-                    }
+                        bool doit = false;
+                        if (a.LastCenter == null) doit = true;
+                        if (doit || (PointD.Distance(a.Center, a.LastCenter) != 0 || a.Angle != a.LastAngle))
+                        {
+                            a.RebuildTransformed(GerberOutlines[a.GerberPath], TheSet.ExtraTabDrillDistance);
+                        }
 
+                    }
                 }
             }
 
@@ -585,7 +588,7 @@ namespace GerberLibrary
 
             foreach (var aa in TheSet.Instances)
             {
-                aa.Tabs.Clear();
+             if (aa.IgnoreOutline == false)   aa.Tabs.Clear();
             }
             FindOutlineIntersections(log);
 
@@ -1397,7 +1400,7 @@ namespace GerberLibrary
                 t.Errors.Clear();
                 List<TabIntersection> Intersections = new List<TabIntersection>();
                 float R2 = t.Radius * t.Radius;
-                foreach (var b in TheSet.Instances)
+                foreach (var b in TheSet.Instances.Where(x => x.IgnoreOutline == false))
                 {
                     // Polygons clips = new Polygons();
                     // if (b.GerberPath.Contains("???") == false)
@@ -1637,8 +1640,9 @@ namespace GerberLibrary
             FinalPolygonsWithTabs = Helpers.LineSegmentsToPolygons(log, SourceLines, true);
         }
 
-        public List<string> SaveOutlineTo(string p, string combinedfilename)
+        public List<string> SaveOutlineTo(string p, string combinedfilename, ProgressLog TheLog)
         {
+            TheLog.PushActivity("SaveOutlineTo");
             List<string> R = new List<string>();
             string DrillFile = Path.Combine(p, combinedfilename + "_tabdrills.TXT");
             string OutlineFile = Path.Combine(p, combinedfilename + "_blended_outline.GKO");
@@ -1650,7 +1654,11 @@ namespace GerberLibrary
             {
                 EF.Tools[1].Drills.Add(a);
             }
-            EF.Write(Path.Combine(p, DrillFile), 0, 0, 0, 0);
+
+            TheLog.AddString(String.Format("Drillfile: {0}", DrillFile));
+            TheLog.AddString(String.Format("DrillfileComb: {0}", Path.Combine(p, DrillFile)));
+
+            EF.Write( DrillFile, 0, 0, 0, 0);
 
             GerberOutlineWriter GOW = new GerberOutlineWriter();
             int id = 0;
@@ -1662,8 +1670,9 @@ namespace GerberLibrary
                 // width is defaulted to 0
                 GOW.AddPolyLine(PL);
             }
-            GOW.Write(Path.Combine(p, OutlineFile));
-
+            GOW.Write(OutlineFile);
+            TheLog.PopActivity();
+            //R.Add(OutlineFile);
             return R;
         }
 
@@ -1676,7 +1685,7 @@ namespace GerberLibrary
 
             if (SaveOutline)
             {
-                GeneratedFiles.AddRange(SaveOutlineTo(targetfolder, combinedfilename));
+                GeneratedFiles.AddRange(SaveOutlineTo(targetfolder, combinedfilename, Logger));
                 FinalFiles.Add(Path.Combine(targetfolder, combinedfilename + "_blended_outline.gko"));
             }
 
@@ -2147,6 +2156,9 @@ namespace GerberLibrary
 
         [System.Xml.Serialization.XmlIgnore]
         public Bounds BoundingBox = new Bounds();
+        
+        public bool IgnoreOutline = false;
+
         internal void CreateOffsetLines(double extradrilldistance)
         {
             OffsetOutlines = new List<List<PolyLine>>(TransformedOutlines.Count);
@@ -2251,6 +2263,8 @@ namespace GerberLibrary
 
         public List<string> SaveTo(string OutputFolder, Dictionary<string, GerberOutline> GerberOutlines, ProgressLog Logger)
         {
+            Logger.PushActivity("LayoutSet-SaveTo");
+            
             LastExportFolder = OutputFolder;
 
             List<string> GeneratedFiles = new List<string>();
@@ -2264,7 +2278,7 @@ namespace GerberLibrary
             foreach (var a in Instances)
             {
                 current++;
-                BOM InstanceBom = BOM.ScanFolderForBoms(a.GerberPath);
+                BOM InstanceBom = BOM.ScanFolderForBoms(a.GerberPath, Logger);
                 if (InstanceBom != null && InstanceBom.GetPartCount() > 0)
                 {
                     MasterBom.MergeBOM(InstanceBom, set, a.Center.X, a.Center.Y, 0, 0, a.Angle);
@@ -2316,7 +2330,7 @@ namespace GerberLibrary
                             }
                         }
 
-                        instanceID = AddFilesForInstance(OutputFolder, a.Center.X, a.Center.Y, a.Angle, FileList, instanceID, GeneratedFiles, outline, Logger);
+                        instanceID = AddFilesForInstance(a, OutputFolder, a.Center.X, a.Center.Y, a.Angle, FileList, instanceID, GeneratedFiles, outline, Logger);
 
 
                         instanceID++;
@@ -2343,20 +2357,24 @@ namespace GerberLibrary
                 MasterBom.SaveBom(BomFile);
                 MasterBom.SaveCentroids(CentroidFile);
 
+                MasterBom.WriteJLCCSV(OutputFolder, "MergedSet_for_JLC", false);
+
                 //                GeneratedFiles.Add(CentroidFile);
                 //              GeneratedFiles.Add(BomFile);
             }
+            Logger.AddString("done saving?");
+            Logger.PopActivity();
             return GeneratedFiles;
         }
 
 
-        private int AddFilesForInstance(string p, double x, double y, double angle, List<string> FileList, int isntid, List<string> GeneratedFiles, GerberOutline outline, ProgressLog Logger)
+        private int AddFilesForInstance(GerberInstance inst,  string p, double x, double y, double angle, List<string> FileList, int isntid, List<string> GeneratedFiles, GerberOutline outline, ProgressLog Logger)
         {
 
             GerberImageCreator GIC = new GerberImageCreator();
             GIC.AddBoardsToSet(FileList, new SilentLog());
 
-
+            Logger.PushActivity("AddFilesForInstance");
 
             foreach (var f in FileList)
             {
@@ -2392,23 +2410,32 @@ namespace GerberLibrary
                             string Filename = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
                             string sourcefile = f;
                             string tempfile = "";
-                            if (ClipToOutlines)
+
+                            BoardSide Side = BoardSide.Unknown;
+                            BoardLayer Layer = BoardLayer.Unknown;
+                            Gerber.DetermineBoardSideAndLayer(f, out Side, out Layer);
+
+                            if (Layer == BoardLayer.Outline && inst.IgnoreOutline == true)
                             {
-                                BoardSide Side = BoardSide.Unknown;
-                                BoardLayer Layer = BoardLayer.Unknown;
-                                Gerber.DetermineBoardSideAndLayer(f, out Side, out Layer);
-                                if (Layer == BoardLayer.Silk)
-                                {
-                                    tempfile = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
-                                    GerberImageCreator GIC2 = new GerberImageCreator();
-                                    GIC2.AddBoardsToSet(FileList, new SilentLog());
-                                    GIC2.ClipBoard(f, tempfile, Logger);
-                                    sourcefile = tempfile;
-                                }
+                                Logger.AddString("Skipping outline");
                             }
-                            GerberTransposer.Transform(Logger, sourcefile, Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
-                            GeneratedFiles.Add(Filename);
-                            if (tempfile.Length > 0) File.Delete(tempfile);
+                            else
+                            {
+                                if (ClipToOutlines)
+                                {
+                                    if (Layer == BoardLayer.Silk)
+                                    {
+                                        tempfile = Path.Combine(p, (isntid++).ToString() + "_" + Path.GetFileName(f));
+                                        GerberImageCreator GIC2 = new GerberImageCreator();
+                                        GIC2.AddBoardsToSet(FileList, new SilentLog());
+                                        GIC2.ClipBoard(f, tempfile, Logger);
+                                        sourcefile = tempfile;
+                                    }
+                                }
+                                GerberTransposer.Transform(Logger, sourcefile, Filename, x, y, outline.TheGerber.TranslationSinceLoad.X, outline.TheGerber.TranslationSinceLoad.Y, angle);
+                                GeneratedFiles.Add(Filename);
+                                if (tempfile.Length > 0) File.Delete(tempfile);
+                            }
                         }
                         catch (Exception E)
                         {
@@ -2423,11 +2450,14 @@ namespace GerberLibrary
                 }
 
             }
+
+            Logger.PopActivity();
             return isntid;
         }
 
         internal void ClearTransformedOutlines()
         {
+
             foreach (var a in Instances)
             {
 

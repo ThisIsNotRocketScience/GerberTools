@@ -57,12 +57,19 @@ namespace GerberToImage
                     case Arguments.None:
                         switch (args[i].ToLower())
                         {
+                            case "-dpi":
                             case "--dpi": NextArg = Arguments.dpi; break;
+                            case "-silk": 
                             case "--silk": NextArg = Arguments.silk;break;
+                            case "-trace":
                             case "--trace": NextArg = Arguments.trace; break;
+                            case "-copper":
                             case "--copper": NextArg = Arguments.copper; break;
+                            case "-mask":
                             case "--mask": NextArg = Arguments.mask; break;
+                            case "-noxray":
                             case "--noxray": xray = false; NextArg = Arguments.None; break;
+                            case "-nopcb":
                             case "--nopcb": normal = false; NextArg = Arguments.None; break;
 
                             default:

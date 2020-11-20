@@ -124,6 +124,7 @@
     <Compile Include="Core\SickOfBeige.cs" />
     <Compile Include="Deprecated\OldCNCRelated.cs" />
     <Compile Include="External\clipper.cs" />
+    <Compile Include="Core\Factory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\PackingAlgos\RectanglePacker.cs" />
     <Compile Include="Artwork Related\V3.cs" />
@@ -137,6 +138,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EagleLoaders\EagleLoaders.csproj">
+      <Project>{B4686D31-46CF-4A12-8FD8-32A9EB817B4B}</Project>
+      <Name>EagleLoaders</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

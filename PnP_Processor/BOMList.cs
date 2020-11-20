@@ -87,14 +87,24 @@ namespace PnP_Processor
             e.DrawFocusRectangle();
             if (e.Index < 0) return;
 
-
             var P = (BOM.Items[e.Index] as BOMEntryItem);
 
             var curcol = Helpers.RefractionNormalledMaxBrightnessAndSat((float)e.Index / (float)BOM.Items.Count);
 
-            e.Graphics.DrawLine(new Pen(Color.FromArgb(200, curcol), 2), e.Bounds.X, e.Bounds.Y + e.Bounds.Height-2, e.Bounds.X + e.Bounds.Width, e.Bounds.Y + e.Bounds.Height - 2);
+            e.Graphics.FillRectangle(new SolidBrush(curcol), e.Bounds);
 
-            e.Graphics.DrawString(P.entry.Combined(), new Font(FontFamily.GenericSansSerif, 10, FontStyle.Regular), Brushes.Black, e.Bounds);
+            if ((e.State & DrawItemState.Focus) != DrawItemState.Focus)
+            {
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(150,Color.Black)), e.Bounds);
+            }
+            else
+            {
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(50, Color.Black)), e.Bounds);
+            }
+            
+//            e.Graphics.DrawLine(new Pen(Color.FromArgb(200, curcol), 2), e.Bounds.X, e.Bounds.Y + e.Bounds.Height-2, e.Bounds.X + e.Bounds.Width, e.Bounds.Y + e.Bounds.Height - 2);
+
+            e.Graphics.DrawString(P.entry.Combined(), new Font(FontFamily.GenericSansSerif, 10, FontStyle.Regular), Brushes.White, e.Bounds);
         }
 
         bool SelectionInProcess = false;

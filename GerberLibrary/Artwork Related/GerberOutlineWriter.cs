@@ -124,7 +124,7 @@ namespace GerberLibrary
 
 
         }
-        public List<string> Write(string targetfolder, string basename, PointD offset = null)
+        public List<string> Write(string targetfolder, string basename,BOM inFiducialBom, PointD offset = null  )
         {
             if (offset == null)
             {
@@ -166,7 +166,9 @@ namespace GerberLibrary
             BottomCopper.Write(OutName + ".gbl", offset); Files.Add(OutName + ".gbl");
             BottomSolderMask.Write(OutName + ".gbs", offset); Files.Add(OutName + ".gbs");
 
-            BOM FiducialBom = new BOM();
+            BOM FiducialBom;
+            if (inFiducialBom != null) FiducialBom = inFiducialBom;  else FiducialBom = new BOM();
+
             BOMNumberSet set = new BOMNumberSet();
             int fd = 1;
 
@@ -174,8 +176,8 @@ namespace GerberLibrary
             {
                 FiducialBom.AddBOMItemExt("FIDUCIAL_" + a.Style.ToString(), "FIDUCIAL_" + a.Style.ToString(), a.Style.ToString(), "__FD" + (fd.ToString()), set, "Frame_" + basename, a.Pos.X + offset.X, a.Pos.Y+offset.Y, 0, a.Side);
             }
-            FiducialBom.WriteJLCCSV(targetfolder, basename + "_fiducials");
-
+            FiducialBom.WriteJLCCSV(targetfolder, basename + "_fiducials", false);
+            
             return Files;
         }
 
@@ -348,10 +350,14 @@ namespace GerberLibrary
             public void PositionAround(PolyLine pL)
             {
                 var B = pL.GetBounds();
+                PositionAround(B);
+            }
+
+            public void PositionAround(Bounds B)
+            {
                 offset = new PointD(B.TopLeft.X - leftEdge - margin, B.TopLeft.Y - topEdge - margin);
                 innerWidth = B.Width() + margin * 2;
                 innerHeight = B.Height() + margin * 2;
-
             }
 
             public bool RenderDirectionArrow = true;
@@ -387,7 +393,13 @@ namespace GerberLibrary
 
         public static void MergeFrameIntoGerberSet(string FrameFolder, string OutlineFolder, string OutputFolder, FrameSettings FS, ProgressLog log, string basename)
         {
+
+
             log.PushActivity("MergeFrame");
+           // log.AddString(".....");
+            if (Directory.Exists(FrameFolder) == false) log.AddString(String.Format("Framefolder {0} does not exist?", FrameFolder));
+            if (Directory.Exists(OutlineFolder) == false) log.AddString(String.Format("OutlineFolder {0} does not exist?", OutlineFolder));
+            if (Directory.Exists(OutputFolder) == false) log.AddString(String.Format("OutputFolder {0} does not exist?", OutputFolder));
             GerberPanel PNL = new GerberPanel();
             PNL.AddGerberFolder(log, FrameFolder);
             PNL.AddGerberFolder(log, OutlineFolder);
@@ -521,15 +533,28 @@ namespace GerberLibrary
 
 
             PNL.UpdateShape(log);
-
-            Directory.CreateDirectory(OutputFolder);
-            var PNLFiles = PNL.SaveGerbersToFolder("MergedFrame", OutputFolder, log, true, false, true, basename);
-
-            if (FS.RenderSample)
+            log.AddString("postupdateshape");
+            try
             {
-                GerberImageCreator GIC = new GerberImageCreator();
-                GIC.AddBoardsToSet(Directory.GetFiles(OutputFolder).ToList(), new SilentLog());
-                GIC.WriteImageFiles(basename, 200, true, false, true, null);
+                Directory.CreateDirectory(OutputFolder);
+                var PNLFiles = PNL.SaveGerbersToFolder("MergedFrame", OutputFolder, log, false, true, false, true, basename);
+            }
+            catch(Exception E)
+            {
+                log.AddString("save gerbers to folder Exceptions: " + E.ToString());
+            }
+            try
+            {
+                if (FS.RenderSample)
+                {
+                    GerberImageCreator GIC = new GerberImageCreator();
+                    GIC.AddBoardsToSet(Directory.GetFiles(OutputFolder).ToList(), new SilentLog());
+                    GIC.WriteImageFiles(basename, 200, true, false, true, null);
+                }
+            }
+            catch (Exception E)
+            {
+                log.AddString("GIC Exceptions: " + E.ToString());
             }
 
             log.PopActivity();
@@ -563,7 +588,7 @@ namespace GerberLibrary
         }
 
 
-        public static List<string> WriteSideEdgeFrame(PolyLine pl, FrameSettings FS, string basefile)
+        public static List<string> WriteSideEdgeFrame(PolyLine pl, FrameSettings FS, string basefile, BOM output = null)
         {
             List<string> Files = new List<string>();
 
@@ -610,7 +635,7 @@ namespace GerberLibrary
                     PCB.AddOutline(PL2);
                 }
 
-                if (FS.InsideEdgeMode == FrameSettings.InsideMode.FormFitting)
+                if (FS.InsideEdgeMode == FrameSettings.InsideMode.FormFitting && pl !=null)
                 {
                     PolyLine PP = pl.Copy();
                     PP.Translate(-FS.offset.X, -FS.offset.Y);
@@ -757,7 +782,7 @@ namespace GerberLibrary
                 //PCB.CellularArt();
 
 
-                Files.AddRange(PCB.Write(Path.GetDirectoryName(basefile), Path.GetFileNameWithoutExtension(basefile), FS.offset)); ;
+                Files.AddRange(PCB.Write(Path.GetDirectoryName(basefile), Path.GetFileNameWithoutExtension(basefile), output, FS.offset)); ;
 
 
 
