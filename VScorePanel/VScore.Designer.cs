@@ -40,9 +40,12 @@
             this.FrameTitle = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.xbox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ybox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.framebox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
             // xbox
@@ -131,7 +134,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(22, 148);
+            this.label4.Location = new System.Drawing.Point(22, 208);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(88, 20);
             this.label4.TabIndex = 6;
@@ -139,7 +142,7 @@
             // 
             // FrameTitle
             // 
-            this.FrameTitle.Location = new System.Drawing.Point(116, 145);
+            this.FrameTitle.Location = new System.Drawing.Point(116, 205);
             this.FrameTitle.Name = "FrameTitle";
             this.FrameTitle.Size = new System.Drawing.Size(137, 26);
             this.FrameTitle.TabIndex = 7;
@@ -159,12 +162,31 @@
             this.label5.TabIndex = 8;
             this.label5.Text = "Drop Folder Here";
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(2, 154);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(105, 20);
+            this.label6.TabIndex = 10;
+            this.label6.Text = "Gap between";
+            // 
+            // numericUpDown1
+            // 
+            this.numericUpDown1.Enabled = false;
+            this.numericUpDown1.Location = new System.Drawing.Point(116, 148);
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(120, 26);
+            this.numericUpDown1.TabIndex = 9;
+            // 
             // VScore
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(516, 371);
+            this.ClientSize = new System.Drawing.Size(317, 371);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.FrameTitle);
             this.Controls.Add(this.label4);
@@ -182,6 +204,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.xbox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ybox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.framebox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -199,6 +222,8 @@
         private System.Windows.Forms.TextBox FrameTitle;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.NumericUpDown numericUpDown1;
     }
 }
 

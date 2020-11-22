@@ -19,6 +19,7 @@ namespace VScorePanel
         public VScore()
         {
             InitializeComponent();
+
         }
 
         private void VScore_DragDrop(object sender, DragEventArgs e)
