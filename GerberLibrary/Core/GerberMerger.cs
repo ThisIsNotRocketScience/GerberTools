@@ -304,7 +304,7 @@ namespace GerberLibrary
                                 double X = 0;
                                 double Y = 0;
                                 GS.Split(GCC.originalline, File1Parsed.State.CoordinateFormat);
-
+                                GS.ApplyMirroring(File1Parsed.State);
                                 if (GS.Has("D") || GS.Has("X") || GS.Has("Y"))
                                 {
                                     if (GS.Get("D") > 3)
@@ -447,6 +447,8 @@ namespace GerberLibrary
                                 {
                                     GerberSplitter GS = new GerberSplitter();
                                     GS.Split(GCC.originalline, otherfile.State.CoordinateFormat);
+                                    GS.ApplyMirroring(otherfile.State);
+
                                     if ((int)GS.Get("G") == 54)
                                     {
                                         if (GS.Has("D") && GS.Get("D") > 3)

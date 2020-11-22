@@ -308,7 +308,8 @@ namespace GerberCombinerBuilder
 
         public void ExportThreadFunc()
         {
-            ThePanel.SaveGerbersToFolder(BaseName, ExportFolder,new ProgressForward( ProgressDialog), ThePanel.TheSet.CopyOutlineToTopSilkscreen);
+
+            ThePanel.SaveGerbersToFolder(BaseName, ExportFolder, new ProgressForward(ProgressDialog), ThePanel.TheSet.CopyOutlineToTopSilkscreen);
         }
 
 

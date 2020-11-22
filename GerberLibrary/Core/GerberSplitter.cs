@@ -249,6 +249,33 @@ namespace GerberLibrary
             }
             return -1;
         }
+        void MirrorIfExist(string N)
+        {
+            if (Has(N))
+            {
+                Set(N, -Get(N));
+            }
+        }
+        internal void ApplyMirroring(GerberParserState state)
+        {
+            if (state.MirrorA)
+            {
+                switch (state.AAxis)
+                {
+                    case GerberParserState.AxisName.X: MirrorIfExist("X"); break;
+                    case GerberParserState.AxisName.Y: MirrorIfExist("Y"); break;
+                }
+            }
+
+            if (state.MirrorB)
+            {
+                switch (state.BAxis)
+                {
+                    case GerberParserState.AxisName.X: MirrorIfExist("X"); break;
+                    case GerberParserState.AxisName.Y: MirrorIfExist("Y") ; break;
+                }
+            }
+        }
     }
 
     public class GerberListSplitter

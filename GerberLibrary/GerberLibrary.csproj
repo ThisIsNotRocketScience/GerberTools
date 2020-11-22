@@ -123,6 +123,11 @@
     <Compile Include="Core\Primitives\PolyLine.cs" />
     <Compile Include="Core\SickOfBeige.cs" />
     <Compile Include="Deprecated\OldCNCRelated.cs" />
+    <Compile Include="EagleThings\BoardRenderer.cs" />
+    <Compile Include="EagleThings\eagle.cs">
+      <DependentUpon>eagle.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="EagleThings\LibraryLoader.cs" />
     <Compile Include="External\clipper.cs" />
     <Compile Include="Core\Factory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -137,13 +142,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="EagleThings\eagle.dtd" />
+    <None Include="EagleThings\eagle.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\EagleLoaders\EagleLoaders.csproj">
-      <Project>{B4686D31-46CF-4A12-8FD8-32A9EB817B4B}</Project>
-      <Name>EagleLoaders</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
