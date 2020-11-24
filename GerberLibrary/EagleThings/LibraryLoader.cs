@@ -1313,6 +1313,11 @@ namespace GerberLibrary
             public NetSpec Settings = new NetSpec() { Name = "default", Clearance = 5 * 25.4 / 1000.0, AutoPour = false, MinTraceWidth = 9 * 25.4 / 1000.0 };
 
             public int IDX = 0;
+
+            public override string ToString()
+            {
+                return String.Format("net {0}: {1} pins, {2} pads", Name, PinsInNet.Count(), PadsInNet.Count());
+            }
         }
 
         public class GatePlacement
@@ -1322,6 +1327,11 @@ namespace GerberLibrary
             public double y;
             public double rot;
             public string part;
+
+            public override string ToString()
+            {
+                return string.Format("{0}({4}): {1},{2} {3} ", Gate, x, y, rot, part);
+            }
         }
 
         public class SchematicLoader
@@ -1579,6 +1589,13 @@ namespace GerberLibrary
                         {
                             foreach (var s in m.sheets.sheet)
                             {
+                                if (s.nets != null && s.nets.net != null)
+                                {
+                                    foreach (var N in s.nets.net)
+                                    {
+                                        this.Nets.Add(new SchematicNet() {Name = N.name });
+                                    }
+                                }
                                 if (s.moduleinsts != null && s.moduleinsts.moduleinst != null)
                                     foreach (var mi in s.moduleinsts.moduleinst)
                                     {
@@ -1604,7 +1621,32 @@ namespace GerberLibrary
                 {
                     foreach (var s in schematic.sheets.sheet)
                     {
+                        if (s.nets != null && s.nets.net != null)
+                        {
+                            foreach (var N in s.nets.net)
+                            {
+
+                                this.Nets.Add(new SchematicNet() {Name = N.name });
+                                Console.WriteLine(N.name);
+                                if (N.portref!=null) foreach(var p in N.portref)
+                                {
+                                    Console.WriteLine(p);
+                                }
+                                if (N.pinref!= null) foreach (var p in N.pinref)
+                                {
+                                    Console.WriteLine(p);
+                                }
+                                if (N.segment!=null) foreach(var seg in N.segment)
+                                {
+                                        if (seg.pinref !=null) foreach(var a in seg.pinref)
+                                        {
+                                                Console.WriteLine(a);
+                                        }
+                                 }
+                            }
+                        }
                         if (s.moduleinsts != null && s.moduleinsts.moduleinst != null)
+                        {
                             foreach (var m in s.moduleinsts.moduleinst)
                             {
                                 var L = Modules[m.module];
@@ -1619,6 +1661,7 @@ namespace GerberLibrary
                                     });
                                 }
                             }
+                        }
                     }
                 }
 
