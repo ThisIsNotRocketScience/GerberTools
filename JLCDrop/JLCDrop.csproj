@@ -89,10 +89,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EagleLoaders\EagleLoaders.csproj">
-      <Project>{b4686d31-46cf-4a12-8fd8-32a9eb817b4b}</Project>
-      <Name>EagleLoaders</Name>
-    </ProjectReference>
     <ProjectReference Include="..\GerberLibrary\GerberLibrary.csproj">
       <Project>{e1c3aa23-3a02-485f-976b-50a96052f00a}</Project>
       <Name>GerberLibrary</Name>

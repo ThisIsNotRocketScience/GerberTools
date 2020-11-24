@@ -32,6 +32,7 @@ namespace TINRS_ArtWorkGenerator
         public TinrsArtWork()
         {
             InitializeComponent();
+            TheSettings.SetupFenixDefault();
             TheSettingsDialog = new SettingsDialog(TheSettings, UpdateFunc, ProcessFunc);
 
             string[] args = Environment.GetCommandLineArgs();

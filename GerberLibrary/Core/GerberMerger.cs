@@ -145,7 +145,6 @@ namespace GerberLibrary
 
             Dictionary<string, string> MacroDict = new Dictionary<string, string>();
 
-
             foreach (var a in File1Parsed.State.ApertureMacros)
             {
                 OutputLines.Add(a.Value.BuildGerber(GNF, 0).Trim());
@@ -510,7 +509,7 @@ namespace GerberLibrary
                                     double X = 0;
                                     double Y = 0;
                                     GS.Split(GCC.originalline, otherfile.State.CoordinateFormat);
-
+                                    GS.ApplyMirroring(otherfile.State);
 
                                     if (GS.Has("D") || GS.Has("X") || GS.Has("Y"))
                                     {
