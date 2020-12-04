@@ -82,7 +82,7 @@ namespace GerberLibrary.Core
         public string Notes;
         public bool IsPolarized;
 
-
+        public MountingType Mounting;
     }
 
     public class BoardContainer
@@ -173,6 +173,12 @@ namespace GerberLibrary.Core
         }
     }
 
+    public enum MountingType
+    {
+        SMD,
+        Throughhole,
+        Meta
+    }
     public class BOMEntry
     {
         public string Name;
@@ -183,6 +189,7 @@ namespace GerberLibrary.Core
         public string MfgPartNumber;
         public string Mfg;
         public string CombinedName;
+        public MountingType Mounting;
         public class RefDesc
         {
             public string NameOnBoard;
@@ -565,6 +572,7 @@ namespace GerberLibrary.Core
                         OptionalOut<BOMEntry> bom = new OptionalOut<BOMEntry>();
                         AddBOMItemInt(b.Value.PackageName, b.Value.Name, b.Value.Value, c.OriginalName, set, c.SourceBoard, X, Y, (c.angle - angle) % 360, c.Side, bom);
                         bom.Result.SetCombined(b.Value.Combined());
+                        bom.Result.Mounting = b.Value.Mounting;
                     }
                 }
             }
@@ -2025,6 +2033,11 @@ namespace GerberLibrary.Core
             string fmt = "{0:F" + digits.ToString() + "}";
             return String.Format(fmt, inp).Replace(",", ".");
         }
+        public static String QuantFormat(double inp, int digits = 2)
+        {
+            string fmt = "{0:F" + digits.ToString() + "}";
+            return String.Format(fmt, inp).Replace(".", ",");
+        }
         public void WriteJLCPnpFile(string BaseFolder, string Name, bool ellagepreference)
         {
             List<string> outlinesPNP = new List<string>();
@@ -2206,20 +2219,28 @@ namespace GerberLibrary.Core
 
                 foreach (var rd_ in rd)
                 {
-                    var S = positions[rd_.Trim()];
-                    if (headers.Count() > 5)
+                    if (positions.ContainsKey(rd_.Trim()))
                     {
-                        OptionalOut<BOMEntry> Entr = new OptionalOut<BOMEntry>(); ;
-                        string name = items[5];
-                        string combined = items[4];
-                        AddBOMItemInt(package, name, value, rd_.Trim(), Set, bOMFile, S.x, S.y, S.angle, S.Side, Entr);
-                        Entr.Result.SetCombined(combined);
-                        //AddBOMItemExt(package, name, value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side);
+                        var S = positions[rd_.Trim()];
 
+                        if (headers.Count() > 5)
+                        {
+                            OptionalOut<BOMEntry> Entr = new OptionalOut<BOMEntry>(); ;
+                            string name = items[5];
+                            string combined = items[4];
+                            AddBOMItemInt(package, name, value, rd_.Trim(), Set, bOMFile, S.x, S.y, S.angle, S.Side, Entr);
+                            Entr.Result.SetCombined(combined);
+                            //AddBOMItemExt(package, name, value, rd_, Set, bOMFile, S.x, S.y, S.angle, S.Side);
+
+                        }
+                        else
+                        {
+                            AddBOMItemExt(package, "", value, rd_.Trim(), Set, bOMFile, S.x, S.y, S.angle, S.Side);
+                        }
                     }
                     else
                     {
-                        AddBOMItemExt(package, "", value, rd_.Trim(), Set, bOMFile, S.x, S.y, S.angle, S.Side);
+                        Console.WriteLine("wtf!");
                     }
 
                 }
@@ -3053,6 +3074,120 @@ namespace GerberLibrary.Core
 
             g.FillEllipse(new SolidBrush(Color.FromArgb(190, 190, 190)), pinrect);
 
+        }
+
+        public void WriteQuantPnPFiles(string BaseFolder, string Name)
+        {
+            List<string> outlinesPNP = new List<string>();
+
+
+            outlinesPNP.Add("Variant:    No variations");
+            outlinesPNP.Add("Units used: mm");
+            outlinesPNP.Add("");
+            outlinesPNP.Add("\"Designator,\"\"Comment\"\",\"\"Layer\"\",\"\"Footprint\"\",\"\"Center-X(mm)\"\",\"\"Center-Y(mm)\"\",\"\"Rotation\"\",\"\"Part Number\"\",\"\"Description\"\",\"\"Variation\"\",\"\"Mounting\"\"\"");;
+            
+            foreach (var ds in DeviceTree)
+            {
+
+                foreach (var v in ds.Value.Values)
+                {
+                    foreach (var p in v.RefDes)
+                    {
+
+                            double A = (p.angle + 360 + GetRotationOffset(v.Combined())) % 360;
+                            while (A > 180) A -= 360;
+                            while (A < -180) A += 360;
+                            string line = String.Format("\"{0}\",\"\"{1}\"\",\"\"{2}\"\",\"\"{3}\"\",\"\"{4}\"\",\"\"{5}\"\",\"\"{6}\"\",\"\"{7}\"\",\"\"{8}\"\",\"\"{9}\"\",\"\"{10}\"\"\"",
+                            p.NameOnBoard,
+                            v.Value, 
+                            p.Side== BoardSide.Top?"TopLayer":"BottomLayer",
+                            v.PackageName,
+                            QuantFormat(p.x, 4),
+                            QuantFormat(p.y, 4),
+                            QuantFormat(A, 0),                              
+                             v.CombinedName,
+                             v.Value,
+                             "",
+                             QuantMounting(v.Mounting));
+
+                            outlinesPNP.Add(line);
+
+                      
+
+                    }
+                }
+            }
+
+            File.WriteAllLines(BaseFolder + "\\" + Name + "_PNP.csv", outlinesPNP);
+        }
+
+        private string QuantMounting(MountingType mounting)
+        {
+        switch(mounting)
+            {
+                case MountingType.Meta: return "";
+                case MountingType.SMD: return "SMD";
+                case MountingType.Throughhole: return "TH";
+            }
+            return "";
+        }
+
+        public void UpdateMountingTypesFromStock(StockDocument stockDoc)
+        {
+            foreach (var ds in DeviceTree)
+            {
+
+                foreach (var v in ds.Value.Values)
+                {
+                    foreach (var p in stockDoc.Parts)
+                    {
+                       if ( p.name == v.Combined())
+                        {
+                            v.Mounting = p.Mounting;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void WriteQuantBOMFile(string BaseFolder, string Name)
+        {
+            List<string> outlinesBOM = new List<string>();
+
+            outlinesBOM.Add("Designator,Comment,Characteristic,Outline,Manufacturer + Part Number,Fitted,Quantity,Mounting");
+
+            foreach (var ds in DeviceTree)
+            {
+
+                foreach (var v in ds.Value.Values)
+                {
+                    SetRotationOffset(v.Combined(), GetRotationOffset(v.Combined()));
+
+                    string refdescs = "\"" + v.RefDes[0].NameOnBoard;
+                    for (int i = 1; i < v.RefDes.Count; i++)
+                    {
+                        refdescs += ", " + v.RefDes[i].NameOnBoard;
+                    }
+                    refdescs += "\"";
+                    string V = v.Value;
+                    if (V.Trim().Length == 0)
+                    {
+                        V = v.MfgPartNumber;
+                    }
+
+                    string mfg = "";
+                    if (v.MfgPartNumber != null)
+                    {
+                        mfg = v.MfgPartNumber.Replace(',', '.');
+                    }
+                    string line = String.Format("{0},{1},{2},{3},{4},{5},{6},{7}", refdescs, V,v.Value, v.PackageName, mfg,"Fitted", v.RefDes.Count.ToString(), v.Mounting);
+                    outlinesBOM.Add(line);
+
+                }
+            }
+            File.WriteAllLines(BaseFolder + "\\" + Name + "_QUANT_BOM.csv", outlinesBOM);
+
+          
         }
     }
 
