@@ -20,4 +20,8 @@ All tools are clean C# and will run fine under Mono.
 Please see http://www.thisisnotrocketscience.nl for news/updates/blogs
 
 ### Linux
-Run `./build.sh`. Dependencies should be automatically fetched.
+
+Install mono-develop via official instructions: https://www.mono-project.com/download/stable/#download-lin. 
+Versions from your distro might also work.
+
+Run `./build.sh`. Nuget dependencies should be automatically fetched.
