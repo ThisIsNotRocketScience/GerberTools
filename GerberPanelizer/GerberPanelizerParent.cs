@@ -26,6 +26,7 @@ namespace GerberCombinerBuilder
         {
             public string T = "";
             public int idx;
+            bool sink = true;
             public ControlWriter()
             {
 
@@ -33,12 +34,16 @@ namespace GerberCombinerBuilder
 
             public override void Write(char value)
             {
+                return;
+                if (sink) return;
                 idx++;
                 T += value;
+                
             }
 
             public override void Write(string value)
             {
+                if (sink) return;
                 idx++;
                 T += value;
             }

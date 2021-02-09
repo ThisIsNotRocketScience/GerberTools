@@ -247,7 +247,7 @@ namespace GerberLibrary
                                 }
                             }
                             moveswritten++;
-                            log.AddString(String.Format("Pure D Code: {0}", lines[i]));
+                            //log.AddString(String.Format("Pure D Code: {0}", lines[i]));
                         }
                         else
                         if (GS.Has("X") || GS.Has("Y") || (GS.Has("D") && GS.Get("D") < 10))
@@ -310,7 +310,7 @@ namespace GerberLibrary
                         outlines.Add(GS.Rebuild(CoordinateFormat));
                         if (PureD)
                         {
-                            log.AddString(String.Format("pureD"));
+                            //log.AddString(String.Format("pureD"));
                         }
 
                     }

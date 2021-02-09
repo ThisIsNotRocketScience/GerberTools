@@ -37,30 +37,16 @@ namespace VScorePanel
                     {
                         try
                         {
-                            var OutputFolder = Path.Combine(S, "../" + Path.GetFileNameWithoutExtension(S) + "_GROOVY");
-                            Directory.CreateDirectory(OutputFolder);
+                           
                             GerberLibrary.GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
                             var A = Directory.GetFiles(S);
 
                             GIC.AddBoardsToSet(A.ToList(), new StandardConsoleLog());
 
                             GerberFrameWriter.FrameSettings FS = new GerberFrameWriter.FrameSettings();
-                            
-                            FS.FrameTitle = FrameTitle.Text; ;
-                            FS.RenderSample = false;
-                            FS.margin = 0;
-                            FS.topEdge = FS.leftEdge = (double)framebox.Value;
-                            FS.roundedInnerCorners = 0;
-                            FS.roundedOuterCorners = 0;
-                            FS.RenderSample = false;
-                            FS.RenderDirectionArrow = false;
-                            FS.DirectionArrowSide = GerberLibrary.Core.BoardSide.Top;
-                            //FS.DefaultFiducials = true;
-                            //FS.FiducialSide = BoardSide.Both;
-                            FS.HorizontalTabs = false;
-                            FS.VerticalTabs = false;
-                            FS.InsideEdgeMode = GerberFrameWriter.FrameSettings.InsideMode.NoEdge;
+                            List<String> OutputLines = new List<string>();
 
+                            OutputLines.Add(String.Format("Panel for {0}", Path.GetDirectoryName(S)));
                             Bounds PanelBounds = new Bounds();
                             double w = GIC.BoundingBox.Width();
                             double h = GIC.BoundingBox.Height();
@@ -71,51 +57,182 @@ namespace VScorePanel
                             Pnl.TheSet.ClipToOutlines = false;
 
                             Pnl.AddGerberFolder(new StandardConsoleLog(), S);
+                            double ginbetween = (double)numericUpDown1.Value;
 
-                            for (int x = 0;x<(int)xbox.Value;x++)
+                            for (int x = 0; x < (int)xbox.Value; x++)
                             {
-                                for(int y =0;y< (int)ybox.Value; y++)
+                                for (int y = 0; y < (int)ybox.Value; y++)
                                 {
-                                    var I = Pnl.AddInstance(S, new PointD(x * w, y * h));
-                                    I.IgnoreOutline = true;
 
-                                    PanelBounds.FitPoint(bx + ((x + 0) * w), by + ((y + 0) * h));
-                                    PanelBounds.FitPoint(bx + ((x + 1) * w), by + ((y + 0) * h));
-                                    PanelBounds.FitPoint(bx + ((x + 1) * w), by + ((y + 1) * h));
-                                    PanelBounds.FitPoint(bx + ((x + 0) * w), by + ((y + 1) * h));
+                                    var I = Pnl.AddInstance(S, new PointD(x * (w+ginbetween), y * (h+ginbetween)));
+
+                                    OutputLines.Add(String.Format("Adding board instance: {0}mm x {1}mm offset", x * (w + ginbetween), y * (h + ginbetween)));
+
+                                    if (theMode == PanelMode.Groovy)  I.IgnoreOutline = true;
+
+                                    PanelBounds.FitPoint(bx + ((x + 0) * (w + ginbetween)), by + ((y + 0) *(h+ ginbetween)));
+                                    PanelBounds.FitPoint(bx + (w+(x + 0) * (w + ginbetween)), by + ((y + 0) *(h+ ginbetween)));
+                                    PanelBounds.FitPoint(bx + (w+(x + 0) * (w + ginbetween)), by + (h+(y +0) *(h+ ginbetween)));
+                                    PanelBounds.FitPoint(bx + ((x + 0) * (w + ginbetween)), by + (h+(y + 0) *(h + ginbetween)));
                                 }
                             }
-                            FS.PositionAround(PanelBounds);
-
-
-                            GerberOutlineWriter GOW = new GerberOutlineWriter();
-                            for (int x = 0; x < (int)xbox.Value+1; x++)
+                            if(theMode == PanelMode.Tabby)
                             {
-                                PolyLine PL = new PolyLine();
-                                PL.Add(bx+(x ) * w, PanelBounds.TopLeft.Y - (float)framebox.Value - 10);
-                                PL.Add(bx+(x ) * w, PanelBounds.BottomRight.Y + (float)framebox.Value + 10);
-                                GOW.AddPolyLine(PL);
+                                OutputLines.Add("Panel created as Tabby board");
+                                OutputLines.Add(String.Format("Space inbetween: {0}mm", ginbetween));
+
+
+                                FS.FrameTitle = FrameTitle.Text; ;
+                                FS.RenderSample = false;
+                                FS.margin = ginbetween;
+                                FS.topEdge = FS.leftEdge = (double)framebox.Value;
+                                OutputLines.Add(String.Format("Frame width: {0}mm", FS.leftEdge));
+                                FS.roundedInnerCorners = 0;
+                                FS.roundedOuterCorners = 0;
+                                FS.RenderSample = false;
+                                FS.DirectionArrowSide = GerberLibrary.Core.BoardSide.Top;
+
+                                FS.RenderDirectionArrow = true;
+                                //FS.DefaultFiducials = true;
+                                //FS.FiducialSide = BoardSide.Both;
+                                FS.HorizontalTabs = false;
+                                FS.VerticalTabs = false;
+                                FS.InsideEdgeMode = GerberFrameWriter.FrameSettings.InsideMode.RegularEdge;
+                                FS.PositionAround(PanelBounds);
+
+                                string sS = String.Format("Frame size: {0} mm x {1} mm", FS.innerWidth + FS.margin * 2 + FS.leftEdge, FS.innerHeight + FS.margin * 2 + FS.topEdge);
+                                OutputLines.Add(sS);
+                                var OutputFolder = Path.Combine(S, "../" + Path.GetFileNameWithoutExtension(S) + "_TABBY");
+                                Directory.CreateDirectory(OutputFolder);
+
+                                String FrameFolder = Path.Combine(OutputFolder, "frame");
+                                Directory.CreateDirectory(FrameFolder);
+                                //Directory.CreateDirectory(Path.Combine(OutputFolder, "merged"));
+                                Directory.CreateDirectory(Path.Combine(OutputFolder, "merged"));
+                                GerberFrameWriter.WriteSideEdgeFrame(null, FS, Path.Combine(FrameFolder, "panelframe"), null);
+                                Pnl.AddGerberFolder(new StandardConsoleLog(), FrameFolder);
+                                Pnl.AddInstance(FrameFolder, new PointD(0, 0));
+                                Pnl.TheSet.MergeFileTypes = false;
+
+                                int tabcount = 2;
+                                double tx = (w - (tabcount * ginbetween*2))/ (tabcount + 1.0f);
+                                double ty = (h - (tabcount * ginbetween * 2)) / (tabcount + 1.0f);
+                                double txs = tx+ ginbetween;
+                                double tys = ty + ginbetween;
+                                tx += ginbetween * 2;
+                                ty += ginbetween * 2;
+
+                                for (int x = 0; x < (int)xbox.Value+1; x++)
+                                {
+                                    for (int y = 0; y < (int)ybox.Value+1; y++)
+                                    {
+
+                                        for (int i = 0; i < tabcount; i++)
+                                        {
+
+                                            if (x < (int)xbox.Value)
+                                            {
+                                                var BT1 = Pnl.AddTab(new PointD(bx + (x + 0) * (w + ginbetween) + tx * (i) + txs, by + ((y + 0) * (h + ginbetween)) - ginbetween / 2));
+                                                BT1.Radius = (float)ginbetween;
+                                            }
+                                            if (y < (int)ybox.Value)
+                                            {
+                                                var BT2 = Pnl.AddTab(new PointD(bx + (x + 0) * (w + ginbetween) - ginbetween / 2, by + ((y + 0) * (h + ginbetween)) + ty * (i) + tys));
+                                                BT2.Radius = (float)ginbetween;
+                                            }
+                                        }
+
+                                    }
+                                }
+
+
+                                
+                                Pnl.UpdateShape(new StandardConsoleLog());
+                                Pnl.SaveGerbersToFolder(Path.GetFileNameWithoutExtension(S) + "_Panel", Path.Combine(OutputFolder, "merged"), new StandardConsoleLog());
+                                File.WriteAllLines(Path.Combine(OutputFolder, "PanelReport.txt"), OutputLines);
+                            }
+
+                            if (theMode == PanelMode.Groovy)
+                            {
+
+                                FS.FrameTitle = FrameTitle.Text; ;
+                                FS.RenderSample = false;
+                                FS.margin = 0;
+                                FS.topEdge = FS.leftEdge = (double)framebox.Value;
+                                FS.roundedInnerCorners = 0;
+                                FS.roundedOuterCorners = 0;
+                                FS.RenderSample = false;
+                                FS.RenderDirectionArrow = false;
+                                FS.DirectionArrowSide = GerberLibrary.Core.BoardSide.Top;
+                                //FS.DefaultFiducials = true;
+                                //FS.FiducialSide = BoardSide.Both;
+                                FS.HorizontalTabs = false;
+                                FS.VerticalTabs = false;
+                                FS.InsideEdgeMode = GerberFrameWriter.FrameSettings.InsideMode.NoEdge;
+                                FS.PositionAround(PanelBounds);
+
+
+                                var OutputFolder = Path.Combine(S, "../" + Path.GetFileNameWithoutExtension(S) + "_GROOVY");
+                                Directory.CreateDirectory(OutputFolder);
+
+                                GerberOutlineWriter GOW = new GerberOutlineWriter();
+                                int xmax = (int)xbox.Value + 1;
+                                int ymax = (int)ybox.Value + 1;
+                                if (ginbetween > 0)
+                                {
+                                    xmax--;
+                                    ymax--;
+                                }
+
+                                for (int x = 0; x < xmax; x++)
+                                {
+                                    PolyLine PL = new PolyLine();
+                                    PL.Add(bx + (x) * (w + ginbetween), PanelBounds.TopLeft.Y - (float)framebox.Value - 10);
+                                    PL.Add(bx + (x) * (w + ginbetween), PanelBounds.BottomRight.Y + (float)framebox.Value + 10);
+                                    GOW.AddPolyLine(PL);
+
+                                    if (ginbetween > 0)
+                                    {
+                                        PolyLine PL2 = new PolyLine();
+                                        PL2.Add(bx + (x) * (w + ginbetween) + w, PanelBounds.TopLeft.Y - (float)framebox.Value - 10);
+                                        PL2.Add(bx + (x) * (w + ginbetween) + w, PanelBounds.BottomRight.Y + (float)framebox.Value + 10);
+                                        GOW.AddPolyLine(PL2);
+                                    }
+                                }
+
+                                for (int y = 0; y < ymax; y++)
+                                {
+                                    PolyLine PL = new PolyLine();
+                                    PL.Add(PanelBounds.TopLeft.X - (float)framebox.Value - 10, by + (y) * (h + ginbetween));
+                                    PL.Add(PanelBounds.BottomRight.X + (float)framebox.Value + 10, by + (y) * (h + ginbetween));
+                                    GOW.AddPolyLine(PL);
+
+                                    if (ginbetween > 0)
+                                    {
+                                        PolyLine PL2 = new PolyLine();
+                                        PL2.Add(PanelBounds.TopLeft.X - (float)framebox.Value - 10, by + (y) * (h + ginbetween) + h);
+                                        PL2.Add(PanelBounds.BottomRight.X + (float)framebox.Value + 10, by + (y) * (h + ginbetween) + h);
+                                        GOW.AddPolyLine(PL2);
+                                    }
+                                }
+                                GOW.Write(Path.Combine(OutputFolder, "VGrooves.gbr"));
+
+                                String FrameFolder = Path.Combine(OutputFolder, "frame");
+                                Directory.CreateDirectory(FrameFolder);
+                                Directory.CreateDirectory(Path.Combine(OutputFolder, "merged"));
+                                GerberFrameWriter.WriteSideEdgeFrame(null, FS, Path.Combine(FrameFolder, "panelframe"), null);
+
+
+
+                                Pnl.AddGerberFolder(new StandardConsoleLog(), FrameFolder);
+                                Pnl.AddInstance(FrameFolder, new PointD(0, 0));
+                                Pnl.UpdateShape(new StandardConsoleLog());
+                                Pnl.SaveGerbersToFolder(Path.GetFileNameWithoutExtension(S) + "_Panel", Path.Combine(OutputFolder, "merged"), new StandardConsoleLog());
 
                             }
-                            for (int y = 0; y < (int)ybox.Value + 1; y++)
-                            {
-                                PolyLine PL = new PolyLine();
-                                PL.Add(PanelBounds.TopLeft.X - (float)framebox.Value - 10,by+ (y ) * h);
-                                PL.Add(PanelBounds.BottomRight.X + (float)framebox.Value + 10,by+ (y ) * h);
-                                GOW.AddPolyLine(PL);
 
-                            }
-
-                            GOW.Write(Path.Combine(OutputFolder, "VGrooves.gbr"));
-                            String FrameFolder = Path.Combine(OutputFolder, "frame");
-                            Directory.CreateDirectory(FrameFolder);
-                            Directory.CreateDirectory(Path.Combine(OutputFolder, "merged"));
-                            GerberFrameWriter.WriteSideEdgeFrame(null, FS, Path.Combine(FrameFolder, "panelframe"), null);
-
-                            Pnl.AddGerberFolder(new StandardConsoleLog(), FrameFolder);
-                            Pnl.AddInstance(FrameFolder, new PointD(0, 0));
-                            Pnl.UpdateShape(new StandardConsoleLog());
-                            Pnl.SaveGerbersToFolder(Path.GetFileNameWithoutExtension(S)+"_Panel", Path.Combine(OutputFolder, "merged"), new StandardConsoleLog());
+                            
+                         
 
 
                             CountDown = 10;
@@ -141,20 +258,38 @@ namespace VScorePanel
             {
                 e.Effect = DragDropEffects.None;
             }
-
         }
+
         int CountDown = 0;
         private void timer1_Tick(object sender, EventArgs e)
         {
-                if (CountDown > 0)
-                {
-                    CountDown--;
-                }
-                else
-                {
-                    BackColor = Color.Gray;
-                }
-            
+            if (CountDown > 0)
+            {
+                CountDown--;
+            }
+            else
+            {
+                BackColor = Color.Gray;
+            }
+        }
+
+        public enum PanelMode{
+            Groovy,
+            Tabby
+        }
+        public PanelMode theMode = PanelMode.Groovy;
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch(listBox1.SelectedIndex)
+            {
+                case 1:
+                    theMode = PanelMode.Groovy;
+                    break;
+                case 0:
+                    theMode = PanelMode.Tabby;
+                    break;
+
+            }
         }
     }
 }
