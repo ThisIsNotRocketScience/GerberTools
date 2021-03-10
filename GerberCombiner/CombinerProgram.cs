@@ -20,6 +20,9 @@ namespace GerberCombiner
             //GS.Split("%SRX1Y1I0.00000J1.76100*%", new GerberLibrary.Core.Primitives.GerberNumberFormat(),true);
             //Console.WriteLine("{0}", GS.Pairs.Count);
             Gerber.ShowProgress = true;
+            Gerber.DumpSanitizedOutput = true;
+            Gerber.WriteSanitized = true;
+
             if (args.Count() < 2)
             {
                 Console.WriteLine("usage: ");

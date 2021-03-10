@@ -126,9 +126,6 @@ namespace GerberLibrary
             File1Lines = PolyLineSet.SanitizeInputLines(File1Lines);
             ParsedGerber File1Parsed = PolyLineSet.ParseGerber274x(Log, File1Lines, true, false, new GerberParserState() { PreCombinePolygons = false, GenerateGeometry = false });
 
-
-
-
             List<string> OutputLines = new List<string>();
             GerberNumberFormat GNF = new GerberNumberFormat();
             GNF.DigitsBefore = Math.Max(File1Parsed.State.CoordinateFormat.DigitsBefore, MaxDigitsBefore);
@@ -477,12 +474,9 @@ namespace GerberLibrary
                                     {
                                         case "LPD":
                                             if (CurrentPolarity != "LPD") { OutputLines.Add("%LPD*%"); CurrentPolarity = "LPD"; }
-
                                             break;
                                         case "LPC":
                                             if (CurrentPolarity != "LPC") { OutputLines.Add("%LPC*%"); CurrentPolarity = "LPC"; }
-
-
                                             break;
 
                                         default:
@@ -507,7 +501,6 @@ namespace GerberLibrary
                                                 {
                                                     Repeating = false;
                                                 }
-
                                             }
                                             else
                                             {

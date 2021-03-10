@@ -538,7 +538,6 @@ namespace GerberLibrary
 
                 {
                     int img = 0;
-                    int forceiter = 0;
                     RD_Elem[] FieldA = new RD_Elem[iW * iH];
                     RD_Elem[] FieldB = new RD_Elem[iW * iH];
                     Random R = new Random(0);

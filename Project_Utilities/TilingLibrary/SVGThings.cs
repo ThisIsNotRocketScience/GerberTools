@@ -535,7 +535,6 @@ namespace TINRSART.SVG
                                     StrokeColor = ParseColor(a[1]);
                                 }
                                 break;
-                                break;
                             case "fill":
                                 if (a[1] == "none")
                                 {
@@ -570,7 +569,7 @@ namespace TINRSART.SVG
                     }
                     catch (Exception E)
                     {
-                        Console.WriteLine(" failed to parse strokewidth {0}", v);
+                        Console.WriteLine(" failed to parse strokewidth {0}: {1}", v, E.Message);
                     }
 
 

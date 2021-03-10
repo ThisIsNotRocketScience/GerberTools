@@ -1519,14 +1519,14 @@ namespace GerberLibrary
                         TI.Direction.X = (V1.X - V2.X) / Len;
                         TI.Direction.Y = (V1.Y - V2.Y) / Len;
                         TI.Angle = Helpers.AngleBetween(t.Center, I1);
-                        bool addedV1 = false;
+                        //bool addedV1 = false;
 
                         bool V1Inside = Helpers.Distance(new PointD(t.Center.X, t.Center.Y), V1) < t.Radius;
                         bool V2Inside = Helpers.Distance(new PointD(t.Center.X, t.Center.Y), V2) < t.Radius;
 
                         if (Helpers.Distance(new PointD(t.Center.X, t.Center.Y), V1) < t.Radius)
                         {
-                            addedV1 = true;
+                          //  addedV1 = true;
                             TI.Start = true;
                         }
 
