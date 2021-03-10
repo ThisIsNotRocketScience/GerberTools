@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{95295D11-C5CA-4C18-93EB-2BF79D9E0EF4}</ProjectGuid>
+    <ProjectGuid>{CF15033D-BDE6-4C38-BF92-FD328FA0FC20}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>JLCDrop</RootNamespace>
-    <AssemblyName>JLCDrop</AssemblyName>
+    <RootNamespace>CarvedOut</RootNamespace>
+    <AssemblyName>CarvedOut</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -27,13 +27,10 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Build\JLCDrop\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -49,16 +46,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="JLCDrop.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="JLCDrop.Designer.cs">
-      <DependentUpon>JLCDrop.cs</DependentUpon>
+    <Compile Include="CarveDrop.cs" />
+    <Compile Include="CarveDrop.Designer.cs">
+      <DependentUpon>CarveDrop.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="JLCDrop.resx">
-      <DependentUpon>JLCDrop.cs</DependentUpon>
+    <Compile Include="SVGLoad.cs" />
+    <EmbeddedResource Include="CarveDrop.resx">
+      <DependentUpon>CarveDrop.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -83,13 +79,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="favicon.ico" />
-    <Content Include="Font.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GerberLibrary\GerberLibrary.csproj">
+    <ProjectReference Include="..\..\GerberLibrary\GerberLibrary.csproj">
       <Project>{e1c3aa23-3a02-485f-976b-50a96052f00a}</Project>
       <Name>GerberLibrary</Name>
     </ProjectReference>
