@@ -628,7 +628,7 @@ namespace GerberLibrary
                     Side = BoardSide.Top;
                     Layer = BoardLayer.SolderMask;
                     break;
-
+                case "outline": 
                 case "gb3": // oshstencils bottom outline
                     Side = BoardSide.Both;
                     Layer = BoardLayer.Outline;

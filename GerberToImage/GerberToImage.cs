@@ -88,7 +88,7 @@ namespace GerberToImage
                 Gerber.ExtremelyVerbose = false;
                 //Gerber.Verbose = true;
                 Gerber.WaitForKey = true;
-                Gerber.ShowProgress = false;
+                Gerber.ShowProgress = true;
 
                CreateImageForSingleFile(new StandardConsoleLog(),RestList[0], Color.Black, Color.White);
                 if (Gerber.WaitForKey)
