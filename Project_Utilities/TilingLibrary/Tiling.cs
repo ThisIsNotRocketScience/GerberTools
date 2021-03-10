@@ -52,6 +52,22 @@ namespace Artwork
         public float BallRadius = 2000;
         public float Gap = 6000;
         public float Rounding = 8000;
+
+        public void SetupFenixDefault(double scalecomp = 1.0)
+        {
+            Threshold = 2;
+            TileType = Artwork.Tiling.TilingType.RegularTriangle;
+            DegreesOff = -15;
+            MarcelPlating = false;
+            scalesmaller = 0;
+            scalesmallerfactor = 0;
+            scalesmallerfactor = -0.02f;
+            distanceToMaskRange = 0.400f * (float)scalecomp;
+            distanceToMaskScale = -0.020f;
+            InvertSource = true;
+            MaxSubDiv = 8;
+        }
+
     }
 
     public class Tiling
@@ -66,7 +82,7 @@ namespace Artwork
             Penrose,
             RegularTriangle,
             SameSameDifferent,
-            TriangleMultiscale,            
+            TriangleMultiscale,
             SVG14Fold,
             HexaTest
         }
@@ -158,9 +174,9 @@ namespace Artwork
 
             public Color GetColor()
             {
-                int R =(int) Math.Max(0, Math.Min(255, AvgColor.x));
+                int R = (int)Math.Max(0, Math.Min(255, AvgColor.x));
                 int G = (int)Math.Max(0, Math.Min(255, AvgColor.y));
-                int B= (int)Math.Max(0, Math.Min(255, AvgColor.z));
+                int B = (int)Math.Max(0, Math.Min(255, AvgColor.z));
                 return Color.FromArgb(R, G, B);
             }
 
@@ -251,7 +267,7 @@ namespace Artwork
 
             public void ScaleDown(Settings.TriangleScaleMode scalingMode, float factor)
             {
-              
+
                 switch (scalingMode)
                 {
                     case Settings.TriangleScaleMode.Original:
@@ -265,13 +281,13 @@ namespace Artwork
                             Vertices[0] = M + b0 * factor;
                             Vertices[1] = M + b1 * factor;
                             Vertices[2] = M + b2 * factor;
-                          
+
                         }
                         break;
 
                     case Settings.TriangleScaleMode.Balanced:
                         {
-                            var v0  = new vec2(Vertices[0]);
+                            var v0 = new vec2(Vertices[0]);
                             var b0 = Mid() - v0;
 
                             var v1 = new vec2(Vertices[1]);
@@ -292,10 +308,10 @@ namespace Artwork
                             vec3 A = new vec3(d0, 0);
                             vec3 B = new vec3(d1, 0);
                             float crossAB = GlmNet.glm.cross(A, B).z;
-                            if (crossAB  > 0) factor = -factor;
-                            var d0n = GlmNet.glm.normalize(d0) *factor;
-                            var d1n = GlmNet.glm.normalize(d1) *factor;
-                            var d2n = GlmNet.glm.normalize(d2) *factor;
+                            if (crossAB > 0) factor = -factor;
+                            var d0n = GlmNet.glm.normalize(d0) * factor;
+                            var d1n = GlmNet.glm.normalize(d1) * factor;
+                            var d2n = GlmNet.glm.normalize(d2) * factor;
 
                             //var b0n = GlmNet.glm.normalize(b0);
                             //var b1n = GlmNet.glm.normalize(b1);
@@ -345,14 +361,14 @@ namespace Artwork
             {
                 if (Vertices.Count() == 0) return;
                 vec2 center = new vec2();
-                foreach(var r in Vertices)
+                foreach (var r in Vertices)
                 {
                     center += r;
                 }
 
                 center /= (float)Vertices.Count();
 
-                for(int i =0;i<Vertices.Count();i++)
+                for (int i = 0; i < Vertices.Count(); i++)
                 {
                     Vertices[i] -= center;
                 }
@@ -370,15 +386,15 @@ namespace Artwork
             s = (-S1.y * (P0.x - P2.x) + S1.x * (P0.y - P2.y)) / (-S2.x * S1.y + S1.x * S2.y);
             t = (S2.x * (P0.y - P2.y) - S2.y * (P0.x - P2.x)) / (-S2.x * S1.y + S1.x * S2.y);
 
-          //  if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
-           // {
-                double X = P0.x + (t * S1.x); ;
-                double Y = P0.y + (t * S1.y);
-                return new vec2((float)X, (float)Y);
+            //  if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+            // {
+            double X = P0.x + (t * S1.x); ;
+            double Y = P0.y + (t * S1.y);
+            return new vec2((float)X, (float)Y);
             //}
 
-           
-            return new vec2(0,0); // No collision
+
+            return new vec2(0, 0); // No collision
 
         }
 
@@ -390,7 +406,7 @@ namespace Artwork
         }
         public class RealPolygonMapping
         {
-            public vec2 Center = new vec2(0,0);
+            public vec2 Center = new vec2(0, 0);
             public float Rotation = 0;
             public float Scale = 1;
             int PolygonID;
@@ -398,7 +414,7 @@ namespace Artwork
 
         public class SVGMapping
         {
-            public void LoadFolder(string basefolder)            
+            public void LoadFolder(string basefolder)
             {
 
                 var SVGfiles = Directory.GetFiles(basefolder, "*.svg");
@@ -435,7 +451,7 @@ namespace Artwork
             public string Name;
             public Polygon Polygon;
             public List<RealPolygonMapping> Subset = new List<RealPolygonMapping>();
-          
+
 
             void Add(float x, float y, int polygon, float angle, float xscale, float yscale)
             {
@@ -443,8 +459,8 @@ namespace Artwork
             }
             void AddXSymmetric(float x, float y, int polygon, float angle)
             {
-                Add(x, y, polygon, angle, 1,1);
-                Add(-x, y, polygon, -angle,-1,1);
+                Add(x, y, polygon, angle, 1, 1);
+                Add(-x, y, polygon, -angle, -1, 1);
             }
             void AddYSymmetric(float x, float y, int polygon, float angle)
             {
@@ -1218,31 +1234,31 @@ namespace Artwork
                     case TilingType.Conway: CreateConway(); break;
                     case TilingType.Maloney: CreateMaloney(); break;
                     case TilingType.Penrose: CreatePenrose(); break;
-                    case TilingType.RegularTriangle: CreateRegular();break;
+                    case TilingType.RegularTriangle: CreateRegular(); break;
                     case TilingType.SameSameDifferent: CreateSameSameDifferent(); break;
-                    case TilingType.TriangleMultiscale: CreateMultiscale();break;
+                    case TilingType.TriangleMultiscale: CreateMultiscale(); break;
 
 
-                    case TilingType.SVG14Fold: CreateSVGTiling("SVGTilings/14Fold");break;
+                    case TilingType.SVG14Fold: CreateSVGTiling("SVGTilings/14Fold"); break;
                     case TilingType.HexaTest: CreateSVGTiling("SVGTilings/HexaThing"); break;
 
                 }
                 return NormalizeSize();
 
             }
-    
+
             public void CreateSVGTiling(string basefolder)
             {
                 SVGMapping svm = new SVGMapping();
                 svm.LoadFolder(basefolder);
-                
+
             }
             private void CreateMultiscale()
             {
                 InflationFactor = 1.0 + Math.Sin((2.0 * Math.PI) / 7.0) / Math.Sin(Math.PI / 7.0);
                 PolygonMapping t0 = new PolygonMapping();
                 PolygonMapping t1 = new PolygonMapping();
-                
+
 
                 double a = Math.Sin(Math.PI / 7.0);
                 double c = Math.Sin((2.0 * Math.PI) / 7.0);
@@ -1254,7 +1270,7 @@ namespace Artwork
 
 
                 a = 1;
-                b = Math.Sin((60 * Math.PI * 2.0) / 360) * 2.0 ;
+                b = Math.Sin((60 * Math.PI * 2.0) / 360) * 2.0;
 
                 //Console.WriteLine("{0} : {1}", b/c,  (d+b)/(c+b+c));
                 //Console.WriteLine("{0} : {1}", d,  b * InflationFactor - a);
@@ -1296,7 +1312,7 @@ namespace Artwork
                     t1.AddCorners();
 
                     int vD = t1.AddBetweenCorners(0, 1, a + a, a);
-                    int vE = t1.AddBetweenCorners(1, 2, a + a,a);
+                    int vE = t1.AddBetweenCorners(1, 2, a + a, a);
                     int vF = t1.AddBetweenCorners(2, 0, a + a, a);
 
                     t1.AddTriangle(vD, vB, vF, 0);
@@ -1309,7 +1325,7 @@ namespace Artwork
 
                 DivisionSet[0] = t0;
                 DivisionSet[1] = t1;
-                
+
 
             }
 
@@ -1358,7 +1374,7 @@ namespace Artwork
                 PolygonMapping t0 = new PolygonMapping();
 
                 double a = 1;
-               
+
 
 
                 int vA = 0;
@@ -1368,9 +1384,9 @@ namespace Artwork
                 {
                     t0.BuildVerticesFromEdgeLengths(a, a, a);
                     t0.AddCorners();
-                    int vAB = t0.AddBetweenCorners(vA, vB, a, a/2);
-                    int vBC = t0.AddBetweenCorners(vB, vC, a, a/2);
-                    int vCA = t0.AddBetweenCorners(vC, vA, a, a/2);
+                    int vAB = t0.AddBetweenCorners(vA, vB, a, a / 2);
+                    int vBC = t0.AddBetweenCorners(vB, vC, a, a / 2);
+                    int vCA = t0.AddBetweenCorners(vC, vA, a, a / 2);
                     t0.AddTriangle(vAB, vBC, vCA, 0);
                     t0.AddTriangle(vA, vAB, vCA, 0);
                     t0.AddTriangle(vAB, vB, vBC, 0);
@@ -1395,12 +1411,12 @@ namespace Artwork
                         if (alwayssubdivide) divide++;
                         if (a.divided == false)
                         {
-                            if (Tree != null)  if (a.ContainsPointsInTree(Tree)) divide++;
+                            if (Tree != null) if (a.ContainsPointsInTree(Tree)) divide++;
                             if (divide > 0)
                             {
 
                                 a.divided = true;
-                                NextSet.AddRange(TilingDefinition.Subdivide(DivisionSet[a.Type], a.Vertices[0], a.Vertices[1], a.Vertices[2], a.depth,(alwayssubdivide && divide < 2)?a.depth:a.depth+1));
+                                NextSet.AddRange(TilingDefinition.Subdivide(DivisionSet[a.Type], a.Vertices[0], a.Vertices[1], a.Vertices[2], a.depth, (alwayssubdivide && divide < 2) ? a.depth : a.depth + 1));
 
                             }
                             else

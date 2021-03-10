@@ -66,7 +66,7 @@
             this.MakeFrameBox.Checked = true;
             this.MakeFrameBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.MakeFrameBox.ForeColor = System.Drawing.Color.White;
-            this.MakeFrameBox.Location = new System.Drawing.Point(86, 355);
+            this.MakeFrameBox.Location = new System.Drawing.Point(86, 540);
             this.MakeFrameBox.Name = "MakeFrameBox";
             this.MakeFrameBox.Size = new System.Drawing.Size(124, 24);
             this.MakeFrameBox.TabIndex = 1;
@@ -77,7 +77,7 @@
             // 
             this.FrameMM.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.FrameMM.Location = new System.Drawing.Point(68, 297);
+            this.FrameMM.Location = new System.Drawing.Point(68, 482);
             this.FrameMM.Maximum = new decimal(new int[] {
             50,
             0,
@@ -89,7 +89,7 @@
             0,
             0});
             this.FrameMM.Name = "FrameMM";
-            this.FrameMM.Size = new System.Drawing.Size(165, 26);
+            this.FrameMM.Size = new System.Drawing.Size(434, 26);
             this.FrameMM.TabIndex = 2;
             this.FrameMM.Value = new decimal(new int[] {
             5,
@@ -103,7 +103,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.FrameName.Location = new System.Drawing.Point(33, 241);
             this.FrameName.Name = "FrameName";
-            this.FrameName.Size = new System.Drawing.Size(243, 26);
+            this.FrameName.Size = new System.Drawing.Size(512, 26);
             this.FrameName.TabIndex = 3;
             this.FrameName.Text = "Frame";
             // 
@@ -113,7 +113,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(324, 442);
+            this.ClientSize = new System.Drawing.Size(593, 627);
             this.Controls.Add(this.FrameName);
             this.Controls.Add(this.FrameMM);
             this.Controls.Add(this.MakeFrameBox);

@@ -120,6 +120,9 @@ namespace PnP_Processor
             }
             BPost.FixupAngles(StockDoc);
             BPost.WriteJLCPnpFile(B.OriginalBasefolder, B.OriginalPnpName + "_rotated", true);
+            BPost.WriteQuantPnPFiles(B.OriginalBasefolder, B.OriginalPnpName + "_QUANTSET");
+            BPost.WriteQuantBOMFile(B.OriginalBasefolder, B.OriginalPnpName + "_QUANTSET");
+
             BPost.WriteRefDesGerber(Path.Combine(B.OriginalBasefolder, B.OriginalPnpName + "_refdes.gbr"));
         }
 
@@ -157,6 +160,7 @@ namespace PnP_Processor
                 log.PushActivity("Loading BOM");
                 log.AddString(String.Format("Loading BOM! {0},{1}", Path.GetFileName(bom), Path.GetFileName(pnp)));
                 B.LoadJLC(bom, pnp);
+                B.UpdateMountingTypesFromStock(StockDoc);
                 log.PopActivity();
 
                 if (gerberzip != null && File.Exists(gerberzip))

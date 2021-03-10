@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace VScorePanel
+namespace EagleBoardToCHeader
 {
     static class Program
     {
@@ -22,7 +22,7 @@ namespace VScorePanel
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new VScore());
+            Application.Run(new Form1());
         }
     }
 }

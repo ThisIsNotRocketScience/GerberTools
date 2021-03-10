@@ -1,5 +1,4 @@
-﻿using EagleLibrary;
-using GerberLibrary;
+﻿using GerberLibrary;
 using GerberLibrary.Core;
 using GerberLibrary.Core.Primitives;
 using System;

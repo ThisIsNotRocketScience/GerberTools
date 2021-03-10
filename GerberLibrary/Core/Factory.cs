@@ -1,4 +1,4 @@
-﻿using EagleLibrary;
+﻿
 using GerberLibrary.Core;
 using GerberLibrary.Core.Primitives;
 using System;
@@ -95,9 +95,9 @@ namespace GerberLibrary
             {
                 try
                 {
-                    EagleLoader Brd = new EagleLoader(a);
+                    Eagle.EagleLoader Brd = new Eagle.EagleLoader(a);
 
-                    var Sch = new EagleLibrary.EagleLoader(schname);
+                    var Sch = new Eagle.EagleLoader(schname);
 
 
 

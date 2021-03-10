@@ -544,6 +544,7 @@ namespace GerberLibrary
                     break;
 
                 case "l2":
+                case "g1l":
                 case "gl1":
                 case "g1":
                     Side = BoardSide.Internal1;
@@ -567,6 +568,7 @@ namespace GerberLibrary
 
                 case "l3":
                 case "gl2":
+                case "g2l":
                 case "g2":
                     Side = BoardSide.Internal2;
                     Layer = BoardLayer.Copper;
@@ -679,7 +681,7 @@ namespace GerberLibrary
                     Side = BoardSide.Bottom;
                     Layer = BoardLayer.Paste;
                     break;
-
+                
                 case "drill_top_bottom":
                 case "drl":
                 case "drill":
