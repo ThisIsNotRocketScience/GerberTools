@@ -15,9 +15,10 @@ namespace GerberCombiner
         {
             
 
-            GerberSplitter GS = new GerberSplitter();
-            GS.Split("G03*", new GerberLibrary.Core.Primitives.GerberNumberFormat());
-            Console.WriteLine("{0}", GS.Pairs.Count);
+            //GerberSplitter GS = new GerberSplitter();
+            //GS.Split("G03*", new GerberLibrary.Core.Primitives.GerberNumberFormat());
+            //GS.Split("%SRX1Y1I0.00000J1.76100*%", new GerberLibrary.Core.Primitives.GerberNumberFormat(),true);
+            //Console.WriteLine("{0}", GS.Pairs.Count);
             Gerber.ShowProgress = true;
             if (args.Count() < 2)
             {
@@ -51,9 +52,7 @@ namespace GerberCombiner
                 {
                     Console.WriteLine("Warning! Filetypes seem to be mismatched! First file ({0}) is a {1}, but {2} is a {3}", args[1], FileType, args[j], FileType2);
                 }
-
             }
-
 
             if (FileType == BoardFileType.Drill)
             {
@@ -67,8 +66,8 @@ namespace GerberCombiner
                 GerberFiles.AddRange(args.Skip(1));
                 GerberMerger.MergeAll(GerberFiles, args[0], new StandardConsoleLog());
             }
-      //      Console.WriteLine("Press any key to continue..");
-       //     Console.ReadKey();
+          //  Console.WriteLine("Press any key to continue..");
+         //  Console.ReadKey();
         }
                 
     }

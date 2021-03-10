@@ -1054,6 +1054,11 @@ namespace GerberLibrary
 
         private static void DoRepeating(GerberParserState State)
         {
+            if (State.Repeater == false)
+            {
+                // cant stop a repeat that is not happening!
+                return;
+            }
             int LastThin = State.NewThinShapes.Count();
             int LastShape = State.NewShapes.Count();
             for (int x = 0; x < State.RepeatXCount; x++)
@@ -1195,7 +1200,7 @@ namespace GerberLibrary
                                             {
                                                 if (Gerber.ShowProgress) Console.WriteLine("Setting up step and repeat ");
                                                 GerberSplitter GS2 = new GerberSplitter();
-                                                GS2.Split(GCC.originalline, State.CoordinateFormat);
+                                                GS2.Split(GCC.originalline, State.CoordinateFormat, true);
                                                 if (GCC.numbercommands.Count == 0)
                                                 {
                                                     DoRepeating(State);
@@ -1209,6 +1214,11 @@ namespace GerberLibrary
                                                     if (Xcount > 1 || Ycount > 1)
                                                     {
                                                         SetupRepeater(State, Xcount, Ycount, Xoff, Yoff);
+                                                    }
+                                                    else
+                                                    {
+                                                        // apparently this is a 1:1 command! 
+                                                        DoRepeating(State);
                                                     }
                                                 }
                                             }
