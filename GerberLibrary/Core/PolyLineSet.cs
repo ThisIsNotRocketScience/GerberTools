@@ -25,7 +25,7 @@ namespace GerberLibrary
             string r = "";
             foreach (var a in Vertices)
                 r += a.ToString() + "  ";
-            return string.Format("closed: {0} verts: ({1} {2}) ({3} {4})", Closed, Vertices[0], Vertices[1], Vertices[Vertices.Count()-2], Vertices[Vertices.Count() - 1] );
+            return string.Format("closed: {0} verts: ({1} {2}) ({3} {4})", Closed, Vertices[0], Vertices[1], Vertices[Vertices.Count() - 2], Vertices[Vertices.Count() - 1]);
         }
     }
     public class GerberParserState
@@ -67,11 +67,11 @@ namespace GerberLibrary
         public bool MirrorA = false;
         public bool MirrorB = false;
         public enum AxisName
-        { 
+        {
             X,
             Y
         }
-        
+
         public AxisName AAxis = AxisName.X;
         public AxisName BAxis = AxisName.Y;
 
@@ -84,7 +84,7 @@ namespace GerberLibrary
         {
             X,
             Y,
-            XY, 
+            XY,
             NoMirror
         }
     }
@@ -229,7 +229,7 @@ namespace GerberLibrary
             return Res;
         }
 
-        public static ParsedGerber LoadExcellonDrillFileFromStream(ProgressLog log,  StreamReader s, string origfilename, bool Precombine = false, double drillscaler = 1.0)
+        public static ParsedGerber LoadExcellonDrillFileFromStream(ProgressLog log, StreamReader s, string origfilename, bool Precombine = false, double drillscaler = 1.0)
         {
             ParsedGerber Gerb = new ParsedGerber();
             Gerb.Name = origfilename;
@@ -248,7 +248,7 @@ namespace GerberLibrary
             {
                 var Tool = T.Value;
 
-                int sides = Math.Max(10,(int)(Gerber.ArcQualityScaleFactor * Math.Max(2.0, Tool.Radius)));
+                int sides = Math.Max(10, (int)(Gerber.ArcQualityScaleFactor * Math.Max(2.0, Tool.Radius)));
 
 
                 foreach (var Hole in Tool.Drills)
@@ -460,7 +460,7 @@ namespace GerberLibrary
             List<PathDefWithClosed> shapelist = new List<PathDefWithClosed>();
             for (int i = 0; i < State.NewThinShapes.Count; i++)
             {
-                //     DisplayShapes.Add(NewThinShapes[i]);
+                //DisplayShapes.Add(NewThinShapes[i]);
                 shapelist.Add(new PathDefWithClosed() { Vertices = State.NewThinShapes[i].Vertices, Width = State.NewThinShapes[i].Width });
             }
 
@@ -872,7 +872,7 @@ namespace GerberLibrary
             PL.ClearanceMode = ClearanceMode;
 
             // TODO: use CreatePolyLineSet and extrude that!
-            var PolySet = CurrentAperture.CreatePolyLineSet(0, 0, ShapeID,rotation, scale, mirror);
+            var PolySet = CurrentAperture.CreatePolyLineSet(0, 0, ShapeID, rotation, scale, mirror);
             //       var Shapes = CurrentAperture.CreatePolyLineSet(0, 0);
 
             foreach (var currpoly in PolySet)
@@ -880,7 +880,7 @@ namespace GerberLibrary
                 currpoly.ID = ShapeID;
                 Polygons Combined = new Polygons();
 
-                PolyLine A = new PolyLine( ShapeID);
+                PolyLine A = new PolyLine(ShapeID);
                 PolyLine B = new PolyLine(ShapeID);
 
                 PointD start = new PointD(LastX, LastY);
@@ -943,7 +943,7 @@ namespace GerberLibrary
 
                     foreach (var a in Combined)
                     {
-                        PolyLine PP = new PolyLine(ShapeID) ;
+                        PolyLine PP = new PolyLine(ShapeID);
                         PP.fromPolygon(a);
                         PP.Close();
                         NewShapes.Add(PP);
@@ -1019,7 +1019,7 @@ namespace GerberLibrary
                     break;
                 case "G37":
                     {
-                        PolyLine PL = new PolyLine( State.LastShapeID++);
+                        PolyLine PL = new PolyLine(State.LastShapeID++);
                         foreach (var a in State.PolygonPoints)
                         {
                             PL.Add(a.X, a.Y);
@@ -1073,7 +1073,7 @@ namespace GerberLibrary
                                 State.LastShapeID++;
                                 LastShapeID = C.ID;
                             }
-                            PolyLine P = new PolyLine(State.LastShapeID );
+                            PolyLine P = new PolyLine(State.LastShapeID);
                             foreach (var a in C.Vertices)
                             {
                                 P.Vertices.Add(new PointD(a.X + xoff, a.Y + yoff));
@@ -1088,7 +1088,7 @@ namespace GerberLibrary
                                 State.LastShapeID++;
                                 LastShapeID = C.ID;
                             }
-                            PolyLine P = new PolyLine(State.LastShapeID ); 
+                            PolyLine P = new PolyLine(State.LastShapeID);
                             P.Width = C.Width;
                             foreach (var a in C.Vertices)
                             {
@@ -1138,7 +1138,7 @@ namespace GerberLibrary
                 GCodeCommand GCC = new GCodeCommand();
                 GCC.Decode(lines[State.CurrentLineIndex], State.CoordinateFormat);
                 string Line = lines[State.CurrentLineIndex];
-
+                if (Gerber.ExtremelyVerbose)  Console.WriteLine("Gerber Input: [{0}]", Line);
 
                 if (BasicLineCommands(Line, State) == false)
                 {
@@ -1154,7 +1154,7 @@ namespace GerberLibrary
                                     {
                                         case 'L':
                                             {
-                                                switch(GCC.charcommands[2])
+                                                switch (GCC.charcommands[2])
                                                 {
                                                     case 'R': // LR -> rotate; 
                                                         State.FlashRotation = GCC.numbercommands[0];
@@ -1164,7 +1164,7 @@ namespace GerberLibrary
                                                         State.FlashScale = GCC.numbercommands[0];
                                                         break;
                                                     case 'M': // LM -> mirror; 
-                                                        switch(Line)
+                                                        switch (Line)
                                                         {
                                                             case "%LMX*%": State.FlashMirror = GerberParserState.MirrorMode.X; break;
                                                             case "%LMY*%": State.FlashMirror = GerberParserState.MirrorMode.Y; break;
@@ -1187,8 +1187,6 @@ namespace GerberLibrary
                                                 {
                                                     // Console.WriteLine("Switched to aperture {0}", GCC.numbercommands[0]);
                                                 }
-
-
                                             }
 
                                             break;
@@ -1204,8 +1202,6 @@ namespace GerberLibrary
                                                 }
                                                 else
                                                 {
-
-
                                                     int Xcount = (int)GCC.numbercommands[0];
                                                     int Ycount = (int)GCC.numbercommands[1];
                                                     double Xoff = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[2]);
@@ -1227,361 +1223,359 @@ namespace GerberLibrary
                                                 switch (GCC.charcommands[2])
                                                 {
                                                     case 'D': // aperture definition
-                                                        { 
                                                         {
-                                                            // Console.WriteLine("Aperture definition: {0}", GCC.originalline);
-                                                            GerberApertureType AT = new GerberApertureType();
-                                                            AT.SourceLine = GCC.originalline;
-                                                            if (GCC.numbercommands.Count < 1)
                                                             {
-                                                                Console.WriteLine("Invalid aperture definition! No ID specified!");
-                                                            }
-                                                            else
-                                                            {
-
-
-                                                                int ATID = (int)GCC.numbercommands[0];
-                                                                if (Gerber.ShowProgress) Console.Write("Aperture definition {0}:", ATID);
-                                                                bool ismacro = false;
-
-                                                                foreach (var a in State.ApertureMacros)
+                                                                // Console.WriteLine("Aperture definition: {0}", GCC.originalline);
+                                                                GerberApertureType AT = new GerberApertureType();
+                                                                AT.SourceLine = GCC.originalline;
+                                                                if (GCC.numbercommands.Count < 1)
                                                                 {
-                                                                    if (GCC.originalline.Substring(6).Contains(a.Value.Name))
-                                                                    {
-                                                                        ismacro = true;
-                                                                        if (Gerber.ShowProgress) Console.WriteLine(" macro");
-
-                                                                    }
-                                                                }
-                                                                if (ismacro == false)
-                                                                {
-                                                                    switch (GCC.charcommands[4])
-                                                                    {
-                                                                        case 'C': // circle aperture
-
-                                                                            if (Gerber.ShowProgress) Console.WriteLine(" circle: {0} (in mm: {1})", GCC.numbercommands[1], State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1])); // command is diameter
-
-                                                                            double radius = (State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]) / 2);
-                                                                            if (radius < State.MinimumApertureRadius)
-                                                                            {
-                                                                                radius = State.MinimumApertureRadius;
-                                                                                if (Gerber.ShowProgress) Console.WriteLine(" -- grew aperture radius to minimum radius: {0}", State.MinimumApertureRadius);
-                                                                            }
-
-                                                                            AT.SetCircle(radius); // hole ignored for now!
-                                                                            // TODO: Add Hole Support
-                                                                            if (AT.CircleRadius == 0)
-                                                                            {
-                                                                                AT.ZeroWidth = true;
-                                                                                if (Gerber.ShowProgress) Console.WriteLine(" -- Zero width aperture found!");
-                                                                            }
-                                                                            break;
-                                                                        case 'P': // polygon aperture
-                                                                            {
-                                                                                //   Console.WriteLine("      ngon: {0}", GCC.numbercommands[1]);
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tpolygon");
-                                                                                AT.NGonDiameter = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]);
-                                                                                AT.NGonXoff = 0;
-                                                                                AT.NGonYoff = 0;
-                                                                                double Rotation = 0;
-                                                                                if (GCC.numbercommands.Count > 3) Rotation = GCC.numbercommands[3];
-                                                                                AT.NGon((int)GCC.numbercommands[2], State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]) / 2, 0, 0, Rotation); // hole ignored for now!
-                                                                                // TODO: Add Hole Support
-                                                                            }
-                                                                            break;
-                                                                        case 'R': // rectangle aperture
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine(" rectangle");
-                                                                                double W = Math.Abs(State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]));
-                                                                                double H = Math.Abs(State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[2]));
-                                                                                //  Console.WriteLine("      rectangle: {0},{1} (in mm: {2},{3})",GCC.numbercommands[1],GCC.numbercommands[2], W,H);
-                                                                                AT.SetRectangle(W, H,0); // hole ignored for now!
-                                                                                // TODO: Add Hole Support
-                                                                            }
-
-
-                                                                            break;
-                                                                        case 'O': // obround aperture
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine(" obround");
-
-                                                                                double W = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]);
-                                                                                double H = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[2]);
-                                                                                AT.SetObround(W, H);
-                                                                                if (GCC.numbercommands.Count() > 3)
-                                                                                {
-                                                                                    // TODO: Add Hole Support
-                                                                                }
-                                                                            }
-                                                                            break;
-                                                                    }
+                                                                    Console.WriteLine("Invalid aperture definition! No ID specified!");
                                                                 }
                                                                 else
                                                                 {
-                                                                    {
-                                                                        int idx = 4;
-                                                                        while (char.IsDigit(lines[State.CurrentLineIndex][idx]) == true) idx++;
-                                                                        string mname = lines[State.CurrentLineIndex].Substring(idx).Split('*')[0];
-                                                                        string[] macrostrings = mname.Split(',');
 
-                                                                        List<string> macroparamstrings = new List<string>();
-                                                                        for (int i = 1; i < macrostrings.Count(); i++)
+
+                                                                    int ATID = (int)GCC.numbercommands[0];
+                                                                    if (Gerber.ShowProgress) Console.Write("Aperture definition {0}:", ATID);
+                                                                    bool ismacro = false;
+
+                                                                    foreach (var a in State.ApertureMacros)
+                                                                    {
+                                                                        if (GCC.originalline.Substring(6).Contains(a.Value.Name))
                                                                         {
-                                                                            string a = macrostrings[i];
-                                                                            string[] macrosubstrings = a.Split('X');
-                                                                            foreach (var aa in macrosubstrings)
-                                                                            {
-                                                                                macroparamstrings.Add(aa.Trim());
-                                                                            }
+                                                                            ismacro = true;
+                                                                            if (Gerber.ShowProgress) Console.WriteLine(" macro");
 
                                                                         }
-                                                                        //   Console.WriteLine("macro aperture type: {0}", macrostrings[0]);
-                                                                        double[] paramlist = new double[macroparamstrings.Count];
-                                                                        for (int i = 0; i < macroparamstrings.Count; i++)
-                                                                        {
-
-                                                                            if (Gerber.TryParseDouble(macroparamstrings[i], out double R))
-                                                                            {
-                                                                                paramlist[i] = R;
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                paramlist[i] = 1;
-                                                                            }
-                                                                        }
-                                                                        AT = State.ApertureMacros[macrostrings[0]].BuildAperture(paramlist.ToList(), State.CoordinateFormat);
-                                                                        //  GCC.Print();
                                                                     }
-                                                                }
-
-                                                                AT.ID = ATID;
-                                                                if (Gerber.ShowProgress)
-                                                                {
-                                                                    if (State.Apertures.ContainsKey(ATID))
+                                                                    if (ismacro == false)
                                                                     {
-                                                                        Console.WriteLine("redefining aperture {0}", ATID);
-                                                                    }
-                                                                }
-                                                                State.Apertures[ATID] = AT;
+                                                                        switch (GCC.charcommands[4])
+                                                                        {
+                                                                            case 'C': // circle aperture
 
+                                                                                if (Gerber.ShowProgress) Console.WriteLine(" circle: {0} (in mm: {1})", GCC.numbercommands[1], State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1])); // command is diameter
+
+                                                                                double radius = (State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]) / 2);
+                                                                                if (radius < State.MinimumApertureRadius)
+                                                                                {
+                                                                                    radius = State.MinimumApertureRadius;
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine(" -- grew aperture radius to minimum radius: {0}", State.MinimumApertureRadius);
+                                                                                }
+
+                                                                                AT.SetCircle(radius); // hole ignored for now!
+                                                                                                      // TODO: Add Hole Support
+                                                                                if (AT.CircleRadius == 0)
+                                                                                {
+                                                                                    AT.ZeroWidth = true;
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine(" -- Zero width aperture found!");
+                                                                                }
+                                                                                break;
+                                                                            case 'P': // polygon aperture
+                                                                                {
+                                                                                    //   Console.WriteLine("      ngon: {0}", GCC.numbercommands[1]);
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tpolygon");
+                                                                                    AT.NGonDiameter = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]);
+                                                                                    AT.NGonXoff = 0;
+                                                                                    AT.NGonYoff = 0;
+                                                                                    double Rotation = 0;
+                                                                                    if (GCC.numbercommands.Count > 3) Rotation = GCC.numbercommands[3];
+                                                                                    AT.NGon((int)GCC.numbercommands[2], State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]) / 2, 0, 0, Rotation); // hole ignored for now!
+                                                                                                                                                                                                          // TODO: Add Hole Support
+                                                                                }
+                                                                                break;
+                                                                            case 'R': // rectangle aperture
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine(" rectangle");
+                                                                                    double W = Math.Abs(State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]));
+                                                                                    double H = Math.Abs(State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[2]));
+                                                                                    //  Console.WriteLine("      rectangle: {0},{1} (in mm: {2},{3})",GCC.numbercommands[1],GCC.numbercommands[2], W,H);
+                                                                                    AT.SetRectangle(W, H, 0); // hole ignored for now!
+                                                                                                              // TODO: Add Hole Support
+                                                                                }
+
+
+                                                                                break;
+                                                                            case 'O': // obround aperture
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine(" obround");
+
+                                                                                    double W = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[1]);
+                                                                                    double H = State.CoordinateFormat.ScaleFileToMM(GCC.numbercommands[2]);
+                                                                                    AT.SetObround(W, H);
+                                                                                    if (GCC.numbercommands.Count() > 3)
+                                                                                    {
+                                                                                        // TODO: Add Hole Support
+                                                                                    }
+                                                                                }
+                                                                                break;
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        {
+                                                                            int idx = 4;
+                                                                            while (char.IsDigit(lines[State.CurrentLineIndex][idx]) == true) idx++;
+                                                                            string mname = lines[State.CurrentLineIndex].Substring(idx).Split('*')[0];
+                                                                            string[] macrostrings = mname.Split(',');
+
+                                                                            List<string> macroparamstrings = new List<string>();
+                                                                            for (int i = 1; i < macrostrings.Count(); i++)
+                                                                            {
+                                                                                string a = macrostrings[i];
+                                                                                string[] macrosubstrings = a.Split('X');
+                                                                                foreach (var aa in macrosubstrings)
+                                                                                {
+                                                                                    macroparamstrings.Add(aa.Trim());
+                                                                                }
+                                                                            }
+                                                                            //   Console.WriteLine("macro aperture type: {0}", macrostrings[0]);
+                                                                            double[] paramlist = new double[macroparamstrings.Count];
+                                                                            for (int i = 0; i < macroparamstrings.Count; i++)
+                                                                            {
+
+                                                                                if (Gerber.TryParseDouble(macroparamstrings[i], out double R))
+                                                                                {
+                                                                                    paramlist[i] = R;
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    paramlist[i] = 1;
+                                                                                }
+                                                                            }
+                                                                            AT = State.ApertureMacros[macrostrings[0]].BuildAperture(paramlist.ToList(), State.CoordinateFormat);
+                                                                            //  GCC.Print();
+                                                                        }
+                                                                    }
+
+                                                                    AT.ID = ATID;
+                                                                    if (Gerber.ShowProgress)
+                                                                    {
+                                                                        if (State.Apertures.ContainsKey(ATID))
+                                                                        {
+                                                                            Console.WriteLine("redefining aperture {0}", ATID);
+                                                                        }
+                                                                    }
+                                                                    State.Apertures[ATID] = AT;
+                                                                }
                                                             }
+                                                            break;
                                                         }
-                                                        break;
-                                                       }
                                                     case 'M': // aperture macro
-                                                        { 
-                                                        string name = GCC.originalline.Substring(3).Split('*')[0];
-                                                        if (Gerber.ShowProgress) Console.WriteLine("Aperture macro: {0} ({1})", name, GCC.originalline);
-                                                        GerberApertureMacro AM = new GerberApertureMacro();
-                                                        AM.Name = name;
-
-                                                        State.CurrentLineIndex++;
-                                                        int macroline = State.CurrentLineIndex;
-                                                        string macrostring = "";
-                                                        List<string> MacroLines = new List<string>();
-                                                        while (lines[macroline].Contains('%') == false)
                                                         {
-                                                            MacroLines.Add(lines[macroline]);
-                                                            macrostring += lines[macroline];
-                                                            //     Console.WriteLine("macro def: {0}", lines[macroline]);
-                                                            macroline++;
-                                                        }
+                                                            string name = GCC.originalline.Substring(3).Split('*')[0];
+                                                            if (Gerber.ShowProgress) Console.WriteLine("Aperture macro: {0} ({1})", name, GCC.originalline);
+                                                            GerberApertureMacro AM = new GerberApertureMacro();
+                                                            AM.Name = name;
 
-                                                        macrostring += lines[macroline];
-
-                                                        //macroline++;
-                                                        var macroparts = macrostring.Split('*');
-                                                        List<string> trimmedparts = new List<string>();
-                                                        foreach (var p in macroparts)
-                                                        {
-                                                            string pt = p.Trim();
-                                                            if (pt.Length > 0)
+                                                            State.CurrentLineIndex++;
+                                                            int macroline = State.CurrentLineIndex;
+                                                            string macrostring = "";
+                                                            List<string> MacroLines = new List<string>();
+                                                            while (lines[macroline].Contains('%') == false)
                                                             {
-                                                                if (pt[0] != '%')
-                                                                {
-                                                                    trimmedparts.Add(pt);
-                                                                    var spl = pt.Split(',');
+                                                                MacroLines.Add(lines[macroline]);
+                                                                macrostring += lines[macroline];
+                                                                //     Console.WriteLine("macro def: {0}", lines[macroline]);
+                                                                macroline++;
+                                                            }
 
-                                                                    // if (Gerber.Verbose) Console.WriteLine("macro part: {0}", spl[0]);
+                                                            macrostring += lines[macroline];
+
+                                                            //macroline++;
+                                                            var macroparts = macrostring.Split('*');
+                                                            List<string> trimmedparts = new List<string>();
+                                                            foreach (var p in macroparts)
+                                                            {
+                                                                string pt = p.Trim();
+                                                                if (pt.Length > 0)
+                                                                {
+                                                                    if (pt[0] != '%')
+                                                                    {
+                                                                        trimmedparts.Add(pt);
+                                                                        var spl = pt.Split(',');
+
+                                                                        // if (Gerber.Verbose) Console.WriteLine("macro part: {0}", spl[0]);
+                                                                    }
                                                                 }
                                                             }
-                                                        }
-                                                        State.CurrentLineIndex = macroline;
+                                                            State.CurrentLineIndex = macroline;
 
 
-                                                        //while (lines[currentline][lines[currentline].Length - 1] != '%')
-                                                        foreach (var a in trimmedparts)
-                                                        {
-                                                            if (a[0] == '0')
+                                                            //while (lines[currentline][lines[currentline].Length - 1] != '%')
+                                                            foreach (var a in trimmedparts)
                                                             {
-                                                                // comment line
-                                                            }
-                                                            else
-                                                            {
-
-
-                                                                GCodeCommand GCC2 = new GCodeCommand();
-                                                                GCC2.Decode(a, State.CoordinateFormat);
-                                                                if (GCC2.numbercommands.Count() > 0)
-                                                                    switch ((int)GCC2.numbercommands[0])
-                                                                    {
-                                                                        case 4: // outline
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: outline");
-                                                                                GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-                                                                                AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Outline;
-                                                                                AMP.DecodeOutline(a, State.CoordinateFormat);
-                                                                                AM.Parts.Add(AMP);
-
-                                                                            }
-                                                                            break;
-                                                                        case 5: // polygon
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: polygon");
-                                                                                GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-
-                                                                                AMP.Decode(a, State.CoordinateFormat);
-                                                                                AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Polygon;
-                                                                                AM.Parts.Add(AMP);
-                                                                                //ApertureMacros[name] = AM;
-                                                                            }
-                                                                            break;
-                                                                        case 6: // MOIRE
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: moiré");
-                                                                                GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-
-                                                                                AMP.Decode(a, State.CoordinateFormat);
-                                                                                AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Moire;
-                                                                                AM.Parts.Add(AMP);
-                                                                                //ApertureMacros[name] = AM;
-                                                                            }
-                                                                            break;
-                                                                        case 7: // THERMAL
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: thermal");
-                                                                                GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-
-                                                                                AMP.Decode(a, State.CoordinateFormat);
-                                                                                AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Thermal;
-                                                                                AM.Parts.Add(AMP);
-                                                                                //ApertureMacros[name] = AM;
-                                                                            }
-                                                                            break;
-                                                                        case 1:
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: circle");
-
-                                                                                GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-
-                                                                                AMP.DecodeCircle(a, State.CoordinateFormat);
-                                                                                AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Circle;
-                                                                                AM.Parts.Add(AMP);
-
-                                                                            }
-                                                                            break;
-
-                                                                        case 20: // line
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: line");
-
-                                                                                GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-
-                                                                                AMP.DecodeLine(a, State.CoordinateFormat);
-                                                                                AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Line_2;
-                                                                                AM.Parts.Add(AMP);
-
-                                                                            }
-                                                                            break;
-                                                                        case 2: // line
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: line");
-
-                                                                                GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-
-                                                                                AMP.DecodeLine(a, State.CoordinateFormat);
-                                                                                AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Line;
-                                                                                AM.Parts.Add(AMP);
-
-                                                                            }
-                                                                            break;
-                                                                        case 21: // centerline
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: center line");
-
-                                                                                GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-
-                                                                                AMP.DecodeCenterLine(a, State.CoordinateFormat);
-                                                                                AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.CenterLine;
-                                                                                AM.Parts.Add(AMP);
-
-                                                                            }
-                                                                            break;
-
-                                                                        case 22: // lowerlef3line
-                                                                            {
-                                                                                if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: lower left line");
-
-                                                                                GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-
-                                                                                AMP.DecodeLowerLeftLine(a, State.CoordinateFormat);
-                                                                                AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.LowerLeftLine;
-                                                                                AM.Parts.Add(AMP);
-
-                                                                            }
-                                                                            break;
-                                                                        default:
-                                                                            {
-                                                                                Regex R = new Regex(@"(?<normal>\s*(?<dec>\$\d+)\s*\=\s*(?<rightside>.*))");
-                                                                                var M = R.Match(GCC2.originalline);
-
-                                                                                if (M.Length > 0)
-                                                                                {
-                                                                                    Console.WriteLine("Found equation! {0}", GCC2.originalline);
-                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Equation;
-                                                                                    AMP.EquationTarget = M.Groups["dec"].Value;
-                                                                                    AMP.EquationSource = M.Groups["rightside"].Value;
-                                                                                    AM.Parts.Add(AMP);
-                                                                                }
-                                                                                else
-
-                                                                                    if (GCC2.numbercommands[0] == 0)
-                                                                                {
-                                                                                    Console.WriteLine("Macro comment? {0}", GCC2.originalline);
-                                                                                }
-                                                                                else
-                                                                                {
-                                                                                    Console.WriteLine("Unhandled macro part type: {0} in macro {1}: {2}", GCC2.originalline, AM.Name, GCC2.numbercommands[0]);
-                                                                                    Console.WriteLine("\t{0}", a);
-                                                                                }
-
-                                                                            }
-                                                                            break;
-                                                                    }
+                                                                if (a[0] == '0')
+                                                                {
+                                                                    // comment line
+                                                                }
                                                                 else
                                                                 {
-                                                                    Regex R = new Regex(@"(?<normal>\s*(?<dec>\$\d+)\s*\=\s*(?<rightside>.*))");
-                                                                    var M = R.Match(GCC2.originalline);
 
-                                                                    if (M.Length > 0)
+
+                                                                    GCodeCommand GCC2 = new GCodeCommand();
+                                                                    GCC2.Decode(a, State.CoordinateFormat);
+                                                                    if (GCC2.numbercommands.Count() > 0)
+                                                                        switch ((int)GCC2.numbercommands[0])
+                                                                        {
+                                                                            case 4: // outline
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: outline");
+                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Outline;
+                                                                                    AMP.DecodeOutline(a, State.CoordinateFormat);
+                                                                                    AM.Parts.Add(AMP);
+
+                                                                                }
+                                                                                break;
+                                                                            case 5: // polygon
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: polygon");
+                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+
+                                                                                    AMP.Decode(a, State.CoordinateFormat);
+                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Polygon;
+                                                                                    AM.Parts.Add(AMP);
+                                                                                    //ApertureMacros[name] = AM;
+                                                                                }
+                                                                                break;
+                                                                            case 6: // MOIRE
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: moiré");
+                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+
+                                                                                    AMP.Decode(a, State.CoordinateFormat);
+                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Moire;
+                                                                                    AM.Parts.Add(AMP);
+                                                                                    //ApertureMacros[name] = AM;
+                                                                                }
+                                                                                break;
+                                                                            case 7: // THERMAL
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: thermal");
+                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+
+                                                                                    AMP.Decode(a, State.CoordinateFormat);
+                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Thermal;
+                                                                                    AM.Parts.Add(AMP);
+                                                                                    //ApertureMacros[name] = AM;
+                                                                                }
+                                                                                break;
+                                                                            case 1:
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: circle");
+
+                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+
+                                                                                    AMP.DecodeCircle(a, State.CoordinateFormat);
+                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Circle;
+                                                                                    AM.Parts.Add(AMP);
+
+                                                                                }
+                                                                                break;
+
+                                                                            case 20: // line
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: line");
+
+                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+
+                                                                                    AMP.DecodeLine(a, State.CoordinateFormat);
+                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Line_2;
+                                                                                    AM.Parts.Add(AMP);
+
+                                                                                }
+                                                                                break;
+                                                                            case 2: // line
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: line");
+
+                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+
+                                                                                    AMP.DecodeLine(a, State.CoordinateFormat);
+                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Line;
+                                                                                    AM.Parts.Add(AMP);
+
+                                                                                }
+                                                                                break;
+                                                                            case 21: // centerline
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: center line");
+
+                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+
+                                                                                    AMP.DecodeCenterLine(a, State.CoordinateFormat);
+                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.CenterLine;
+                                                                                    AM.Parts.Add(AMP);
+
+                                                                                }
+                                                                                break;
+
+                                                                            case 22: // lowerlef3line
+                                                                                {
+                                                                                    if (Gerber.ShowProgress) Console.WriteLine("\tMacro part: lower left line");
+
+                                                                                    GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+
+                                                                                    AMP.DecodeLowerLeftLine(a, State.CoordinateFormat);
+                                                                                    AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.LowerLeftLine;
+                                                                                    AM.Parts.Add(AMP);
+
+                                                                                }
+                                                                                break;
+                                                                            default:
+                                                                                {
+                                                                                    Regex R = new Regex(@"(?<normal>\s*(?<dec>\$\d+)\s*\=\s*(?<rightside>.*))");
+                                                                                    var M = R.Match(GCC2.originalline);
+
+                                                                                    if (M.Length > 0)
+                                                                                    {
+                                                                                        Console.WriteLine("Found equation! {0}", GCC2.originalline);
+                                                                                        GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+                                                                                        AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Equation;
+                                                                                        AMP.EquationTarget = M.Groups["dec"].Value;
+                                                                                        AMP.EquationSource = M.Groups["rightside"].Value;
+                                                                                        AM.Parts.Add(AMP);
+                                                                                    }
+                                                                                    else
+
+                                                                                        if (GCC2.numbercommands[0] == 0)
+                                                                                    {
+                                                                                        Console.WriteLine("Macro comment? {0}", GCC2.originalline);
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        Console.WriteLine("Unhandled macro part type: {0} in macro {1}: {2}", GCC2.originalline, AM.Name, GCC2.numbercommands[0]);
+                                                                                        Console.WriteLine("\t{0}", a);
+                                                                                    }
+
+                                                                                }
+                                                                                break;
+                                                                        }
+                                                                    else
                                                                     {
-                                                                        Console.WriteLine("Found equation! {0}", GCC2.originalline);
-                                                                        GerberApertureMacroPart AMP = new GerberApertureMacroPart();
-                                                                        AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Equation;
-                                                                        AMP.EquationTarget = M.Groups["dec"].Value;
-                                                                        AMP.EquationSource = M.Groups["rightside"].Value;
-                                                                        AM.Parts.Add(AMP);
+                                                                        Regex R = new Regex(@"(?<normal>\s*(?<dec>\$\d+)\s*\=\s*(?<rightside>.*))");
+                                                                        var M = R.Match(GCC2.originalline);
+
+                                                                        if (M.Length > 0)
+                                                                        {
+                                                                            Console.WriteLine("Found equation! {0}", GCC2.originalline);
+                                                                            GerberApertureMacroPart AMP = new GerberApertureMacroPart();
+                                                                            AMP.Type = GerberApertureMacroPart.ApertureMacroTypes.Equation;
+                                                                            AMP.EquationTarget = M.Groups["dec"].Value;
+                                                                            AMP.EquationSource = M.Groups["rightside"].Value;
+                                                                            AM.Parts.Add(AMP);
+                                                                        }
                                                                     }
                                                                 }
+                                                                //         currentline++;
                                                             }
-                                                            //         currentline++;
+
+                                                            State.ApertureMacros[name] = AM;
+
+                                                            break;
                                                         }
-
-                                                        State.ApertureMacros[name] = AM;
-
-                                                        break;
-                                                }
 
                                                     case 'B': // block aperture... here be dragons
                                                         {
@@ -1722,9 +1716,9 @@ namespace GerberLibrary
 
                                         if (State.MirrorA)
                                         {
-                                            switch(State.AAxis)
+                                            switch (State.AAxis)
                                             {
-                                                case GerberParserState.AxisName.X: X = -X;break;
+                                                case GerberParserState.AxisName.X: X = -X; break;
                                                 case GerberParserState.AxisName.Y: Y = -Y; break;
                                             }
                                         }
@@ -1777,7 +1771,7 @@ namespace GerberLibrary
                                                 case 2:
                                                     if (State.PolygonPoints.Count > 0)
                                                     {
-                                                        PolyLine PL = new PolyLine( State.LastShapeID++);
+                                                        PolyLine PL = new PolyLine(State.LastShapeID++);
                                                         PL.ClearanceMode = State.ClearanceMode;
                                                         foreach (var a in State.PolygonPoints)
                                                         {
@@ -1824,7 +1818,7 @@ namespace GerberLibrary
                                                                 switch (State.MoveInterpolation)
                                                                 {
                                                                     case InterpolationMode.Linear:
-                                                                        if (State.GenerateGeometry) AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, X, Y,  State.LastShapeID, State.FlashRotation, State.FlashScale, State.FlashMirror);
+                                                                        if (State.GenerateGeometry) AddExtrudedCurveSegment(ref State.LastX, ref State.LastY, State.NewShapes, State.CurrentAperture, State.ClearanceMode, X, Y, State.LastShapeID, State.FlashRotation, State.FlashScale, State.FlashMirror);
                                                                         State.LastShapeID++;
                                                                         break;
                                                                     default:
@@ -1843,7 +1837,7 @@ namespace GerberLibrary
                                                             {
                                                                 if (State.ThinLine == null)
                                                                 {
-                                                                    State.ThinLine = new PolyLine(State.LastShapeID ++);
+                                                                    State.ThinLine = new PolyLine(State.LastShapeID++);
                                                                     State.ThinLine.ClearanceMode = State.ClearanceMode;
                                                                     State.ThinLine.Width = State.CurrentAperture.CircleRadius;
                                                                     //Console.WriteLine("Start: {0:N2} , {1:N2} - {2}", State.LastX, State.LastY, Line);
@@ -1854,7 +1848,7 @@ namespace GerberLibrary
                                                                     case InterpolationMode.Linear:
 
                                                                         State.ThinLine.Add(X, Y);
-                                                                   //     Console.WriteLine("{0:N2} , {1:N2} - {2}", X,Y, Line);
+                                                                        //     Console.WriteLine("{0:N2} , {1:N2} - {2}", X,Y, Line);
                                                                         break;
 
                                                                     default:
@@ -1971,7 +1965,7 @@ namespace GerberLibrary
         {
             if (State.Repeater == true) DoRepeating(State);
 
-            State.Repeater = (Xcount * Ycount > 1) ?  true: false;
+            State.Repeater = (Xcount * Ycount > 1) ? true : false;
             State.RepeatXCount = Xcount;
             State.RepeatYCount = Ycount;
             State.RepeatXOff = Xoff;
@@ -1980,7 +1974,7 @@ namespace GerberLibrary
             State.RepeatStartThinShapeIdx = State.NewThinShapes.Count();
             State.RepeatStartShapeIdx = State.NewShapes.Count();
         }
-        
+
         public class GerberBlock
         {
             public bool Header;

@@ -252,8 +252,8 @@ namespace CarvedOut
                 // t = o / a
                 // a = o / t
 
-//                F.RectangularFillBetweenPolygons(R1, cuttingdepth, rapiddepth, toolradiusatcuttingdepth * 0.75, -B.Width() / 2 - 2, B.Width() / 2 + 2, -B.Height() / 2 - 2, B.Height() / 2 + 2, 0.2);
-  //              F.AddClipperPolygonsToCarve(R1, cuttingdepth, rapiddepth,0.5);
+//              F.RectangularFillBetweenPolygons(R1, cuttingdepth, rapiddepth, toolradiusatcuttingdepth * 0.75, -B.Width() / 2 - 2, B.Width() / 2 + 2, -B.Height() / 2 - 2, B.Height() / 2 + 2, 0.2);
+//              F.AddClipperPolygonsToCarve(R1, cuttingdepth, rapiddepth,0.5);
 
 
                 var R =  ClipperLib.Clipper.OffsetPolygons(subj, toolradiusatcuttingdepth * 100000.0);                                

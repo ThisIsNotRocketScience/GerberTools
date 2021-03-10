@@ -444,10 +444,28 @@ namespace GerberLibrary.Core.Primitives
                 case ApertureMacroTypes.Outline:
                     if (Gerber.ShowProgress) Console.WriteLine("Making an aperture for outline. {0} params. {1} in paramlist", Params.Count, paramlist.Count());
                     OutlineVerticesPostProc = new List<PointD>();
-                    foreach(var a in OutlineVertices)
+                    double ParamRotation = 0;
+                    if (OutlineRotationExprEnabled)
                     {
-                        OutlineVerticesPostProc.Add(a.Get(paramlist));
-                        
+                        int par = -1;
+                        var Amp = new ApertureMacroParam(OutlineRotationExpr, -1, GNF, out par);
+                        ParamRotation = Amp.BuildValue(paramlist);
+                    }
+
+                     foreach (var a in OutlineVertices)
+                    {
+                        if (OutlineRotationExprEnabled)
+                        {
+                            OutlineVerticesPostProc.Add(a.Get(paramlist).Rotate(ParamRotation));
+
+
+                            //       ApertureMacroParam OExpr = new ()
+                        }
+                        else 
+                        {
+                            OutlineVerticesPostProc.Add(a.Get(paramlist));
+                        }
+
                     }
                     AT.SetCustom(OutlineVerticesPostProc);
                     break;
@@ -629,6 +647,7 @@ namespace GerberLibrary.Core.Primitives
             AT.ShapeType = GerberApertureShape.Macro;
             AT.MacroName = Name;
 
+           
             return AT;
         }
         public class OutlineParameterPoint
@@ -692,17 +711,16 @@ namespace GerberLibrary.Core.Primitives
             if ((v.Length - 3 - vertices * 2) < 0) vertices--;
             double X = 0;
             double Y = 0;
-            while (i < vertices && v[idx + 1].Contains("*") == false)
-            //            for (int i = 0; i < vertices; i++)
+            while (i < vertices && v[idx + 1].Contains("*") == false)            
             {
                 bool xparambound = false;
                 bool yparambound = false;
-                //                int xid = -1;
-                //int yid = -1;
+                
                 string xexpr = "";
                 string yexpr = "";
-
                 idx++;
+                
+                //  if (Gerber.Verbose) Console.Write("{1} Line [{0}] ", v[idx], idx);
                 //  if (Gerber.Verbose) Console.Write("{1}| reading X from {0}: ", idx, i);            
                 if (v[idx].Contains("$"))
                 {
@@ -717,8 +735,8 @@ namespace GerberLibrary.Core.Primitives
 
                      X = Gerber.ParseDouble(v[idx]);
                 }
-                //  if (Gerber.Verbose) Console.WriteLine(" {0} ", X);
                 idx++;
+                // if (Gerber.Verbose)  Console.Write(" X {0} ", X);
                 // if (Gerber.Verbose) Console.Write("{1}| reading Y from {0}: ", idx,i);            
                 if (v[idx].Contains("$"))
                 {
@@ -733,7 +751,7 @@ namespace GerberLibrary.Core.Primitives
                 {
                     Y = Gerber.ParseDouble(v[idx]);
                 }
-                //if (Gerber.Verbose) Console.WriteLine(" {0} ", Y);
+                //if (Gerber.Verbose)  Console.WriteLine(" Y {0} ", Y);
 
                 X = GNF.ScaleFileToMM(X);
                 Y = GNF.ScaleFileToMM(Y);
@@ -743,19 +761,36 @@ namespace GerberLibrary.Core.Primitives
             }
             if (v.Length >= (vertices-1) * 2 + 5)
             {
-                OutlineRotation = (Gerber.ParseDouble(v[v.Length-1]));
-                
-                foreach(var ov in OutlineVertices)
+                int rotationidx = v.Length - 1;
+                if (v[rotationidx].Contains("$"))
                 {
-                    ov.Point = ov.Point.Rotate(OutlineRotation);
+                    Console.WriteLine("{0}", v[rotationidx]);
+                    OutlineRotationExprEnabled = true;
+                    int neg = 0;
+                    if (v[rotationidx][0] == '-') neg = 1;
+                    OutlineRotationExpr = v[rotationidx];
+
                 }
+                else
+                {
+                    OutlineRotation = Gerber.ParseDouble(v[rotationidx]);
+                    foreach (var ov in OutlineVertices)
+                    {
+                        ov.Point = ov.Point.Rotate(OutlineRotation);
+                    }
+                }
+
+           //     OutlineRotation = (Gerber.ParseDouble(v[v.Length-1]));
+                
+               
 
                 // rotate! 
             }
 
             //       throw new NotImplementedException();
         }
-
+        string OutlineRotationExpr;
+        bool OutlineRotationExprEnabled = false;
         internal void DecodeCircle(string p, GerberNumberFormat GNF)
         {
             Decode(p, GNF);

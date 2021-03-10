@@ -79,9 +79,8 @@ namespace GerberToImage
                 }
             }
 
-
             Gerber.SaveIntermediateImages = false;
-            Gerber.ShowProgress = false;
+            Gerber.ShowProgress = true;
 
             if (RestList.Count() == 1 && File.Exists(RestList[0]) && Path.GetExtension(RestList[0]).ToLower()!= ".zip")
             {
@@ -89,7 +88,7 @@ namespace GerberToImage
                 Gerber.ExtremelyVerbose = false;
                 //Gerber.Verbose = true;
                 Gerber.WaitForKey = true;
-                Gerber.ShowProgress = true;
+                Gerber.ShowProgress = false;
 
                CreateImageForSingleFile(new StandardConsoleLog(),RestList[0], Color.Black, Color.White);
                 if (Gerber.WaitForKey)

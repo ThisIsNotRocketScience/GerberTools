@@ -19,7 +19,7 @@ namespace GerberLibrary.Core.Primitives
 
         public GerberApertureType BuildAperture(List<double> paramlist, GerberNumberFormat GNF)
         {
-
+            
             GerberApertureType GAT = new GerberApertureType();
             GAT.MacroParamList = paramlist.ToList();
             GAT.ShapeType = GerberApertureShape.Compound;
