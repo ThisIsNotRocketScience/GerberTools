@@ -54,8 +54,6 @@ namespace Base64Extractor
             if (File.Exists(a) )
             {
                 var lines = File.ReadAllLines(a);
-                int startline = 0; 
-              //  int endline = 0;
                 for (int i = 0;i<lines.Count();i++)
                 {
                     if (lines[i].Contains("Content-Transfer-Encoding: base64"))

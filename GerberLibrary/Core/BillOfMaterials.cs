@@ -623,7 +623,7 @@ namespace GerberLibrary.Core
 
                 //string Header = "Count,Name,Type,Package,Value,MfgPartNumber,RefDes";
 
-                //int idxcount = 0;
+                int idxcount = 0;
                 int idxname = 1;
                 int idxtype = 2;
                 int idxpackage = 3;
