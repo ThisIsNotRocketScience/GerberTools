@@ -397,6 +397,7 @@ namespace GerberLibrary.Core.Primitives
 
                         }
                         srccopy = srccopy.Replace("X", "*");
+                        srccopy = srccopy.Replace("x", "*");
                         MacroExpressionEvaluator E = new MacroExpressionEvaluator();
                         for (int i = 0; i < paramlist.Count(); i++)
                         {

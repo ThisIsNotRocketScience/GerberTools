@@ -144,19 +144,26 @@ namespace GerberLibrary
 
             foreach (var a in File1Parsed.State.ApertureMacros)
             {
+                a.Value.Name = a.Value.Name + "_FILE0";
                 OutputLines.Add(a.Value.BuildGerber(GNF, 0).Trim());
-                MacroDict[a.Value.Name + "____"] = a.Value.Name;
+                MacroDict[a.Value.Name ] = a.Value.Name;
             }
+            int FileN = 1;
             foreach (var fileparsed in OtherFiles)
             {
+
+                string FileSuffix = "_FILE" + FileN.ToString();
+                FileN++;
                 foreach (var a in fileparsed.State.ApertureMacros)
                 {
+                    a.Value.Name = a.Value.Name + FileSuffix;
+
                     int off = 0;
-                    string name = string.Format("{0}{1}", a.Value.Name, off);
+                    string name = string.Format("{0}", a.Value.Name);
                     while (MacroDict.Values.Contains(name))
                     {
                         off++;
-                        name = string.Format("{0}{1}", a.Value.Name, off);
+                        name = string.Format("{0}_{1}", a.Value.Name, off);
                     }
                     MacroDict[a.Value.Name] = name;
                     a.Value.Name = name;
@@ -168,6 +175,7 @@ namespace GerberLibrary
 
             foreach (var a in File1Parsed.State.Apertures)
             {
+                a.Value.MacroName = a.Value.MacroName + "_FILE0";
                 OutputLines.Add(a.Value.BuildGerber(GNF));
             }
 
@@ -176,15 +184,20 @@ namespace GerberLibrary
 
 
             int LastID = ApertureOffset + 10;
+            FileN = 1;
             foreach (var fileparsed in OtherFiles)
             {
                 CheckAllApertures(fileparsed, fileparsed.OriginalLines, Log);
+                string FileSuffix = "_FILE" + FileN.ToString();
+                FileN++;
 
                 foreach (var a in fileparsed.State.Apertures)
                 {
+
                     if (a.Value.ShapeType == GerberApertureShape.Macro || a.Value.ShapeType == GerberApertureShape.Compound)
                     {
-                        a.Value.MacroName = MacroDict[a.Value.MacroName];
+                        a.Value.MacroName = a.Value.MacroName + FileSuffix;
+                //        a.Value.MacroName = MacroDict[a.Value.MacroName];
                     }
                     a.Value.ID = LastID++;
                     OutputLines.Add(a.Value.BuildGerber(GNF));

@@ -2234,7 +2234,7 @@ namespace GerberLibrary
         public double FillOffset = 3;
         public double Smoothing = 1;
         public double ExtraTabDrillDistance = 0;
-        public bool ClipToOutlines = true;
+        public bool ClipToOutlines = false;
         public string LastExportFolder = "";
 
         public bool DoNotGenerateMouseBites = false;

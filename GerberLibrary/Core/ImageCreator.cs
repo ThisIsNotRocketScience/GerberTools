@@ -66,20 +66,22 @@ namespace GerberLibrary
                 foreach (var ol in ols)
                 {
                     var R = ol.FindLargestPolygon();
-
-                    var poly = R.Item2.toPolygon();
-
-                    if (ClipperLib.Clipper.Orientation(poly) == false)
+                    if (R != null)
                     {
-                        //Console.WriteLine("pos");
-                    }
-                    else
-                    {
-                        poly.Reverse();
-                        //Console.WriteLine("neg");
-                    }
+                        var poly = R.Item2.toPolygon();
 
-                    CP.AddPolygon(poly, ClipperLib.PolyType.ptClip);
+                        if (ClipperLib.Clipper.Orientation(poly) == false)
+                        {
+                            //Console.WriteLine("pos");
+                        }
+                        else
+                        {
+                            poly.Reverse();
+                            //Console.WriteLine("neg");
+                        }
+
+                        CP.AddPolygon(poly, ClipperLib.PolyType.ptClip);
+                    }
                 }
                 CP.AddPolygon(a.toPolygon(), ClipperLib.PolyType.ptSubject);
                 List<List<ClipperLib.IntPoint>> solution = new List<List<ClipperLib.IntPoint>>();

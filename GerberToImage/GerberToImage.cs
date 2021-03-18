@@ -87,10 +87,11 @@ namespace GerberToImage
               //  Gerber.WriteSanitized = true;
                 Gerber.ExtremelyVerbose = false;
                 //Gerber.Verbose = true;
+                Gerber.ThrowExceptions = true;
                 Gerber.WaitForKey = true;
                 Gerber.ShowProgress = true;
 
-               CreateImageForSingleFile(new StandardConsoleLog(),RestList[0], Color.Black, Color.White);
+               CreateImageForSingleFile(new StandardConsoleLog(),RestList[0], Color.Black, Color.White,dpi);
                 if (Gerber.WaitForKey)
                 {
                     Console.WriteLine("Press any key to continue");
@@ -141,7 +142,7 @@ namespace GerberToImage
             Console.WriteLine("Done writing {0}", TargetFileBaseName);
         }
 
-        private static void CreateImageForSingleFile(ProgressLog log, string arg, Color Foreground, Color Background)
+        private static void CreateImageForSingleFile(ProgressLog log, string arg, Color Foreground, Color Background, float dpi = 1000)
         {
             
             if (arg.ToLower().EndsWith(".png") == true) return;
@@ -149,16 +150,16 @@ namespace GerberToImage
             //Gerber.Verbose = true;
             if (Gerber.ThrowExceptions)
             {
-                Gerber.SaveGerberFileToImageUnsafe(log, arg, arg + "_render.png", 1000, Foreground, Background);
+                Gerber.SaveGerberFileToImageUnsafe(log, arg, arg + "_render.png", dpi, Foreground, Background);
             }
             else
             {
-                Gerber.SaveGerberFileToImage(log, arg, arg + "_render.png", 1000, Foreground, Background);
+                Gerber.SaveGerberFileToImage(log, arg, arg + "_render.png", dpi, Foreground, Background);
             }
 
             if (Gerber.SaveDebugImageOutput)
             {
-                Gerber.SaveDebugImage(arg, arg + "_debugviz.png", 1000, Foreground, Background, new StandardConsoleLog());
+                Gerber.SaveDebugImage(arg, arg + "_debugviz.png", dpi, Foreground, Background, new StandardConsoleLog());
             }
         }
 
