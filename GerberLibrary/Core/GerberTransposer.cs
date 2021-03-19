@@ -138,7 +138,7 @@ namespace GerberLibrary
 
                     var M = Parsed.State.ApertureMacros[name];
                     M.Written = true;
-                    var gerb = M.BuildGerber(CoordinateFormat, AngleInDeg).Split('\n');
+                    var gerb = M.BuildGerber(CoordinateFormat, AngleInDeg, "" ).Split('\n');
                     foreach (var l in gerb)
                     {
                         if (l.Trim().Length > 0)
@@ -173,7 +173,7 @@ namespace GerberLibrary
                         int ATID = (int)GCC.numbercommands[0];
                         var Aperture = Parsed.State.Apertures[ATID];
                         if (Gerber.ShowProgress) log.AddString(String.Format("found " + Aperture.ToString()));
-                        string gerb = Aperture.BuildGerber(CoordinateFormat, AngleInDeg);
+                        string gerb = Aperture.BuildGerber(CoordinateFormat, "", AngleInDeg);
 
                         if ((Aperture.ShapeType == GerberApertureShape.Compound || Aperture.ShapeType == GerberApertureShape.Macro) && Parsed.State.ApertureMacros[Aperture.MacroName].Written == false)
                         {

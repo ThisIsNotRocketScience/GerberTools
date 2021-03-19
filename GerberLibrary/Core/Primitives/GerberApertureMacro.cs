@@ -43,9 +43,9 @@ namespace GerberLibrary.Core.Primitives
 
         }
 
-        public string BuildGerber(GerberNumberFormat GNF, double p)
+        public string BuildGerber(GerberNumberFormat GNF, double p, string filesuffix )
         {
-            string res = "%AM" + Name + "*" + Gerber.LineEnding;
+            string res = "%AM" + Name + filesuffix +  "*" + Gerber.LineEnding;
             foreach (var part in Parts)
             {
                 res += part.BuildGerber(GNF, p);
