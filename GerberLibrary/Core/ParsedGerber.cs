@@ -37,6 +37,17 @@ namespace GerberLibrary.Core
             return len;
         }
 
+        public Dictionary<string, GerberApertureType> GetApertureHashTable()
+        {
+            Dictionary<string, GerberApertureType> R = new Dictionary<string, GerberApertureType>();
+
+            foreach(var a in State.Apertures)
+            {
+                R[a.Value.GetApertureHash()] = a.Value;
+            }
+            return R;
+        }
+
         // brute force path optimization. This should be rewritten with some nice treesearching algo.. but this is fast enough to "not matter" for now.
 
         public void Optimize()

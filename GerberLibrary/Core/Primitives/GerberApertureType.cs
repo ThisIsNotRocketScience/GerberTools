@@ -189,6 +189,23 @@ namespace GerberLibrary.Core.Primitives
             return res;
         }
 
+
+        public string StripSource()
+        {
+            if (SourceLine.Length < 4) return "";
+            int idx = 4;
+            while (idx<SourceLine.Length && char.IsDigit(SourceLine[idx]))
+            {
+                idx++;
+            }
+            return SourceLine.Substring(idx);
+        }
+        public string GetApertureHash()
+        {
+            string R = Enum.GetName(typeof(GerberApertureShape), ShapeType) + "_" + StripSource();
+            return R;
+        }
+
         public GerberApertureType()
         {
             Shape = new PolyLine(PolyLine.PolyIDs.ApertureConstr);

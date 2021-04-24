@@ -139,7 +139,7 @@ namespace GerberLibrary
 //            L.PopActivity();
         }
 
-        internal void Set(string name, double val)
+        public void Set(string name, double val)
         {
             if (Has(name) == false)
             {
