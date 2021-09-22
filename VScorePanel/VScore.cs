@@ -55,7 +55,6 @@ namespace VScorePanel
 
                             GerberPanel Pnl = new GerberPanel();
                             Pnl.TheSet.ClipToOutlines = false;
-
                             Pnl.AddGerberFolder(new StandardConsoleLog(), S);
                             double ginbetween = (double)numericUpDown1.Value;
 
@@ -107,6 +106,8 @@ namespace VScorePanel
 
                                 String FrameFolder = Path.Combine(OutputFolder, "frame");
                                 Directory.CreateDirectory(FrameFolder);
+
+                                
                                 //Directory.CreateDirectory(Path.Combine(OutputFolder, "merged"));
                                 Directory.CreateDirectory(Path.Combine(OutputFolder, "merged"));
                                 GerberFrameWriter.WriteSideEdgeFrame(null, FS, Path.Combine(FrameFolder, "panelframe"), null);
@@ -150,6 +151,23 @@ namespace VScorePanel
                                 Pnl.UpdateShape(new StandardConsoleLog());
                                 Pnl.SaveGerbersToFolder(Path.GetFileNameWithoutExtension(S) + "_Panel", Path.Combine(OutputFolder, "merged"), new StandardConsoleLog());
                                 File.WriteAllLines(Path.Combine(OutputFolder, "PanelReport.txt"), OutputLines);
+
+
+                                List<String> FilesInFolder = Directory.GetFiles(Path.Combine(OutputFolder, "merged"), "*.frontpanelholes").ToList();
+                                if (FilesInFolder.Count > 0)
+                                {
+                                    String JigFolder = Path.Combine(OutputFolder, "jig");
+                                    Directory.CreateDirectory(JigFolder);
+                                    File.Copy(FilesInFolder[0], Path.Combine(JigFolder, "jig.gml"), true);
+                                    FS.InsideEdgeMode = GerberFrameWriter.FrameSettings.InsideMode.NoEdge;                                    
+                                    GerberFrameWriter.WriteSideEdgeFrame(null, FS, Path.Combine(JigFolder,"jig"), null);
+                                    GerberMerger.Merge(Path.Combine(JigFolder, "jig.gml"), Path.Combine(JigFolder, "jig.gko"), Path.Combine(JigFolder, "jig.gko2"), new StandardConsoleLog());
+                                    File.Delete(Path.Combine(JigFolder, "jig.gko"));
+                                    File.Delete(Path.Combine(JigFolder, "jig.gml"));
+                                    File.Move(Path.Combine(JigFolder, "jig.gko2"), Path.Combine(JigFolder, "jig.gko"));
+
+                                }
+
                             }
 
                             if (theMode == PanelMode.Groovy)
