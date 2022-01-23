@@ -589,12 +589,12 @@ namespace GerberLibrary
                                                 switch ((int)GS.Get("G"))
                                                 {
                                                     case 70:
-                                                        OutputLines.Add("G04 skipping 70");
+                                                        OutputLines.Add("G04 skipping 70*");
                                                         otherfile.State.CoordinateFormat.SetImperialMode();
 
                                                         break;
                                                     case 71:
-                                                        OutputLines.Add("G04 skipping 71");
+                                                        OutputLines.Add("G04 skipping 71*");
                                                         otherfile.State.CoordinateFormat.SetMetricMode();
 
                                                         break;
@@ -1264,12 +1264,12 @@ namespace GerberLibrary
                                             switch ((int)GS.Get("G"))
                                             {
                                                 case 70:
-                                                    OutputLines.Add("G04 skipping 70");
+                                                    OutputLines.Add("G04 skipping 70*");
                                                     File2Parsed.State.CoordinateFormat.SetImperialMode();
 
                                                     break;
                                                 case 71:
-                                                    OutputLines.Add("G04 skipping 71");
+                                                    OutputLines.Add("G04 skipping 71*");
                                                     File2Parsed.State.CoordinateFormat.SetMetricMode();
 
                                                     break;
