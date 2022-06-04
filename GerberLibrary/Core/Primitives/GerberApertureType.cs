@@ -34,7 +34,7 @@ namespace GerberLibrary.Core.Primitives
         {
             return String.Format("D{0}: {1} ({2})", ID, Enum.GetName(typeof(GerberApertureShape), ShapeType), SourceLine);
         }
-        public string BuildGerber(GerberNumberFormat format, double RotationAngle = 0)
+        public string BuildGerber(GerberNumberFormat format, string MacroNameSuffix = "", double RotationAngle = 0)
         {
             string res = String.Format("%ADD{0}", ID.ToString("D2"));
             int parmcount = 0;
@@ -42,7 +42,7 @@ namespace GerberLibrary.Core.Primitives
             {
                 case GerberApertureShape.Macro:
 
-                    res += MacroName;
+                    res += MacroName + MacroNameSuffix;
                     if (MacroParamList.Count > 0) res += ",";
                     foreach (var a in MacroParamList)
                     {
@@ -136,7 +136,7 @@ namespace GerberLibrary.Core.Primitives
                     break;
                 case GerberApertureShape.Compound:
                     {
-                        string macroname = "COMP" + (MacroPostFix++).ToString();
+                        string macroname = "COMP" + (MacroPostFix++).ToString()+ MacroNameSuffix;
                         string macrores = Gerber.WriteMacroStart(macroname);
                         foreach (var P in Parts)
                         {
@@ -187,6 +187,23 @@ namespace GerberLibrary.Core.Primitives
             res += "*%";
 
             return res;
+        }
+
+
+        public string StripSource()
+        {
+            if (SourceLine.Length < 4) return "";
+            int idx = 4;
+            while (idx<SourceLine.Length && char.IsDigit(SourceLine[idx]))
+            {
+                idx++;
+            }
+            return SourceLine.Substring(idx);
+        }
+        public string GetApertureHash()
+        {
+            string R = Enum.GetName(typeof(GerberApertureShape), ShapeType) + "_" + StripSource();
+            return R;
         }
 
         public GerberApertureType()

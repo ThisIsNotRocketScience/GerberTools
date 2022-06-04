@@ -62,7 +62,7 @@ namespace GerberLibrary
         public string SanitizedFile = "";
         public BoardSide Side;
         public PolyLine ThinLine;
-        internal bool GenerateGeometry = true;
+        public bool GenerateGeometry = true;
 
         public bool MirrorA = false;
         public bool MirrorB = false;
