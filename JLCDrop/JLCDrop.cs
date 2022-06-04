@@ -51,6 +51,7 @@ namespace JLCDrop
                         {                            
                             BOM.LoadRotationOffsets();
                             Factory.MakeBomAndPlacement(S);
+                            
                             Factory.ZipGerbers(S, MakeFrameBox.Checked, (int)FrameMM.Value, FrameName.Text);
                             CountDown = 10;
                         }

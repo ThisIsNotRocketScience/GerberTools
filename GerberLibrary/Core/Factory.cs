@@ -121,6 +121,7 @@ namespace GerberLibrary
                 }
             }
 
+
             string ascname = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(a), Name + ".asc");
             if (File.Exists(ascname))
             {
@@ -133,7 +134,24 @@ namespace GerberLibrary
                     Console.WriteLine("something went wrong loading diptrace asc..:{0}", E);
                 }
             }
+
+            string kicadschname = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(a), Name + ".kicad_sch");
+            string kicadpcbname = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(a), Name + ".kicad_pcb");
+            if (File.Exists(kicadschname) && File.Exists(kicadpcbname))
+            {
+                try
+                {
+                    TheBOM.LoadKicad(kicadschname, kicadpcbname, new StandardConsoleLog());
+                }
+                catch (Exception E)
+                {
+                    Console.WriteLine("something went wrong loading diptrace asc..:{0}", E);
+                }
+            }
+
             TheBOM.WriteJLCCSV(BoardFactoryFolder, MakeJLCName(Name), false);
+            TheBOM.WriteJLCCSV(BoardFactoryFolder, "EllageVersion_"+ MakeJLCName(Name), true);
+
             Console.WriteLine("Done exporting.");
         }
 

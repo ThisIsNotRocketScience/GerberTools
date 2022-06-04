@@ -2150,50 +2150,57 @@ namespace GerberLibrary.Core
 
 
             var bomlines = File.ReadAllLines(bOMFile);
-            var pnplines = File.ReadAllLines(pnPFile);
 
-            //outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #");
             var regex = new Regex("(?<=^|,)(\"(?:[^\"]|\"\")*\"|[^,]*)");
-            
-            int RefdesIdx = 0;
-            int Xidx = 1;
-            int Yidx = 2;
-            int Sideidx = 3;
-            int Angleidx = 4;
 
-            var Headers = pnplines[0].Split(',');
-            for(int i =0;i<Headers.Count();i++)
+            if (pnPFile != null)
             {
-                var H = StripCSV( Headers[i].ToLower());
-                switch (H)
+                var pnplines = File.ReadAllLines(pnPFile);
+
+                //outlinesBOM.Add("Comment,Designator,Footprint,LCSC Part #");
+             
+                int RefdesIdx = 0;
+                int Xidx = 1;
+                int Yidx = 2;
+                int Sideidx = 3;
+                int Angleidx = 4;
+
+                var Headers = pnplines[0].Split(',');
+                for (int i = 0; i < Headers.Count(); i++)
                 {
-                    case "x": Xidx = i;break;
-                    case "y": Yidx = i; break;
-                    case "refdes": RefdesIdx = i; break;
-                    case "side": Sideidx = i; break;
-                    case "angle": Angleidx = i;break;
+                    var H = StripCSV(Headers[i].ToLower());
+                    switch (H)
+                    {
+                        case "x": Xidx = i; break;
+                        case "y": Yidx = i; break;
+                        case "mid x": Xidx = i; break;
+                        case "mid y": Yidx = i; break;
+                        case "refdes": RefdesIdx = i; break;
+                        case "designator": RefdesIdx = i; break;
+                        case "side": Sideidx = i; break;
+                        case "angle": Angleidx = i; break;
+                    }
+                }
+
+                //outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
+                for (int i = 1; i < pnplines.Count(); i++)
+                {
+                    var s = pnplines[i];
+                    List<string> items = new List<string>();
+                    foreach (Match m in regex.Matches(s))
+                    {
+                        items.Add(m.Value);
+                    }
+
+                    var rd = StripCSV(items[RefdesIdx]);
+                    var X = ConvertDimension(items[Xidx]);
+                    var Y = ConvertDimension(items[Yidx]);
+                    var Side = GetSide(StripCSV(items[Sideidx]));
+                    var Angle = Double.Parse(StripCSV(items[Angleidx]));
+
+                    positions[rd] = new BOMEntry.RefDesc() { angle = Angle, x = X, y = Y, OriginalName = rd, NameOnBoard = rd, SourceBoard = bOMFile, Side = Side };
                 }
             }
-
-            //outlinesPNP.Add("Designator,Mid X,Mid Y,Layer,Rotation");
-            for (int i = 1; i < pnplines.Count(); i++)
-            {
-                var s = pnplines[i];
-                List<string> items = new List<string>();
-                foreach (Match m in regex.Matches(s))
-                {
-                    items.Add(m.Value);
-                }
-
-                var rd = StripCSV(items[RefdesIdx]);
-                var X = ConvertDimension(items[Xidx]);
-                var Y = ConvertDimension(items[Yidx]);
-                var Side = GetSide(StripCSV(items[Sideidx]));
-                var Angle = Double.Parse(StripCSV(items[Angleidx]));
-
-                positions[rd] = new BOMEntry.RefDesc() { angle = Angle, x = X, y = Y, OriginalName = rd, NameOnBoard = rd, SourceBoard = bOMFile, Side = Side };
-            }
-
             BOMNumberSet Set = new BOMNumberSet();
             var headers = bomlines[0].Split(',');
 
@@ -3189,6 +3196,221 @@ namespace GerberLibrary.Core
 
           
         }
+
+        internal void LoadKicad(string kicadschname, string kicadpcbname, StandardConsoleLog Log)
+        {
+                Log.PushActivity("KiCAD BOM Loader");
+
+                Log.AddString(String.Format("Loading Diptrace module: {0}", Path.GetFileNameWithoutExtension(kicadschname)));
+
+                string S = System.IO.File.ReadAllText(kicadschname);
+                S = S.Replace("\n", "");
+                string S2 = System.IO.File.ReadAllText(kicadpcbname);
+                S2 = S2.Replace("\n", "");
+                var SchRoot = new SNode();
+                SchRoot.Load(S);
+                 var PCBRoot = new SNode();
+                PCBRoot.Load(S2);
+
+                float originx = 0, originy= 0, UnitMult = 1;
+                var pcb = PCBRoot.Find("kicad_pcb");
+                float AngleMult = 1.0f;
+
+                var C = pcb[0].Find("footprint");
+
+                foreach (var a in C)
+                {
+                    BoardSide side = BoardSide.Top;
+                    var AT = a.Find("at");
+                    var FP = a.Children[0].Name;
+                    int layerdesc = 1;
+                    if (a.Children[1].Name == "locked") layerdesc++;
+                    var siden = a.Children[layerdesc].Children[0].Name;
+                    if (siden != "F.Cu") side = BoardSide.Bottom;
+                    var fp_text = a.Find("fp_text");
+                    bool skip = false;
+                    var attr = a.Find("attr");
+                    float Angle = 0;
+                    float X = float.Parse(AT[0].Children[0].Name.Replace('.', ','));
+                    float Y = float.Parse(AT[0].Children[1].Name.Replace('.', ','));
+                    if (AT[0].Children.Count > 2)
+                    {
+                        Angle = float.Parse(AT[0].Children[2].Name.Replace('.', ','));
+                    }
+                    string reference = "";
+                    string value = "";
+                foreach (var t in attr)
+                {
+                    foreach (var c in t.Children)
+                    {
+                        if (c.Name == "exclude_from_pos_files") skip = true;
+                        if (c.Name == "exclude_from_bom") skip = true;
+                    }
+                    
+
+
+                }
+                foreach (var t in fp_text)
+                    {
+                        if (t.Children[0].Name == "reference")
+                        {
+                            reference = t.Children[1].Name;
+                        }
+                        if (t.Children[0].Name == "value")
+                        {
+                            value= t.Children[1].Name;
+                        }
+
+                    }
+
+                    Console.WriteLine("{0} {1} {2} {3}", reference, value, X, Y, Angle);
+                if (!skip)
+                {
+                    var placement = AddBOMItemExt(FP, FP, value, reference, null, System.IO.Path.GetFileNameWithoutExtension(kicadschname), X, Y, Angle, side);
+                    //    var BE = GetBOMEntry(placement);
+                    //    float DipComp = 0;// DipCompensationAngle(BE.Combined(), side);
+
+                    //    // orientangle += DipComp;
+                    var RD = GetRefDes(placement);
+                }
+                //    DipRotateAndAdjust(x, y, partoriginx, partoriginy, angle, orientidx, partorientidx, Flipped, RD, originx, originy, UnitMult);
+                //    if (side == BoardSide.Bottom) RD.angle = -RD.angle;
+                //    RD.angle += DipComp;
+
+
+                //float partoriginx = 0;
+                //float partoriginy = 0;
+                //var pox = a.Find("OriginX");
+                //var poy = a.Find("OriginY");
+                //if (pox.Count > 0)
+                //{
+                //    partoriginx = float.Parse(pox.First().Children[0].Name.Replace('.', ','));
+                //}
+                //if (poy.Count > 0)
+                //{
+                //    partoriginy = float.Parse(poy.First().Children[0].Name.Replace('.', ','));
+                //}
+
+
+                //float x = -1;
+                //float y = -1;
+                //string name = "unknown";
+                //string id = "id";
+                //// try
+                //{
+                //    name = a.Children[0].Name;
+                //    id = a.Children[1].Name;
+                //    string descattrib = "";
+                //    string sizeattrib = "";
+                //    string value = "";
+                //    var vV = a.Find("Value", false).FirstOrDefault();
+                //    var pP = a.Find("Pattern", false).FirstOrDefault();
+
+
+                //    if (vV != null && vV.Children.Count > 0)
+                //    {
+                //        descattrib = vV.Children[0].Name;
+                //        value = vV.Children[0].Name;
+                //    }
+
+                //    BoardSide side = BoardSide.Top;
+                //    var BottomSide = a.Find("BottomSide", false).FirstOrDefault();
+                //    if (BottomSide != null && BottomSide.Children.Count > 0)
+                //    {
+                //        string V = BottomSide.Children[0].Name;
+                //        if (V == "Y") side = BoardSide.Bottom;
+                //    }
+
+
+                //    string pattern = "";
+
+                //    if (pP != null && pP.Children.Count > 0)
+                //    {
+                //        pattern = pP.Children[0].Name;
+                //    }
+                //    var X = a.Find("X", false).FirstOrDefault();
+                //    if (X != null && X.Children.Count > 0)
+                //    {
+                //        string V = X.Children[0].Name;
+                //        if (V[0] == '.') V = "0" + V;
+                //        V = V.Replace('.', ',');
+                //        x = float.Parse(V);
+
+                //    }
+                //    var Y = a.Find("Y", false).FirstOrDefault();
+                //    if (Y != null && Y.Children.Count > 0)
+                //    {
+                //        string V = Y.Children[0].Name;
+                //        if (V[0] == '.') V = "0" + V;
+                //        V = V.Replace('.', ',');
+
+                //        y = float.Parse(V);
+                //    }
+                //    float angle = 0;
+                //    float orientangle = 0;
+                //    int orientidx = 0;
+                //    var O = a.Find("Orientation", false).FirstOrDefault();
+                //    if (O != null && O.Children.Count > 0)
+                //    {
+                //        string V = O.Children[0].Name;
+                //        if (V[0] == '0') { orientangle = 0; orientidx = 0; };
+                //        if (V[0] == '1') { orientangle = 90; orientidx = 1; };
+                //        if (V[0] == '2') { orientangle = 180; orientidx = 2; };
+                //        if (V[0] == '3') { orientangle = 270; orientidx = 3; };
+                //    }
+                //    float pangle = 0;
+                //    int partorientidx = 0;
+                //    var PO = a.Find("PatternOrientation", false).FirstOrDefault();
+                //    if (PO != null && PO.Children.Count > 0)
+                //    {
+                //        string V = PO.Children[0].Name;
+                //        if (V[0] == '0') { pangle = 0; partorientidx = 0; }
+                //        if (V[0] == '1') { pangle = 90; partorientidx = 1; }
+                //        if (V[0] == '2') { pangle = 180; partorientidx = 2; }
+                //        if (V[0] == '3') { pangle = 270; partorientidx = 3; }
+
+                //    }
+
+
+                //    var A = a.Find("Angle", false).FirstOrDefault();
+                //    if (A != null && A.Children.Count > 0)
+                //    {
+                //        angle = float.Parse(A.Children[0].Name.Replace('.', ',')) * AngleMult;
+                //    }
+
+                //    bool Flipped = false;
+                //    var nFlipped = a.Find("Flipped", false).FirstOrDefault();
+                //    if (nFlipped != null && BottomSide.Children.Count > 0)
+                //    {
+                //        string V = nFlipped.Children[0].Name;
+                //        if (V == "Y")
+                //        {
+                //            Flipped = true;
+                //        }
+                //    }
+
+                //    var placement = AddBOMItemExt(pattern, name, value, id, null, System.IO.Path.GetFileNameWithoutExtension(kicadschname), 0, 0, 0, side);
+                //    var BE = GetBOMEntry(placement);
+                //    float DipComp = 0;// DipCompensationAngle(BE.Combined(), side);
+
+                //    // orientangle += DipComp;
+                //    var RD = GetRefDes(placement);
+
+                //    DipRotateAndAdjust(x, y, partoriginx, partoriginy, angle, orientidx, partorientidx, Flipped, RD, originx, originy, UnitMult);
+                //    if (side == BoardSide.Bottom) RD.angle = -RD.angle;
+                //    RD.angle += DipComp;
+                //    if (id == "C10")
+                //    {
+                //        Console.WriteLine(RD);
+                //    }
+
+
+
+            }
+
+            Log.PopActivity();
+        }
     }
+
 
 }

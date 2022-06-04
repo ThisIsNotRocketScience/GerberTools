@@ -40,8 +40,18 @@ namespace VScorePanel
                            
                             GerberLibrary.GerberImageCreator GIC = new GerberLibrary.GerberImageCreator();
                             var A = Directory.GetFiles(S);
-
-                            GIC.AddBoardsToSet(A.ToList(), new StandardConsoleLog());
+                            List<String> SensibleFile = new List<string>();
+                            foreach(var a in A)
+                            {
+                                GerberLibrary.Core.BoardSide Si;
+                                GerberLibrary.Core.BoardLayer La;
+                                Gerber.DetermineBoardSideAndLayer(a, out Si, out La);
+                                
+                                if (Si == GerberLibrary.Core.BoardSide.Both && La == GerberLibrary.Core.BoardLayer.Outline) SensibleFile.Add(a);
+                                if (Si == GerberLibrary.Core.BoardSide.Both && La == GerberLibrary.Core.BoardLayer.Mill) SensibleFile.Add(a);
+                                if (La == GerberLibrary.Core.BoardLayer.Copper) SensibleFile.Add(a);
+                            }
+                            GIC.AddBoardsToSet(SensibleFile.ToList(), new StandardConsoleLog());
 
                             GerberFrameWriter.FrameSettings FS = new GerberFrameWriter.FrameSettings();
                             List<String> OutputLines = new List<string>();
