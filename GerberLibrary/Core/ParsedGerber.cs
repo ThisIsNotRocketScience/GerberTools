@@ -10,7 +10,7 @@ using static GerberLibrary.PolyLineSet;
 using ClipperPolygon = System.Collections.Generic.List<ClipperLib.IntPoint>;
 using Polygons = System.Collections.Generic.List<System.Collections.Generic.List<ClipperLib.IntPoint>>;
 
-using TriangleNet.Geometry;
+
 using TriangleNet.IO;
 using TriangleNet.Meshing;
 

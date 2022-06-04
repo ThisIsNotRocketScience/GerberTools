@@ -13,7 +13,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Serialization;
-using Artwork;
 
 namespace TINRS_ArtWorkGenerator
 {
@@ -330,7 +329,7 @@ namespace TINRS_ArtWorkGenerator
                     }
                     GAW.Write(gerbersaveFileDialog1.FileName);
                 }
-                catch (Exception E)
+                catch (Exception)
                 {
 
                 }

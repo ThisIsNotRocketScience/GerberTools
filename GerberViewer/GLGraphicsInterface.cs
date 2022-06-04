@@ -331,7 +331,7 @@ namespace GerberViewer
                         AddTriangle((float)A.X, (float)A.Y, (float)B.X, (float)B.Y, (float)C.X, (float)C.Y, c);
                     }
                 }
-                catch(Exception E)
+                catch(Exception)
                 {
 
                 }
