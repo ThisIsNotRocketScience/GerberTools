@@ -1,7 +1,7 @@
 ﻿using GerberLibrary;
 using GerberLibrary.Core;
 using GerberLibrary.Core.Primitives;
-using QiHe.CodeLib;
+//using QiHe.CodeLib;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
