@@ -703,15 +703,38 @@ namespace Artwork
 
 
                             float aThresholdLevel = TheSettings.Threshold * 0.01f;
-
-                            foreach (var A in SubDivPoly)
+                            if (TheSettings.DistanceMaskFile.Length > 0)
                             {
+                                Bitmap B = (Bitmap)Bitmap.FromFile(TheSettings.DistanceMaskFile);
 
-                                var m = A.Mid();
-                                float sum = GetPixelSum(m, Mask, TheSettings.distanceToMaskRange, aThresholdLevel, TheSettings.InvertSource);
-                                //if (sum > 1) sum = 1;
-                                A.ScaleDown(TheSettings.scalingMode, (scaler * sum));
+                                DirectBitmap DMask = new DirectBitmap(aMask.Width, aMask.Height);
+                                Graphics Dmg = Graphics.FromImage(DMask.Bitmap);
+                                Dmg.DrawImage(B, 0, 0, aMask.Width, aMask.Height) ;
 
+                                foreach (var A in SubDivPoly)
+                                {
+
+                                    var m = A.Mid();
+                                    float sum = GetPixelSum(m, DMask, TheSettings.distanceToMaskRange, aThresholdLevel, TheSettings.InvertSource);
+                                    //if (sum > 1) sum = 1;
+                                    A.ScaleDown(TheSettings.scalingMode, (scaler * sum));
+
+
+                                }
+
+                            }
+                            else
+                            {
+                                foreach (var A in SubDivPoly)
+                                {
+
+                                    var m = A.Mid();
+                                    float sum = GetPixelSum(m, Mask, TheSettings.distanceToMaskRange, aThresholdLevel, TheSettings.InvertSource);
+                                    //if (sum > 1) sum = 1;
+                                    A.ScaleDown(TheSettings.scalingMode, (scaler * sum));
+
+
+                                }
 
                             }
                         }

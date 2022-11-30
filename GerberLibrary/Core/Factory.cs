@@ -139,13 +139,13 @@ namespace GerberLibrary
             string kicadpcbname = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(a), Name + ".kicad_pcb");
             if (File.Exists(kicadschname) && File.Exists(kicadpcbname))
             {
-                try
+               // try
                 {
                     TheBOM.LoadKicad(kicadschname, kicadpcbname, new StandardConsoleLog());
                 }
-                catch (Exception E)
+                //catch (Exception E)
                 {
-                    Console.WriteLine("something went wrong loading diptrace asc..:{0}", E);
+                  //  Console.WriteLine("something went wrong loading kicad s-exprs..:{0}", E);
                 }
             }
 

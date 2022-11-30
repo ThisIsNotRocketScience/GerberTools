@@ -1261,15 +1261,46 @@ namespace GerberLibrary.Core
                 bool quoted = false;
                 bool escaped = false;
                 int depth = 1;
+                int written = 0;
                 while (P < s.Length && depth > 0)
                 {
+                    if (quoted)
+                    {
+                  //      Console.Write("{0}", s[P]);
+                        written++;
+                        if (written > 100)
+                        {
+                    //        Console.WriteLine("");
+                            written = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (written > 0)
+                        {
+                      //      Console.WriteLine("");
+                            written = 0;
+                        }
+                    }
                     switch (s[P])
                     {
+                        case '\\':
+                        {
+                                if (escaped)
+                                {
+                                    currenttoken += s[P];
+                                    escaped = false;
+                                }
+                                else
+                                {
+                                    escaped = true;
+                                }
+                                P++;
+                            }
+                            break;
                         case '"':
                             if (quoted)
                             {
-
-
                                 if (escaped)
                                 {
                                     currenttoken += s[P];
@@ -1284,8 +1315,23 @@ namespace GerberLibrary.Core
                             }
                             else
                             {
-                                quoted = true;
-                                escaped = false;
+                                if (escaped)
+                                {
+                                    currenttoken += s[P];
+                                    escaped = false;
+                                }
+                                else
+                                {
+                               //     Console.Write("escaping:");
+                                    for (int R = Math.Max(P - 140, 0); R != P + 1; R++)
+                                    {
+                                 //       Console.Write("{0}", s[R]);
+                                    }
+                                    //Console.WriteLine("-- escaping {0}", P);
+
+                                    quoted = true;
+                                    escaped = false;
+                                }
                             }
                             P++;
                             break;
@@ -1305,23 +1351,39 @@ namespace GerberLibrary.Core
                             P++;
                             break;
                         case '(':
-                            CheckTokenAndConsume();
-                            SNode child = new SNode();
-                            P = child.Read(s, P + 1);
-                            Children.Add(child);
+                            if (!quoted)
+                            {
+                                CheckTokenAndConsume();
+                                SNode child = new SNode();
+                                P = child.Read(s, P + 1);
+                                Children.Add(child);
+                            }
+                            else
+                            {
+                                currenttoken += s[P];
+                                P++;
+                            }
                             break;
                         case ')':
-                            CheckTokenAndConsume();
-
-                            return P + 1;
-
+                            if (!quoted)
+                            {
+                                CheckTokenAndConsume();
+                                return P + 1;
+                            }
+                            else
+                            {
+                                currenttoken += s[P];
+                                P++;
+                            }break;
 
                         default:
                             currenttoken += s[P];
                             P++;
+                            escaped = false;
                             break;
 
                     }
+                    
 
                 }
 
@@ -1352,30 +1414,51 @@ namespace GerberLibrary.Core
                 List<SNode> res = new List<SNode>();
                 string currenttoken = "";
                 int R = 0;
+                bool escaped =false ;
                 while (R < s.Length)
                 {
-                    switch (s[R])
+                    if (escaped)
                     {
-                        case '\r':
-                        case '\n':
-                        case '\t':
-                        case ' ':
-                            currenttoken = "";
+                        switch (s[R])
+                        {
+                            case '"':
+                                escaped = false;
+                                break;
 
-                            R++;
-                            break;
-                        default:
-                            currenttoken += s[R];
-                            R++;
-                            break;
-                        case '(':
-                            {
-                                SNode child = new SNode();
-                                R = child.Read(s, R + 1);
-                                res.Add(child);
-                            }
-                            break;
+                        }
+                        R++;
                     }
+                    else
+
+                    {
+                        switch (s[R])
+                        {
+                            /*case '"':
+                                escaped = true;
+                                R++;
+                                break;*/
+                            case '\r':
+                            case '\n':
+                            case '\t':
+                            case ' ':
+                                currenttoken = "";
+
+                                R++;
+                                break;
+                            default:
+                                currenttoken += s[R];
+                                R++;
+                                break;
+                            case '(':
+                                {
+                                    SNode child = new SNode();
+                                    R = child.Read(s, R + 1);
+                                    res.Add(child);
+                                }
+                                break;
+                        }
+                    }
+                    
                 }
                 return res;
 
@@ -3197,11 +3280,11 @@ namespace GerberLibrary.Core
           
         }
 
-        internal void LoadKicad(string kicadschname, string kicadpcbname, StandardConsoleLog Log)
+        public void LoadKicad(string kicadschname, string kicadpcbname, StandardConsoleLog Log)
         {
                 Log.PushActivity("KiCAD BOM Loader");
 
-                Log.AddString(String.Format("Loading Diptrace module: {0}", Path.GetFileNameWithoutExtension(kicadschname)));
+                Log.AddString(String.Format("Loading Kicad board files for: {0}", Path.GetFileNameWithoutExtension(kicadschname)));
 
                 string S = System.IO.File.ReadAllText(kicadschname);
                 S = S.Replace("\n", "");
@@ -3223,9 +3306,22 @@ namespace GerberLibrary.Core
                     BoardSide side = BoardSide.Top;
                     var AT = a.Find("at");
                     var FP = a.Children[0].Name;
+
+                if (FP.Contains(":"))
+                {
+                    FP = FP.Split(':').Last();
+                }
                     int layerdesc = 1;
+                string siden = "";
+                for (int i =0;i<a.Children.Count();i++)
+                {
+                    if (a.Children[i].Name == "layer")
+                    {
+                            siden = a.Children[i].Children[0].Name;
+                    }
+                }
                     if (a.Children[1].Name == "locked") layerdesc++;
-                    var siden = a.Children[layerdesc].Children[0].Name;
+                   
                     if (siden != "F.Cu") side = BoardSide.Bottom;
                     var fp_text = a.Find("fp_text");
                     bool skip = false;

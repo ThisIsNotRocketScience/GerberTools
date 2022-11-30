@@ -409,6 +409,10 @@ namespace GerberLibrary
             bool NumberSpecHad = false;
             double LastX = 0;
             double LastY = 0;
+
+            double WorkZeroX; // not sure what to do with these workzero coordinates? can these change multiple times per file?
+            double WorkZeroY;
+
             CutterCompensation Compensation = CutterCompensation.None;
             List<PointD> PathCompensation = new List<PointD>();
             bool WarnIntersections = true;
@@ -695,6 +699,17 @@ namespace GerberLibrary
                                             Compensation = CutterCompensation.Right;
                                             PathCompensation.Clear();
                                             PathCompensation.Add(new PointD(LastX * drillscaler, LastY * drillscaler));
+                                        }
+                                        else if (GS.Has("G") && GS.Get("G") == 93) /* excellon work zero? */
+                                        {
+                                            WorkZeroX = 0;
+                                            WorkZeroY = 0;
+                                            if (GS.Has("X"))
+                                                WorkZeroX = GNF.ScaleFileToMM(GS.Get("X") * Scaler);
+                                            if (GS.Has("Y"))
+                                                WorkZeroY = GNF.ScaleFileToMM(GS.Get("Y") * Scaler);
+
+                                            log.AddString("WorkZero set - unsupported feature so far.");
                                         }
                                         else
                                         {

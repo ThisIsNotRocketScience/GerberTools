@@ -280,5 +280,15 @@ namespace TINRS_ArtWorkGenerator
             SettingsTarget.Rounding = (float)Rounding.Value * 1.0f; ;
             DoUpdate();
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                SettingsTarget.DistanceMaskFile = openFileDialog1.FileName;
+                SettingsTarget.ReloadMask = true;
+                DoUpdate();
+            }
+        }
     }
 }

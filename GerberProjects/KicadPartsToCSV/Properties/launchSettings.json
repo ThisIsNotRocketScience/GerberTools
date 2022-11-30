@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "KicadPartsToCSV": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\projects\\BigFish\\EncoderTests\\EncoderTests\\EncoderLedBoard\\EncoderLedBoard.kicad_pcb\" RGB_LEDRGB_LED SMD_LEDSMD_LED"
+    }
+  }
+}

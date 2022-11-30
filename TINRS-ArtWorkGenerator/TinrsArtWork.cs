@@ -569,5 +569,22 @@ namespace TINRS_ArtWorkGenerator
             this.Height = Mask.Height + 40;
             this.Width = Mask.Width + 20;
         }
+
+        private void saveArtworkMultilevelsvgToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (svgsaveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                int startlevel = TheSettings.MaxSubDiv;
+                for(int i =1;i<=startlevel;i++)
+                {
+                    TheSettings.MaxSubDiv = i;
+                    UpdateFunc();
+                    string P = Path.GetDirectoryName(svgsaveFileDialog1.FileName);
+                    string TargetFile = Path.GetFileNameWithoutExtension(svgsaveFileDialog1.FileName) + "_" + i.ToString() + ".svg";
+                    SaveSVG(Path.Combine(P, TargetFile));
+                }
+                
+            }
+        }
     }
 }

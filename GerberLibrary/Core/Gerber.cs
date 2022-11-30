@@ -1171,6 +1171,34 @@ namespace GerberLibrary
         {
             return "%AM" + name + "*" + Gerber.LineEnding;
         }
+
+        internal static string GetStandardFileExt(BoardLayer layer, BoardSide side)
+        {
+            
+            if (layer == BoardLayer.Drill) { return ".drill.txt"; };
+            if (layer == BoardLayer.Outline) { return ".outline.gko"; };
+            if (side == BoardSide.Top)
+            {
+                switch (layer)
+                {
+                    case BoardLayer.Copper: return ".top_copper.gtl";
+                    case BoardLayer.Silk: return ".top_silk.gto";
+                    case BoardLayer.Paste: return ".top_paste.gtp";
+                    case BoardLayer.SolderMask: return ".top_soldermask.gts";
+                }
+            }
+            if (side == BoardSide.Bottom)
+            {
+                switch (layer)
+                {
+                    case BoardLayer.Copper: return ".bottom_copper.gbl";
+                    case BoardLayer.Silk: return ".bottom_silk.gbo";
+                    case BoardLayer.Paste: return ".bottom_paste.gbp";
+                    case BoardLayer.SolderMask: return ".bottom_soldermask.gbs";
+                }
+            }
+            return String.Format(".{0}_{1}", layer, side);
+        }
         #endregion
     }
 

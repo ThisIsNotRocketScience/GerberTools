@@ -123,7 +123,7 @@ namespace VScorePanel
                                 GerberFrameWriter.WriteSideEdgeFrame(null, FS, Path.Combine(FrameFolder, "panelframe"), null);
                                 Pnl.AddGerberFolder(new StandardConsoleLog(), FrameFolder);
                                 Pnl.AddInstance(FrameFolder, new PointD(0, 0));
-                                Pnl.TheSet.MergeFileTypes = false;
+                                Pnl.TheSet.MergeFileTypes = true;
 
                                 int tabcount = 2;
                                 double tx = (w - (tabcount * ginbetween*2))/ (tabcount + 1.0f);
@@ -145,11 +145,13 @@ namespace VScorePanel
                                             {
                                                 var BT1 = Pnl.AddTab(new PointD(bx + (x + 0) * (w + ginbetween) + tx * (i) + txs, by + ((y + 0) * (h + ginbetween)) - ginbetween / 2));
                                                 BT1.Radius = (float)ginbetween;
+                                                OutputLines.Add(String.Format( "tab at ({0},{1}) diameter {2}", BT1.Center.X, BT1.Center.Y, BT1.Radius * 2.0f));
                                             }
                                             if (y < (int)ybox.Value)
                                             {
                                                 var BT2 = Pnl.AddTab(new PointD(bx + (x + 0) * (w + ginbetween) - ginbetween / 2, by + ((y + 0) * (h + ginbetween)) + ty * (i) + tys));
                                                 BT2.Radius = (float)ginbetween;
+                                                OutputLines.Add(String.Format("tab at ({0},{1}) diameter {2}", BT2.Center.X, BT2.Center.Y, BT2.Radius * 2.0f));
                                             }
                                         }
 
@@ -161,7 +163,7 @@ namespace VScorePanel
                                 Pnl.UpdateShape(new StandardConsoleLog());
                                 Pnl.SaveGerbersToFolder(Path.GetFileNameWithoutExtension(S) + "_Panel", Path.Combine(OutputFolder, "merged"), new StandardConsoleLog());
                                 File.WriteAllLines(Path.Combine(OutputFolder, "PanelReport.txt"), OutputLines);
-
+                                Pnl.SaveFile(Path.Combine(OutputFolder, "Panel.gerberset"));
 
                                 List<String> FilesInFolder = Directory.GetFiles(Path.Combine(OutputFolder, "merged"), "*.frontpanelholes").ToList();
                                 if (FilesInFolder.Count > 0)

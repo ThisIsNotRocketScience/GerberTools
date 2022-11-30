@@ -52,6 +52,7 @@ namespace Artwork
         public float BallRadius = 2000;
         public float Gap = 6000;
         public float Rounding = 8000;
+        public string DistanceMaskFile = "";
 
         public void SetupFenixDefault(double scalecomp = 1.0)
         {

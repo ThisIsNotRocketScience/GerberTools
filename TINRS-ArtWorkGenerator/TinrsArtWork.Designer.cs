@@ -47,6 +47,7 @@
             this.settingssaveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.settingsopenFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.gerbersaveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.saveArtworkMultilevelsvgToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -75,7 +76,8 @@
             this.loadSettingsToolStripMenuItem,
             this.blankMaskToolStripMenuItem,
             this.createSleeveToolStripMenuItem,
-            this.bottomEdgeMaskToolStripMenuItem});
+            this.bottomEdgeMaskToolStripMenuItem,
+            this.saveArtworkMultilevelsvgToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(54, 29);
             this.fileToolStripMenuItem.Text = "&File";
@@ -83,63 +85,63 @@
             // loadMaskToolStripMenuItem
             // 
             this.loadMaskToolStripMenuItem.Name = "loadMaskToolStripMenuItem";
-            this.loadMaskToolStripMenuItem.Size = new System.Drawing.Size(286, 34);
+            this.loadMaskToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
             this.loadMaskToolStripMenuItem.Text = "&Load Mask";
             this.loadMaskToolStripMenuItem.Click += new System.EventHandler(this.loadMaskToolStripMenuItem_Click);
             // 
             // saveArtworkbmpToolStripMenuItem
             // 
             this.saveArtworkbmpToolStripMenuItem.Name = "saveArtworkbmpToolStripMenuItem";
-            this.saveArtworkbmpToolStripMenuItem.Size = new System.Drawing.Size(286, 34);
+            this.saveArtworkbmpToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
             this.saveArtworkbmpToolStripMenuItem.Text = "&Save Artwork (png)";
             this.saveArtworkbmpToolStripMenuItem.Click += new System.EventHandler(this.saveArtworkbmpToolStripMenuItem_Click);
             // 
             // saveArtworksvgToolStripMenuItem
             // 
             this.saveArtworksvgToolStripMenuItem.Name = "saveArtworksvgToolStripMenuItem";
-            this.saveArtworksvgToolStripMenuItem.Size = new System.Drawing.Size(286, 34);
+            this.saveArtworksvgToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
             this.saveArtworksvgToolStripMenuItem.Text = "Save Artwork (svg)";
             this.saveArtworksvgToolStripMenuItem.Click += new System.EventHandler(this.saveArtworksvgToolStripMenuItem_Click);
             // 
             // saveArtworkgerberToolStripMenuItem
             // 
             this.saveArtworkgerberToolStripMenuItem.Name = "saveArtworkgerberToolStripMenuItem";
-            this.saveArtworkgerberToolStripMenuItem.Size = new System.Drawing.Size(286, 34);
+            this.saveArtworkgerberToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
             this.saveArtworkgerberToolStripMenuItem.Text = "&Save Artwork (gerber)";
             this.saveArtworkgerberToolStripMenuItem.Click += new System.EventHandler(this.saveArtworkgerberToolStripMenuItem_Click);
             // 
             // saveSettingsToolStripMenuItem
             // 
             this.saveSettingsToolStripMenuItem.Name = "saveSettingsToolStripMenuItem";
-            this.saveSettingsToolStripMenuItem.Size = new System.Drawing.Size(286, 34);
+            this.saveSettingsToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
             this.saveSettingsToolStripMenuItem.Text = "Save Settings";
             this.saveSettingsToolStripMenuItem.Click += new System.EventHandler(this.saveSettingsToolStripMenuItem_Click);
             // 
             // loadSettingsToolStripMenuItem
             // 
             this.loadSettingsToolStripMenuItem.Name = "loadSettingsToolStripMenuItem";
-            this.loadSettingsToolStripMenuItem.Size = new System.Drawing.Size(286, 34);
+            this.loadSettingsToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
             this.loadSettingsToolStripMenuItem.Text = "Load Settings";
             this.loadSettingsToolStripMenuItem.Click += new System.EventHandler(this.loadSettingsToolStripMenuItem_Click);
             // 
             // blankMaskToolStripMenuItem
             // 
             this.blankMaskToolStripMenuItem.Name = "blankMaskToolStripMenuItem";
-            this.blankMaskToolStripMenuItem.Size = new System.Drawing.Size(286, 34);
+            this.blankMaskToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
             this.blankMaskToolStripMenuItem.Text = "Blank Mask";
             this.blankMaskToolStripMenuItem.Click += new System.EventHandler(this.blankMaskToolStripMenuItem_Click);
             // 
             // createSleeveToolStripMenuItem
             // 
             this.createSleeveToolStripMenuItem.Name = "createSleeveToolStripMenuItem";
-            this.createSleeveToolStripMenuItem.Size = new System.Drawing.Size(286, 34);
+            this.createSleeveToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
             this.createSleeveToolStripMenuItem.Text = "Create Sleeve";
             this.createSleeveToolStripMenuItem.Click += new System.EventHandler(this.createSleeveToolStripMenuItem_Click);
             // 
             // bottomEdgeMaskToolStripMenuItem
             // 
             this.bottomEdgeMaskToolStripMenuItem.Name = "bottomEdgeMaskToolStripMenuItem";
-            this.bottomEdgeMaskToolStripMenuItem.Size = new System.Drawing.Size(286, 34);
+            this.bottomEdgeMaskToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
             this.bottomEdgeMaskToolStripMenuItem.Text = "BottomEdgeMask";
             this.bottomEdgeMaskToolStripMenuItem.Click += new System.EventHandler(this.bottomEdgeMaskToolStripMenuItem_Click);
             // 
@@ -188,6 +190,13 @@
             this.gerbersaveFileDialog1.Filter = "GERBER files|*.gbr";
             this.gerbersaveFileDialog1.Title = "Select Gerber File.";
             // 
+            // saveArtworkMultilevelsvgToolStripMenuItem
+            // 
+            this.saveArtworkMultilevelsvgToolStripMenuItem.Name = "saveArtworkMultilevelsvgToolStripMenuItem";
+            this.saveArtworkMultilevelsvgToolStripMenuItem.Size = new System.Drawing.Size(359, 34);
+            this.saveArtworkMultilevelsvgToolStripMenuItem.Text = "Save Artwork - multilevel (svg) ";
+            this.saveArtworkMultilevelsvgToolStripMenuItem.Click += new System.EventHandler(this.saveArtworkMultilevelsvgToolStripMenuItem_Click);
+            // 
             // TinrsArtWork
             // 
             this.AllowDrop = true;
@@ -230,6 +239,7 @@
         private System.Windows.Forms.ToolStripMenuItem blankMaskToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem createSleeveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem bottomEdgeMaskToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveArtworkMultilevelsvgToolStripMenuItem;
     }
 }
 

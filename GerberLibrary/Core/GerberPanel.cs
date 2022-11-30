@@ -1646,7 +1646,10 @@ namespace GerberLibrary
             List<string> R = new List<string>();
             string DrillFile = Path.Combine(p, combinedfilename + "_tabdrills.TXT");
             string OutlineFile = Path.Combine(p, combinedfilename + "_blended_outline.GKO");
+            
             R.Add(DrillFile);
+            //R.Add(OutlineFile);
+
             //  R.Add(OutlineFile);
             ExcellonFile EF = new ExcellonFile();
             EF.Tools[1] = new ExcellonTool() { ID = 1, Radius = 0.25 };
@@ -1701,8 +1704,8 @@ namespace GerberLibrary
             foreach (var s in GeneratedFiles)
             {
                 string ext = Path.GetExtension(s).ToLower(); ;
-                if (ext == "xln") ext = "txt";
-                if (ext == "drl") ext = "txt";
+                if (ext == ".xln") ext = ".txt";
+                if (ext == ".drl") ext = ".txt";
 
                 if (TheSet.MergeFileTypes)
                 {
@@ -1711,7 +1714,17 @@ namespace GerberLibrary
 
                     Gerber.DetermineBoardSideAndLayer(s, out Side, out layer);
 
-                    ext = String.Format(".{0}_{1}", layer, Side);
+                    if (layer == BoardLayer.Unknown || Side == BoardSide.Unknown)
+                    {
+                        var T = Gerber.FindFileType(s);
+                        if (T == BoardFileType.Drill)
+                        {
+                            layer = BoardLayer.Drill;
+                            Side = BoardSide.Both;
+                        }
+                    }
+                    ext = Gerber.GetStandardFileExt(layer, Side);
+                    
                 }
 
 
@@ -1753,7 +1766,7 @@ namespace GerberLibrary
                         break;
                     case BoardFileType.Gerber:
                         {
-                            if (a.Key.ToLower() != ".gko")
+                            if (a.Key.ToLower() != ".outline.gko")
                             {
                                 string Filename = Path.Combine(targetfolder, combinedfilename + a.Key);
                                 lock (finallock)

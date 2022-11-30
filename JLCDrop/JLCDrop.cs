@@ -32,6 +32,10 @@ namespace JLCDrop
         {
             InitializeComponent();
             SetInvariantCulture();
+
+
+           // var S = GerberLibrary.Core.BOM.SNode.ReadExpression("(footprint \"TINRS - Wobbler(pico)sch: 3.5MM - JACK - SWITCH - 13MM - NOHOLES - TESTPAD\" locked (layer \"F.Cu\") ((descr \".05\\\" x 5, 2 Row\")))");
+           // foreach(var s in S) s.Print();
         }
 
         private void Form1_DragDrop(object sender, DragEventArgs e)
