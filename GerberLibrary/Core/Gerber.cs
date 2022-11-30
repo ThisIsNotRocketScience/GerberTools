@@ -404,19 +404,12 @@ namespace GerberLibrary
                     {
                         case "profile":
                         case "boardoutline":
-                            Side = BoardSide.Both;
-                            Layer = BoardLayer.Outline;
-                            break;
-
                         case "outline":
-                            Side = BoardSide.Both;
-                            Layer = BoardLayer.Outline;
-                            break;
-
                         case "board":
                             Side = BoardSide.Both;
                             Layer = BoardLayer.Outline;
                             break;
+
 
                         case "copper_bottom":
                         case "bottom":

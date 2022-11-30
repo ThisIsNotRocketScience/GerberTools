@@ -407,7 +407,6 @@ namespace Artwork
         }
         public static Color MakeHighlight(double H)
         {
-            int r, g, b;
             double DH = ((H + 60) % 120) - 60;
             H += DH * 0.4;
 
