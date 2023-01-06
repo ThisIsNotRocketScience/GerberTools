@@ -89,7 +89,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MakeIcon", "..\MakeIcon\Mak
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PnP_Processor", "..\PnP_Processor\PnP_Processor.csproj", "{884D67EC-0142-4425-9FD2-1D562407FE27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VScorePanel", "..\VScorePanel\VScorePanel.csproj", "{9334CD5A-D40B-414B-9771-544D2C76DFF6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameDrop", "..\VScorePanel\FrameDrop.csproj", "{9334CD5A-D40B-414B-9771-544D2C76DFF6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JLCDrop", "..\JLCDrop\JLCDrop.csproj", "{95295D11-C5CA-4C18-93EB-2BF79D9E0EF4}"
 EndProject
@@ -101,7 +101,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BOMConsolidator", "..\BOMCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightPipeBuilder", "..\LightPipeBuilder\LightPipeBuilder.csproj", "{A9101526-770B-4042-A934-6C3D8EC2A46B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KicadPartsToCSV", "KicadPartsToCSV\KicadPartsToCSV.csproj", "{474D5CAE-697F-4496-8D28-C5087401E545}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KicadPartsToCSV", "KicadPartsToCSV\KicadPartsToCSV.csproj", "{474D5CAE-697F-4496-8D28-C5087401E545}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

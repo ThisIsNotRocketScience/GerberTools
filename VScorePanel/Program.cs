@@ -22,7 +22,7 @@ namespace VScorePanel
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new VScore());
+            Application.Run(new FrameDrop());
         }
     }
 }

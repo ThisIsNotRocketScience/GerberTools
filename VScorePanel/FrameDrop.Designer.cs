@@ -1,6 +1,6 @@
 ﻿namespace VScorePanel
 {
-    partial class VScore
+    partial class FrameDrop
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(VScore));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrameDrop));
             this.xbox = new System.Windows.Forms.NumericUpDown();
             this.ybox = new System.Windows.Forms.NumericUpDown();
             this.framebox = new System.Windows.Forms.NumericUpDown();
@@ -197,12 +197,12 @@
             this.listBox1.TabIndex = 12;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
-            // VScore
+            // FrameDrop
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(317, 460);
+            this.ClientSize = new System.Drawing.Size(427, 428);
             this.Controls.Add(this.listBox1);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.numericUpDown1);
@@ -216,8 +216,8 @@
             this.Controls.Add(this.ybox);
             this.Controls.Add(this.xbox);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "VScore";
-            this.Text = "TiNRS VGrooveDrop";
+            this.Name = "FrameDrop";
+            this.Text = "FrameDrop";
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.VScore_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.VScore_DragEnter);
             ((System.ComponentModel.ISupportInitialize)(this.xbox)).EndInit();

@@ -13,9 +13,9 @@ using GerberLibrary.Core.Primitives;
 
 namespace VScorePanel
 {
-    public partial class VScore : Form
+    public partial class FrameDrop : Form
     {
-        public VScore()
+        public FrameDrop()
         {
             InitializeComponent();
 

@@ -7,7 +7,7 @@
     <ProjectGuid>{9334CD5A-D40B-414B-9771-544D2C76DFF6}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>VScorePanel</RootNamespace>
-    <AssemblyName>VScorePanel</AssemblyName>
+    <AssemblyName>FrameDrop</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -49,11 +49,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="VScore.cs">
+    <Compile Include="FrameDrop.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="VScore.Designer.cs">
-      <DependentUpon>VScore.cs</DependentUpon>
+    <Compile Include="FrameDrop.Designer.cs">
+      <DependentUpon>FrameDrop.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -66,8 +66,8 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="VScore.resx">
-      <DependentUpon>VScore.cs</DependentUpon>
+    <EmbeddedResource Include="FrameDrop.resx">
+      <DependentUpon>FrameDrop.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
