@@ -567,6 +567,118 @@ namespace GerberLibrary
                     Layer = BoardLayer.Copper;
                     break;
 
+                case "gl3":
+                case "g3l":
+                case "g3":
+                    Side = BoardSide.Internal3;
+                    Layer = BoardLayer.Copper;
+                    break;
+
+                case "gl4":
+                case "g4l":
+                case "g4":
+                    Side = BoardSide.Internal4;
+                    Layer = BoardLayer.Copper;
+                    break;
+
+                case "gl5":
+                case "g5l":
+                case "g5":
+                    Side = BoardSide.Internal5;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl6":
+                case "g6l":
+                case "g6":
+                    Side = BoardSide.Internal6;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl7":
+                case "g7l":
+                case "g7":
+                    Side = BoardSide.Internal7;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl8":
+                case "g8l":
+                case "g8":
+                    Side = BoardSide.Internal8;
+                    Layer = BoardLayer.Copper;
+                    break;
+
+                case "gl9":
+                case "g9l":
+                case "g9":
+                    Side = BoardSide.Internal9;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl10":
+                case "g10l":
+                case "g10":
+                    Side = BoardSide.Internal10;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl11":
+                case "g11l":
+                case "g11":
+                    Side = BoardSide.Internal11;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl12":
+                case "g12l":
+                case "g12":
+                    Side = BoardSide.Internal12;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl13":
+                case "g13l":
+                case "g13":
+                    Side = BoardSide.Internal13;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl14":
+                case "g14l":
+                case "g14":
+                    Side = BoardSide.Internal14;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl15":
+                case "g15l":
+                case "g15":
+                    Side = BoardSide.Internal15;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl16":
+                case "g16l":
+                case "g16":
+                    Side = BoardSide.Internal16;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl17":
+                case "g17l":
+                case "g17":
+                    Side = BoardSide.Internal17;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl18":
+                case "g18l":
+                case "g18":
+                    Side = BoardSide.Internal18;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl19":
+                case "g19l":
+                case "g19":
+                    Side = BoardSide.Internal19;
+                    Layer = BoardLayer.Copper;
+                    break;
+                case "gl20":
+                case "g20l":
+                case "g20":
+                    Side = BoardSide.Internal20;
+                    Layer = BoardLayer.Copper;
+                    break;
+
                 case "l4":
                 case "gbl":
                 case "l2m":
