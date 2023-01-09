@@ -43,6 +43,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.listBox1 = new System.Windows.Forms.ListBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.xbox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ybox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.framebox)).BeginInit();
@@ -135,7 +136,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(22, 208);
+            this.label4.Location = new System.Drawing.Point(315, 105);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(88, 20);
             this.label4.TabIndex = 6;
@@ -143,7 +144,7 @@
             // 
             // FrameTitle
             // 
-            this.FrameTitle.Location = new System.Drawing.Point(116, 205);
+            this.FrameTitle.Location = new System.Drawing.Point(409, 102);
             this.FrameTitle.Name = "FrameTitle";
             this.FrameTitle.Size = new System.Drawing.Size(137, 26);
             this.FrameTitle.TabIndex = 7;
@@ -157,7 +158,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(87, 269);
+            this.label5.Location = new System.Drawing.Point(518, 18);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(132, 20);
             this.label5.TabIndex = 8;
@@ -174,6 +175,7 @@
             // 
             // numericUpDown1
             // 
+            this.numericUpDown1.DecimalPlaces = 2;
             this.numericUpDown1.Location = new System.Drawing.Point(116, 148);
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(120, 26);
@@ -191,18 +193,28 @@
             this.listBox1.Items.AddRange(new object[] {
             "Routed with tabs",
             "Grooved"});
-            this.listBox1.Location = new System.Drawing.Point(56, 311);
+            this.listBox1.Location = new System.Drawing.Point(283, 15);
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(197, 64);
             this.listBox1.TabIndex = 12;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
+            // 
+            // textBox1
+            // 
+            this.textBox1.Enabled = false;
+            this.textBox1.Location = new System.Drawing.Point(26, 193);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(1001, 182);
+            this.textBox1.TabIndex = 13;
             // 
             // FrameDrop
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(427, 428);
+            this.ClientSize = new System.Drawing.Size(1077, 415);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.listBox1);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.numericUpDown1);
@@ -244,6 +256,7 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }
 

@@ -21,6 +21,36 @@ namespace VScorePanel
 
         }
 
+
+        public class Textlog : ProgressLog
+        {
+            ProgressLog Forward = null;
+            FrameDrop H;
+            public Textlog(FrameDrop host)
+            {
+                H = host;
+            }
+
+            public override void AddString(string text, float progress = -1)
+            {
+               H.SetLog(GetDefaultText(text, progress));
+               
+            }
+        }
+
+        void SetLog(string T)
+        {
+            textBox1.Invoke((MethodInvoker)delegate ()
+            { 
+                textBox1.AppendText(T+"\r\n");
+                Application.DoEvents();
+            });
+
+        
+        }
+
+
+
         private void VScore_DragDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -34,6 +64,8 @@ namespace VScorePanel
                 {
                     if (Directory.Exists(S))
                     {
+                        this.Enabled = false;
+                        Application.DoEvents();
                         try
                         {
                            
@@ -50,7 +82,7 @@ namespace VScorePanel
                                 if (Si == GerberLibrary.Core.BoardSide.Both && La == GerberLibrary.Core.BoardLayer.Mill) SensibleFile.Add(a);
                                 if (La == GerberLibrary.Core.BoardLayer.Copper) SensibleFile.Add(a);
                             }
-                            GIC.AddBoardsToSet(SensibleFile.ToList(), new StandardConsoleLog());
+                            GIC.AddBoardsToSet(SensibleFile.ToList(), new Textlog(this));
 
                             GerberFrameWriter.FrameSettings FS = new GerberFrameWriter.FrameSettings();
                             List<String> OutputLines = new List<string>();
@@ -64,7 +96,7 @@ namespace VScorePanel
 
                             GerberPanel Pnl = new GerberPanel();
                             Pnl.TheSet.ClipToOutlines = false;
-                            Pnl.AddGerberFolder(new StandardConsoleLog(), S);
+                            Pnl.AddGerberFolder(new Textlog(this), S);
                             double ginbetween = (double)numericUpDown1.Value;
 
                             for (int x = 0; x < (int)xbox.Value; x++)
@@ -120,7 +152,7 @@ namespace VScorePanel
                                 //Directory.CreateDirectory(Path.Combine(OutputFolder, "merged"));
                                 Directory.CreateDirectory(Path.Combine(OutputFolder, "merged"));
                                 GerberFrameWriter.WriteSideEdgeFrame(null, FS, Path.Combine(FrameFolder, "panelframe"), null);
-                                Pnl.AddGerberFolder(new StandardConsoleLog(), FrameFolder);
+                                Pnl.AddGerberFolder(new Textlog(this), FrameFolder);
                                 Pnl.AddInstance(FrameFolder, new PointD(0, 0));
                                 Pnl.TheSet.MergeFileTypes = true;
 
@@ -155,12 +187,13 @@ namespace VScorePanel
                                         }
 
                                     }
+                                    Application.DoEvents();
                                 }
 
 
                                 
-                                Pnl.UpdateShape(new StandardConsoleLog());
-                                Pnl.SaveGerbersToFolder(Path.GetFileNameWithoutExtension(S) + "_Panel", Path.Combine(OutputFolder, "merged"), new StandardConsoleLog());
+                                Pnl.UpdateShape(new Textlog(this));
+                                Pnl.SaveGerbersToFolder(Path.GetFileNameWithoutExtension(S) + "_Panel", Path.Combine(OutputFolder, "merged"), new Textlog(this));
                                 File.WriteAllLines(Path.Combine(OutputFolder, "PanelReport.txt"), OutputLines);
                                 Pnl.SaveFile(Path.Combine(OutputFolder, "Panel.gerberset"));
 
@@ -172,7 +205,7 @@ namespace VScorePanel
                                     File.Copy(FilesInFolder[0], Path.Combine(JigFolder, "jig.gml"), true);
                                     FS.InsideEdgeMode = GerberFrameWriter.FrameSettings.InsideMode.NoEdge;                                    
                                     GerberFrameWriter.WriteSideEdgeFrame(null, FS, Path.Combine(JigFolder,"jig"), null);
-                                    GerberMerger.Merge(Path.Combine(JigFolder, "jig.gml"), Path.Combine(JigFolder, "jig.gko"), Path.Combine(JigFolder, "jig.gko2"), new StandardConsoleLog());
+                                    GerberMerger.Merge(Path.Combine(JigFolder, "jig.gml"), Path.Combine(JigFolder, "jig.gko"), Path.Combine(JigFolder, "jig.gko2"), new Textlog(this));
                                     File.Delete(Path.Combine(JigFolder, "jig.gko"));
                                     File.Delete(Path.Combine(JigFolder, "jig.gml"));
                                     File.Move(Path.Combine(JigFolder, "jig.gko2"), Path.Combine(JigFolder, "jig.gko"));
@@ -253,10 +286,10 @@ namespace VScorePanel
 
 
 
-                                Pnl.AddGerberFolder(new StandardConsoleLog(), FrameFolder);
+                                Pnl.AddGerberFolder(new Textlog(this), FrameFolder);
                                 Pnl.AddInstance(FrameFolder, new PointD(0, 0));
-                                Pnl.UpdateShape(new StandardConsoleLog());
-                                Pnl.SaveGerbersToFolder(Path.GetFileNameWithoutExtension(S) + "_Panel", Path.Combine(OutputFolder, "merged"), new StandardConsoleLog());
+                                Pnl.UpdateShape(new Textlog(this));
+                                Pnl.SaveGerbersToFolder(Path.GetFileNameWithoutExtension(S) + "_Panel", Path.Combine(OutputFolder, "merged"), new Textlog(this));
 
                             }
 
@@ -265,11 +298,15 @@ namespace VScorePanel
 
 
                             CountDown = 10;
+                            this.Enabled = true;
                         }
-                        catch (Exception)
+                        catch (Exception E)
                         {
+                            SetLog(E.Message);
+                            this.Enabled = true;
                             BackColor = Color.Red;
                         }
+                        Application.DoEvents();
                     }
 
 

@@ -1746,7 +1746,7 @@ namespace GerberLibrary
             object finallock = new object();
             Parallel.ForEach(FilesPerExt, (a) =>
             {
-                ProgressLog L = new StandardConsoleLog(Logger);
+                ProgressLog L = new StandardConsoleLog();
                 lock (finallock)
                 {
                     count++;
