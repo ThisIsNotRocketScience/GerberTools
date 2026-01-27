@@ -251,3 +251,8 @@ Build/
 # JetBrains Rider
 .idea/
 *.sln.iml
+/.agent
+/.gemini
+/.gsd
+/scripts
+nuget.exe

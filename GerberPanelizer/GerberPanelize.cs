@@ -33,6 +33,8 @@ namespace GerberCombinerBuilder
         PointD DragStartCoord = new PointD();
         PointD DragInstanceOriginalPosition = new PointD();
         PointD ContextStartCoord = new PointD();
+        bool Panning = false;
+        PointD PanStartPoint = new PointD(0, 0);
 
         private float DrawingScale;
         public double Zoom = 1;
@@ -61,6 +63,7 @@ namespace GerberCombinerBuilder
             ParentFrame = Host;
             Gerber.ArcQualityScaleFactor = 20;
             InitializeComponent();
+            glControl1.MouseWheel += glControl1_MouseWheel;
             RotateLeftHover.Visible = false;
             RotateRightHover.Visible = false;
 
@@ -376,6 +379,12 @@ namespace GerberCombinerBuilder
 
         private void DoMouseDown(MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.Middle)
+            {
+                Panning = true;
+                PanStartPoint = new PointD(e.X, e.Y);
+            }
+
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
 
@@ -427,6 +436,11 @@ namespace GerberCombinerBuilder
 
         private void DoMouseUp(MouseEventArgs e)
         {
+            if (Panning && e.Button == MouseButtons.Middle)
+            {
+                Panning = false;
+            }
+
             if (MouseCapture)
             {
                 ID.UpdateBoxes(this);
@@ -464,6 +478,20 @@ namespace GerberCombinerBuilder
         private void DoMouseMove(MouseEventArgs e)
         {
             LastMouseMove = new PointD(e.X, e.Y);
+            if (Panning)
+            {
+                PointD Current = new PointD(e.X, e.Y);
+                PointD Delta = Current - PanStartPoint;
+
+                CenterPoint.X -= Delta.X / Zoom;
+                CenterPoint.Y += Delta.Y / Zoom;
+
+                PanStartPoint = Current;
+                Redraw(false);
+                UpdateScrollers();
+                return;
+            }
+
             if (MouseCapture && SelectedInstance != null)
             {
                 PointD Delta = new PointD(e.X, e.Y) - DragStartCoord;
@@ -1077,6 +1105,24 @@ namespace GerberCombinerBuilder
         private void RotateLeftHover_Click(object sender, EventArgs e)
         {
 
+        }
+        
+        private void glControl1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (e.Delta != 0)
+            {
+                double det = e.Delta > 0 ? 1.1 : 0.9;
+
+                PointD ScreenRel = new PointD(e.X - glControl1.Width / 2, (e.Y - glControl1.Height / 2) * -1);
+
+                Zoom *= det;
+
+                CenterPoint.X += ScreenRel.X * (1.0 / (Zoom / det) - 1.0 / Zoom);
+                CenterPoint.Y += ScreenRel.Y * (1.0 / (Zoom / det) - 1.0 / Zoom);
+
+                UpdateScrollers();
+                Redraw(false);
+            }
         }
     }
 }
