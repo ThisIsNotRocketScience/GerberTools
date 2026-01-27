@@ -38,6 +38,7 @@ namespace GerberCombinerBuilder
 
         private float DrawingScale;
         public double Zoom = 1;
+        public double TargetZoom = 1;
         public PointD CenterPoint = new PointD(0, 0);
 
         enum SnapMode
@@ -367,7 +368,8 @@ namespace GerberCombinerBuilder
 
             ThePanel.RemoveInstance(angledThing);
             TV.BuildTree(this, ThePanel.TheSet);
-            Redraw(true);
+            ThePanel.UpdateShape(new StandardConsoleLog());
+            Redraw(true, true);
         }
 
         internal void SaveFile(string FileName)
@@ -619,6 +621,7 @@ namespace GerberCombinerBuilder
                 double A2 = glControl1.Width / glControl1.Height;
 
                 Zoom = Math.Min(glControl1.Width / (ThePanel.TheSet.Width + 8), glControl1.Height / (ThePanel.TheSet.Height + 8));
+                TargetZoom = Zoom;
 
                 CenterPoint.X = ThePanel.TheSet.Width / 2;
                 CenterPoint.Y = ThePanel.TheSet.Height / 2;
@@ -626,6 +629,7 @@ namespace GerberCombinerBuilder
             else
             {
                 Zoom = 1;
+                TargetZoom = 1;
                 CenterPoint = new PointD(0, 0);
             }
 
@@ -918,9 +922,8 @@ namespace GerberCombinerBuilder
 
         public void ZoomIn()
         {
-            Zoom *= 1.05;
-            UpdateScrollers();
-            Redraw(false);
+            TargetZoom *= 1.5;
+            StartZoomAnimation(glControl1.Width / 2, glControl1.Height / 2);
         }
 
         private void zoomOutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -930,9 +933,8 @@ namespace GerberCombinerBuilder
 
         public void ZoomOut()
         {
-            Zoom *= 0.95;
-            UpdateScrollers();
-            Redraw(false);
+            TargetZoom *= 0.6;
+            StartZoomAnimation(glControl1.Width / 2, glControl1.Height / 2);
         }
 
         private void Zoom1to1()
@@ -992,8 +994,7 @@ namespace GerberCombinerBuilder
                 case Keys.Delete:
                     if (SelectedInstance != null)
                     {
-                        ThePanel.RemoveInstance(SelectedInstance);
-                        Redraw(true);
+                        RemoveInstance(SelectedInstance);
                     }
                     break;
 
@@ -1172,18 +1173,43 @@ namespace GerberCombinerBuilder
         {
             if (e.Delta != 0)
             {
-                double det = e.Delta > 0 ? 1.1 : 0.9;
-
-                PointD ScreenRel = new PointD(e.X - glControl1.Width / 2, (e.Y - glControl1.Height / 2) * -1);
-
-                Zoom *= det;
-
-                CenterPoint.X += ScreenRel.X * (1.0 / (Zoom / det) - 1.0 / Zoom);
-                CenterPoint.Y += ScreenRel.Y * (1.0 / (Zoom / det) - 1.0 / Zoom);
-
-                UpdateScrollers();
-                Redraw(false);
+                double det = e.Delta > 0 ? 1.5 : 0.6;
+                TargetZoom *= det;
+                StartZoomAnimation(e.X, e.Y);
             }
+        }
+
+        private void StartZoomAnimation(int mouseX, int mouseY)
+        {
+             ZoomAnimationCenter = new PointD(mouseX - glControl1.Width / 2, (mouseY - glControl1.Height / 2) * -1);
+             ZoomAnimationTimer.Enabled = true;
+        }
+
+        PointD ZoomAnimationCenter;
+        
+        private void ZoomAnimationTimer_Tick(object sender, EventArgs e)
+        {
+            double diff = TargetZoom - Zoom;
+            if (Math.Abs(diff) < 0.001)
+            {
+                Zoom = TargetZoom;
+                ZoomAnimationTimer.Enabled = false;
+            }
+            else
+            {
+                var OldZoom = Zoom;
+                Zoom += diff * 0.2;
+                // var det = Zoom / LastScale;
+
+                // The shift in centerpoint needed to keep the mouse fixed on the same world coordinate is:
+                // Shift = MouseScreenRel * (1/OldZoom - 1/NewZoom) 
+
+                double Factor = (1.0 / OldZoom - 1.0 / Zoom);
+                CenterPoint.X += ZoomAnimationCenter.X * Factor;
+                CenterPoint.Y += ZoomAnimationCenter.Y * Factor;
+            }
+            UpdateScrollers();
+            Redraw(false);
         }
     }
 }

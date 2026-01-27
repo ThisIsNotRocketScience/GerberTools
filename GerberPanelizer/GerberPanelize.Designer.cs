@@ -6,6 +6,7 @@
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
+        private System.Windows.Forms.Timer ZoomAnimationTimer;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -29,6 +30,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            this.ZoomAnimationTimer = new System.Windows.Forms.Timer(this.components);
+            this.ZoomAnimationTimer.Interval = 15;
+            this.ZoomAnimationTimer.Tick += new System.EventHandler(this.ZoomAnimationTimer_Tick);
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GerberPanelize));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.autosortAlgo1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
