@@ -53,6 +53,8 @@
             this.AClock = new System.Windows.Forms.Button();
             this.RightButton = new System.Windows.Forms.Button();
             this.Bigger = new System.Windows.Forms.Button();
+            this.ZoomInButton = new System.Windows.Forms.Button();
+            this.ZoomOutButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
@@ -273,7 +275,7 @@
             this.panel2.Controls.Add(this.tableLayoutPanel3);
             this.panel2.Location = new System.Drawing.Point(3, 28);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(414, 129);
+            this.panel2.Size = new System.Drawing.Size(414, 172);
             this.panel2.TabIndex = 19;
             // 
             // tableLayoutPanel3
@@ -293,13 +295,44 @@
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel3.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-            this.tableLayoutPanel3.RowCount = 3;
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(414, 129);
+            this.tableLayoutPanel3.RowCount = 4;
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(414, 172);
             this.tableLayoutPanel3.TabIndex = 18;
             this.tableLayoutPanel3.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel3_Paint);
+            this.tableLayoutPanel3.Controls.Add(this.ZoomInButton, 0, 3);
+            this.tableLayoutPanel3.Controls.Add(this.ZoomOutButton, 2, 3);
+            // 
+            // ZoomInButton
+            // 
+            this.ZoomInButton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ZoomInButton.ImageKey = "ScaleUp.jpg";
+            this.ZoomInButton.ImageList = this.imageList1;
+            this.ZoomInButton.Location = new System.Drawing.Point(4, 133);
+            this.ZoomInButton.Margin = new System.Windows.Forms.Padding(4);
+            this.ZoomInButton.Name = "ZoomInButton";
+            this.ZoomInButton.Size = new System.Drawing.Size(130, 35);
+            this.ZoomInButton.TabIndex = 18;
+            this.ZoomInButton.Text = "Zoom In";
+            this.ZoomInButton.UseVisualStyleBackColor = true;
+            this.ZoomInButton.Click += new System.EventHandler(this.ZoomInButton_Click);
+            // 
+            // ZoomOutButton
+            // 
+            this.ZoomOutButton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ZoomOutButton.ImageKey = "ScaleDown.jpg";
+            this.ZoomOutButton.ImageList = this.imageList1;
+            this.ZoomOutButton.Location = new System.Drawing.Point(280, 133);
+            this.ZoomOutButton.Margin = new System.Windows.Forms.Padding(4);
+            this.ZoomOutButton.Name = "ZoomOutButton";
+            this.ZoomOutButton.Size = new System.Drawing.Size(130, 35);
+            this.ZoomOutButton.TabIndex = 19;
+            this.ZoomOutButton.Text = "Zoom Out";
+            this.ZoomOutButton.UseVisualStyleBackColor = true;
+            this.ZoomOutButton.Click += new System.EventHandler(this.ZoomOutButton_Click);
             // 
             // Smaller
             // 
@@ -523,6 +556,8 @@
         private System.Windows.Forms.Button Down;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
+        private System.Windows.Forms.Button ZoomInButton;
+        private System.Windows.Forms.Button ZoomOutButton;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;

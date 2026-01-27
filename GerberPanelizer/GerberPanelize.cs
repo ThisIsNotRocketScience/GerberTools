@@ -347,6 +347,7 @@ namespace GerberCombinerBuilder
         {
 
             SetSelectedInstance(ThePanel.AddInstance(path, MouseToMM(coord)));
+            CheckAndResizeCanvas();
             TV.BuildTree(this, ThePanel.TheSet);
             Redraw(true);
         }
@@ -769,6 +770,12 @@ namespace GerberCombinerBuilder
                 string[] D = e.Data.GetData(DataFormats.FileDrop) as string[];
                 foreach (string S in D)
                 {
+                    if (File.Exists(S) && (Path.GetExtension(S).ToLower() == ".gerberset" || Path.GetExtension(S).ToLower() == ".xml"))
+                    {
+                        LoadFile(S);
+                        return;
+                    }
+
                     if (Directory.Exists(S) || (File.Exists(S) && (Path.GetExtension(S).ToLower() == ".zip" || Path.GetExtension(S).ToLower() == "zip")))
                     {
                         Console.WriteLine("Adding dropped folder: {0}", S);
@@ -786,7 +793,11 @@ namespace GerberCombinerBuilder
                         Console.WriteLine("Dropped item {0} is not a folder! ignoring!", S);
                     }
                 }
+                
+                ThePanel.UpdateShape(new StandardConsoleLog());
+                CheckAndResizeCanvas();
                 TV.BuildTree(this, ThePanel.TheSet);
+                ZoomToFit();
                 Redraw(true, true);
             }
         }
@@ -866,6 +877,7 @@ namespace GerberCombinerBuilder
                     ThePanel.TheSet.Instances.Add(GI);
                     SelectedInstance = GI;
                 }
+                CheckAndResizeCanvas();
                 TV.BuildTree(this, ThePanel.TheSet);
                 Redraw(true);
             }
@@ -896,6 +908,30 @@ namespace GerberCombinerBuilder
         private void scale11ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Zoom1to1();
+            Redraw(false);
+        }
+
+        private void zoomInToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ZoomIn();
+        }
+
+        public void ZoomIn()
+        {
+            Zoom *= 1.05;
+            UpdateScrollers();
+            Redraw(false);
+        }
+
+        private void zoomOutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ZoomOut();
+        }
+
+        public void ZoomOut()
+        {
+            Zoom *= 0.95;
+            UpdateScrollers();
             Redraw(false);
         }
 
@@ -1062,7 +1098,7 @@ namespace GerberCombinerBuilder
 
         private void GerberPanelize_Resize(object sender, EventArgs e)
         {
-            ZoomToFit();
+            //ZoomToFit();
         }
         
 
@@ -1095,6 +1131,31 @@ namespace GerberCombinerBuilder
         private void AutoProcess_Click(object sender, EventArgs e)
         {
             UpdateAutoProcessButton();
+        }
+
+        private void CheckAndResizeCanvas()
+        {
+            double maxX = ThePanel.TheSet.Width;
+            double maxY = ThePanel.TheSet.Height;
+            bool changed = false;
+
+            foreach (var i in ThePanel.TheSet.Instances)
+            {
+                var bb = i.BoundingBox;
+                if (bb.BottomRight.X > maxX) { maxX = bb.BottomRight.X + 2; changed = true; }
+                if (bb.TopLeft.X > maxX) { maxX = bb.TopLeft.X + 2; changed = true; }
+
+                if (bb.BottomRight.Y > maxY) { maxY = bb.BottomRight.Y + 2; changed = true; }
+                if (bb.TopLeft.Y > maxY) { maxY = bb.TopLeft.Y + 2; changed = true; }
+            }
+
+            if (changed)
+            {
+                ThePanel.TheSet.Width = maxX;
+                ThePanel.TheSet.Height = maxY;
+                UpdateScrollers();
+                Redraw(true);
+            }
         }
 
         private void RotateRightHover_Click(object sender, EventArgs e)

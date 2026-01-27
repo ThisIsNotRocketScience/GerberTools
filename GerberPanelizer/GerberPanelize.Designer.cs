@@ -44,6 +44,8 @@
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomToFitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scale11ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.zoomInToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.zoomOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ProcessButton = new System.Windows.Forms.ToolStripMenuItem();
             this.AutoProcess = new System.Windows.Forms.ToolStripMenuItem();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
@@ -180,7 +182,9 @@
             // 
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.zoomToFitToolStripMenuItem,
-            this.scale11ToolStripMenuItem});
+            this.scale11ToolStripMenuItem,
+            this.zoomInToolStripMenuItem,
+            this.zoomOutToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(53, 24);
             this.viewToolStripMenuItem.Text = "View";
@@ -198,6 +202,20 @@
             this.scale11ToolStripMenuItem.Size = new System.Drawing.Size(160, 26);
             this.scale11ToolStripMenuItem.Text = "Scale 1:1";
             this.scale11ToolStripMenuItem.Click += new System.EventHandler(this.scale11ToolStripMenuItem_Click);
+            // 
+            // zoomInToolStripMenuItem
+            // 
+            this.zoomInToolStripMenuItem.Name = "zoomInToolStripMenuItem";
+            this.zoomInToolStripMenuItem.Size = new System.Drawing.Size(160, 26);
+            this.zoomInToolStripMenuItem.Text = "Zoom In";
+            this.zoomInToolStripMenuItem.Click += new System.EventHandler(this.zoomInToolStripMenuItem_Click);
+            // 
+            // zoomOutToolStripMenuItem
+            // 
+            this.zoomOutToolStripMenuItem.Name = "zoomOutToolStripMenuItem";
+            this.zoomOutToolStripMenuItem.Size = new System.Drawing.Size(160, 26);
+            this.zoomOutToolStripMenuItem.Text = "Zoom Out";
+            this.zoomOutToolStripMenuItem.Click += new System.EventHandler(this.zoomOutToolStripMenuItem_Click);
             // 
             // ProcessButton
             // 
@@ -502,6 +520,8 @@
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomToFitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem scale11ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem zoomInToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem zoomOutToolStripMenuItem;
         private System.DirectoryServices.DirectoryEntry directoryEntry1;
         private System.Windows.Forms.VScrollBar vScrollBar1;
         private System.Windows.Forms.HScrollBar hScrollBar1;

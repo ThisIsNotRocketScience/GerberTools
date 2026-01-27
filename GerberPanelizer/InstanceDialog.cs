@@ -25,8 +25,28 @@ namespace GerberCombinerBuilder
         {
             TargetInstance = newTarget;
 
-            if (TargetInstance == null || TargetInstance.SelectedInstance == null) { panel1.Enabled = false; return; } else { panel1.Enabled = true; }
+            if (TargetInstance == null) { panel1.Enabled = false; return; } else { panel1.Enabled = true; }
             newTarget.SuspendRedraw = true;
+
+            
+            bool hasSelection = TargetInstance.SelectedInstance != null;
+            tableLayoutPanel1.Enabled = hasSelection;
+            Up.Enabled = hasSelection;
+            Down.Enabled = hasSelection;
+            LeftButton.Enabled = hasSelection;
+            RightButton.Enabled = hasSelection;
+            Clock.Enabled = hasSelection;
+            AClock.Enabled = hasSelection;
+            // Bigger/Smaller depended on BreakTab anyway, but global disable handles them.
+            // But now we need to be careful.
+            // Bigger/Smaller are disabled by default logic below if not BreakTab.
+            
+            if (!hasSelection)
+            {
+                newTarget.SuspendRedraw = false;
+                return;
+            }
+
             double x = TargetInstance.SelectedInstance.Center.X;
             double y = TargetInstance.SelectedInstance.Center.Y;
             double r = TargetInstance.SelectedInstance.Angle;
@@ -59,6 +79,16 @@ namespace GerberCombinerBuilder
             Initializing = false;
             newTarget.SuspendRedraw = false;
 
+        }
+
+        private void ZoomInButton_Click(object sender, EventArgs e)
+        {
+            if (TargetInstance != null) TargetInstance.ZoomIn();
+        }
+
+        private void ZoomOutButton_Click(object sender, EventArgs e)
+        {
+            if (TargetInstance != null) TargetInstance.ZoomOut();
         }
 
         void UpdateInstance()

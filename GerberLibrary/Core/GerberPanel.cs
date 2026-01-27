@@ -119,6 +119,8 @@ namespace GerberLibrary
         public List<PolyLine> CombinedOutline = new List<PolyLine>();
         GraphicsPath GP = new GraphicsPath();
         Bitmap MMGrid = null;
+        double LastWidth = -1;
+        double LastHeight = -1;
 
         public List<string> AddGerberFolder(ProgressLog log, string path, bool add = true, bool skipoutlines = false)
         {
@@ -827,9 +829,11 @@ namespace GerberLibrary
 
             }
             else
-                if ((MMGrid == null || MMGrid.Width != targetwidth || MMGrid.Height != targetheight))
+                if ((MMGrid == null || MMGrid.Width != targetwidth || MMGrid.Height != targetheight || LastWidth != TheSet.Width || LastHeight != TheSet.Height))
             {
                 MMGrid = new Bitmap(targetwidth, targetheight);
+                LastWidth = TheSet.Width;
+                LastHeight = TheSet.Height;               
                 Graphics G2 = Graphics.FromImage(MMGrid);
                 G2.SmoothingMode = SmoothingMode.HighQuality;
                 G2.Transform = G.Transform;
