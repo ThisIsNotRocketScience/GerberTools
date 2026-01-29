@@ -253,6 +253,7 @@ Build/
 *.sln.iml
 /.agent
 /.gemini
-/.gsd
+
 /scripts
 nuget.exe
+/.gsd

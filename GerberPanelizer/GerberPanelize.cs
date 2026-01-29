@@ -36,10 +36,22 @@ namespace GerberCombinerBuilder
         bool Panning = false;
         PointD PanStartPoint = new PointD(0, 0);
 
+        // Selection
+        public List<AngledThing> SelectedInstances = new List<AngledThing>();
+        private Dictionary<AngledThing, PointD> DragOriginalPositions = new Dictionary<AngledThing, PointD>();
+        private bool IsBoxSelecting = false;
+        private PointD BoxSelectStart = new PointD();
+        private PointD BoxSelectCurrent = new PointD();
+
         private float DrawingScale;
         public double Zoom = 1;
         public double TargetZoom = 1;
         public PointD CenterPoint = new PointD(0, 0);
+
+        // Undo/Redo
+        public List<string> UndoStack = new List<string>();
+        public List<string> RedoStack = new List<string>();
+        private string PendingUndoState = null;
 
         enum SnapMode
         {
@@ -390,15 +402,66 @@ namespace GerberCombinerBuilder
 
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-
-                SelectedInstance = ThePanel.FindOutlineUnderPoint(MouseToMM(new PointD(e.X, e.Y)));
-                if (SelectedInstance != null)
+                var clickedInstance = ThePanel.FindOutlineUnderPoint(MouseToMM(new PointD(e.X, e.Y)));
+                
+                if (clickedInstance != null)
                 {
-                    MouseCapture = true;
-                    DragStartCoord = new PointD(e.X, e.Y);
-                    DragInstanceOriginalPosition = SelectedInstance.Center;
+                    if (ModifierKeys.HasFlag(Keys.Control))
+                    {
+                        if (SelectedInstances.Contains(clickedInstance))
+                        {
+                            SelectedInstances.Remove(clickedInstance);
+                            SelectedInstance = SelectedInstances.LastOrDefault(); // or null
+                            MouseCapture = false; // Don't drag if deselecting
+                        }
+                        else
+                        {
+                            SelectedInstances.Add(clickedInstance);
+                            SelectedInstance = clickedInstance;
+                            MouseCapture = true; 
+                        }
+                    }
+                    else
+                    {
+                        if (!SelectedInstances.Contains(clickedInstance))
+                        {
+                            SelectedInstances.Clear();
+                            SelectedInstances.Add(clickedInstance);
+                        }
+                        // If it IS contained, we keep selection to allow dragging multiple
+                        SelectedInstance = clickedInstance; 
+                        MouseCapture = true;
+                    }
+                    
+                    if (MouseCapture)
+                    {
+                        DragStartCoord = new PointD(e.X, e.Y);
+                        DragOriginalPositions.Clear();
+                        foreach(var inst in SelectedInstances)
+                        {
+                            DragOriginalPositions[inst] = new PointD(inst.Center.X, inst.Center.Y); 
+                        }
+                        DragInstanceOriginalPosition = SelectedInstance.Center; // Legacy support
+                        
+                        // Capture state for Undo if we actually move
+                        try {
+                            PendingUndoState = SerializeState();
+                        } catch(Exception) { PendingUndoState = null; }
+                    }
+                    
+                    SetSelectedInstance(SelectedInstance);
                 }
-                SetSelectedInstance(SelectedInstance);
+                else // Clicked on empty space
+                {
+                    if (!ModifierKeys.HasFlag(Keys.Control))
+                    {
+                        SelectedInstances.Clear();
+                        SetSelectedInstance(null);
+                    }
+                    IsBoxSelecting = true;
+                    BoxSelectStart = new PointD(e.X, e.Y);
+                    BoxSelectCurrent = new PointD(e.X, e.Y);
+                }
             }
 
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
@@ -410,6 +473,12 @@ namespace GerberCombinerBuilder
 
                 if (SelectedInstance != null)
                 {
+                    if (!SelectedInstances.Contains(SelectedInstance))
+                    {
+                         SelectedInstances.Clear();
+                         SelectedInstances.Add(SelectedInstance);
+                         SetSelectedInstance(SelectedInstance);
+                    }
                     contextMenuStrip2.Show(this, e.Location);
                 }
                 else
@@ -444,33 +513,96 @@ namespace GerberCombinerBuilder
                 Panning = false;
             }
 
+            if (IsBoxSelecting && e.Button == MouseButtons.Left)
+            {
+                IsBoxSelecting = false;
+                
+                // Calculate box in MM
+                PointD StartMM = MouseToMM(BoxSelectStart);
+                PointD EndMM = MouseToMM(BoxSelectCurrent);
+                double minX = Math.Min(StartMM.X, EndMM.X);
+                double maxX = Math.Max(StartMM.X, EndMM.X);
+                double minY = Math.Min(StartMM.Y, EndMM.Y);
+                double maxY = Math.Max(StartMM.Y, EndMM.Y);
+                Bounds selectionBounds = new Bounds();
+                selectionBounds.FitPoint(minX, minY);
+                selectionBounds.FitPoint(maxX, maxY);
+
+                if (!ModifierKeys.HasFlag(Keys.Control))
+                {
+                    SelectedInstances.Clear();
+                }
+
+                foreach(var inst in ThePanel.TheSet.Instances)
+                {
+                    if (selectionBounds.Contains(inst.Center)) 
+                    {
+                        if (!SelectedInstances.Contains(inst)) SelectedInstances.Add(inst);
+                    }
+                }
+                 foreach(var tab in ThePanel.TheSet.Tabs)
+                {
+                    if (selectionBounds.Contains(tab.Center)) 
+                    {
+                         if (!SelectedInstances.Contains(tab)) SelectedInstances.Add(tab);
+                    }
+                }
+                
+                SelectedInstance = SelectedInstances.LastOrDefault();
+                SetSelectedInstance(SelectedInstance);
+                Redraw(false);
+                return; // Early return to skip Drag logic
+            }
+
             if (MouseCapture)
             {
-                ID.UpdateBoxes(this);
-
                 MouseCapture = false;
                 PointD Delta = new PointD(e.X, e.Y) - DragStartCoord;
                 if (Delta.Length() == 0)
                 {
-                    if (SelectedInstance != null)
-                    {
-                        SelectedInstance.Center = DragInstanceOriginalPosition;
-                        
-                    }
-                    Redraw(false);
+                     // Clicked, not dragged. 
+                     PendingUndoState = null; // discard
+                     // Clicked, not dragged. Logic handled in MouseDown mostly.
+                     // But if we were clicking on an already selected item without control, we might want to clear others?
+                     // Standard behavior: 
+                     // Click on selected item -> MouseDown: keeps others selected (in case of drag).
+                     // MouseUp: if no drag, clear others?
+                     if (!ModifierKeys.HasFlag(Keys.Control))
+                     {
+                         if(SelectedInstance != null && SelectedInstances.Count > 1) {
+                             SelectedInstances.Clear();
+                             SelectedInstances.Add(SelectedInstance);
+                             SetSelectedInstance(SelectedInstance);
+                         }
+                     }
+                      Redraw(false);
+
                 }
                 else
                 {
-                    if (SelectedInstance != null)
+                    // Dragged - Commit Undo
+                    if (PendingUndoState != null)
                     {
-                        var GI = SelectedInstance as GerberInstance;
+                        UndoStack.Add(PendingUndoState);
+                        if (UndoStack.Count > 20) UndoStack.RemoveAt(0);
+                        RedoStack.Clear();
+                        PendingUndoState = null;
+                    }
+                    
+                    // Dragged
+                    bool fullRedraw = false;
+                    foreach(var inst in SelectedInstances)
+                    {
+                        var GI = inst as GerberInstance;
                         if (GI != null)
                         {
                             GI.RebuildTransformed(ThePanel.GerberOutlines[GI.GerberPath], ThePanel.TheSet.ExtraTabDrillDistance);
-
+                            fullRedraw = true;
                         }
                     }
-                    Redraw(true);
+                    if (SelectedInstance != null) ID.UpdateBoxes(this);
+
+                    Redraw(fullRedraw);
                 }
             }
         }
@@ -495,14 +627,30 @@ namespace GerberCombinerBuilder
                 return;
             }
 
-            if (MouseCapture && SelectedInstance != null)
+            if (IsBoxSelecting)
+            {
+                BoxSelectCurrent = new PointD(e.X, e.Y);
+                Redraw(false);
+                return;
+            }
+
+            if (MouseCapture && SelectedInstances.Count > 0)
             {
                 PointD Delta = new PointD(e.X, e.Y) - DragStartCoord;
                 Delta.X /= Zoom;
                 Delta.Y /= -Zoom;
-                SelectedInstance.Center = Snap(DragInstanceOriginalPosition + Delta);
-                UpdateHoverControls();
-                //       SelectedInstance.Center.Y = (float)(DragInstanceOriginalPosition.Y + Delta.Y);
+                
+                foreach(var inst in SelectedInstances)
+                {
+                    if (DragOriginalPositions.ContainsKey(inst))
+                    {
+                        inst.Center = Snap(DragOriginalPositions[inst] + Delta);
+                    }
+                }
+
+                if (SelectedInstance != null) {
+                     UpdateHoverControls();
+                }
                 Redraw(false);
             }
             else
@@ -711,7 +859,52 @@ namespace GerberCombinerBuilder
 
             
             ThePanel.DrawBoardBitmap(1.0f, GI, glControl1.Width, glControl1.Height, SelectedInstance, HoverShape, SnapDistance());
-            glControl1.SwapBuffers();
+    
+    // Highlight other selected instances
+    foreach(var inst in SelectedInstances)
+    {
+        if (inst != SelectedInstance)
+        {
+             ThePanel.RenderInstance(GI, DrawingScale, Color.Black, inst, false, true);
+        }
+    }
+
+    if (IsBoxSelecting)
+    {
+         GL.MatrixMode(MatrixMode.Modelview);
+         GL.LoadIdentity();
+         // Coordinates are in screen space centered? No, Ortho was set to centered.
+         // Ortho is (-w/2, w/2, h/2, -h/2)
+         // Mouse coordinates are (0..w, 0..h) from top left?
+         // WinForms mouse: 0,0 is top left.
+         // GL Ortho: 0,0 is center. Y is up.
+         // Need to map Mouse to GL.
+         
+         double x1 = BoxSelectStart.X - glControl1.Width / 2.0;
+         double y1 = (BoxSelectStart.Y - glControl1.Height / 2.0);
+         double x2 = BoxSelectCurrent.X - glControl1.Width / 2.0;
+         double y2 = (BoxSelectCurrent.Y - glControl1.Height / 2.0);
+
+        GL.Enable(EnableCap.Blend);
+         GL.Color4(0.0f, 0.5f, 1.0f, 0.3f);
+         GL.Begin(PrimitiveType.Quads);
+         GL.Vertex2(x1, y1);
+         GL.Vertex2(x2, y1);
+         GL.Vertex2(x2, y2);
+         GL.Vertex2(x1, y2);
+         GL.End();
+
+         GL.Color4(0.0f, 0.5f, 1.0f, 0.8f);
+         GL.LineWidth(1.0f);
+         GL.Begin(PrimitiveType.LineLoop);
+         GL.Vertex2(x1, y1);
+         GL.Vertex2(x2, y1);
+         GL.Vertex2(x2, y2);
+         GL.Vertex2(x1, y2);
+         GL.End();
+    }
+
+    glControl1.SwapBuffers();
         }
 
         private void glControl1_MouseDown(object sender, MouseEventArgs e)
@@ -1012,6 +1205,38 @@ namespace GerberCombinerBuilder
                     Redraw(false);
                     break;
 
+                case Keys.R:
+                    if (HoverShape != null && HoverShape is BreakTab)
+                    {
+                        var BT = HoverShape as BreakTab;
+                        BT.Radius -= 0.25f;
+                        if (BT.Radius < 0.5f) BT.Radius = 0.5f;
+                        Redraw(true);
+                    }
+                    else if (SelectedInstance != null && SelectedInstance is BreakTab)
+                    {
+                         var BT = SelectedInstance as BreakTab;
+                        BT.Radius -= 0.25f;
+                        if (BT.Radius < 0.5f) BT.Radius = 0.5f;
+                        Redraw(true);
+                    }
+                    break;
+
+                case Keys.Y:
+                    if (HoverShape != null && HoverShape is BreakTab)
+                    {
+                         var BT = HoverShape as BreakTab;
+                         BT.Radius += 0.25f;
+                         Redraw(true);
+                    }
+                    else if (SelectedInstance != null && SelectedInstance is BreakTab)
+                    {
+                         var BT = SelectedInstance as BreakTab;
+                         BT.Radius += 0.25f;
+                         Redraw(true);
+                    }
+                    break;
+
                 default:
                     if (SelectedInstance != null)
                     {
@@ -1185,6 +1410,166 @@ namespace GerberCombinerBuilder
              ZoomAnimationTimer.Enabled = true;
         }
 
+        // Clipboard
+        public void CopySelection()
+        {
+            if (SelectedInstances.Count == 0) return;
+            ClipboardData data = new ClipboardData();
+            foreach(var inst in SelectedInstances)
+            {
+                if (inst is GerberInstance) data.Instances.Add(inst as GerberInstance);
+                if (inst is BreakTab) data.Tabs.Add(inst as BreakTab);
+            }
+            try
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(ClipboardData));
+                using (StringWriter writer = new StringWriter())
+                {
+                    serializer.Serialize(writer, data);
+                    Clipboard.SetText(writer.ToString());
+                }
+            }
+            catch(Exception e) { Console.WriteLine("Copy failed: " + e.Message); }
+        }
+
+        public void PasteSelection()
+        {
+            if (!Clipboard.ContainsText()) return;
+            try
+            {
+                PushUndo();
+                string xml = Clipboard.GetText();
+                XmlSerializer serializer = new XmlSerializer(typeof(ClipboardData));
+                using (StringReader reader = new StringReader(xml))
+                {
+                    ClipboardData data = (ClipboardData)serializer.Deserialize(reader);
+                    SelectedInstances.Clear();
+                    
+                    foreach(var inst in data.Instances)
+                    {
+                        inst.Center.X += 5;
+                        inst.Center.Y += 5;
+                        // We need to re-link or re-load the outlines?
+                        // GerberInstance has GerberPath
+                        // We need to ensure loaded outlines has it?
+                        // Actually, if we just add it to Instances, UpdateShape will handle it if LoadedOutlines has it.
+                        // Assuming the file is still loaded.
+                        if (!ThePanel.TheSet.LoadedOutlines.Contains(inst.GerberPath))
+                        {
+                            ThePanel.TheSet.LoadedOutlines.Add(inst.GerberPath);
+                            // We might need to actually reload the file content if it's not in GerberOutlines?
+                            // But ThePanel.TheSet.LoadedOutlines is just a list of strings.
+                            // ThePanel.AddGerberFolder loads it.
+                            // If we paste from same session, current loaded outlines is fine.
+                            // If we paste from another session/instance, we might be missing the file?
+                            // For now assume same session or path valid.
+                        }
+                        
+                        ThePanel.TheSet.Instances.Add(inst);
+                        SelectedInstances.Add(inst);
+                    }
+                    foreach(var tab in data.Tabs)
+                    {
+                        tab.Center.X += 5;
+                        tab.Center.Y += 5;
+                        ThePanel.TheSet.Tabs.Add(tab);
+                        SelectedInstances.Add(tab);
+                    }
+                    SelectedInstance = SelectedInstances.LastOrDefault();
+                    SetSelectedInstance(SelectedInstance);
+                    ThePanel.UpdateShape(new StandardConsoleLog());
+                    Redraw(true);
+                }
+            }
+             catch(Exception e) { Console.WriteLine("Paste failed: " + e.Message); }
+        }
+
+        public void CutSelection()
+        {
+            CopySelection();
+            DeleteSelection();
+        }
+
+        public void DeleteSelection()
+        {
+            if (SelectedInstances.Count == 0) return;
+            PushUndo();
+            foreach(var inst in SelectedInstances)
+            {
+                if (inst is GerberInstance) ThePanel.TheSet.Instances.Remove(inst as GerberInstance);
+                if (inst is BreakTab) ThePanel.TheSet.Tabs.Remove(inst as BreakTab);
+            }
+            SelectedInstances.Clear();
+            SelectedInstance = null;
+            SetSelectedInstance(null);
+            ThePanel.UpdateShape(new StandardConsoleLog());
+            Redraw(true);
+        }
+
+        // Undo/Redo Logic
+        public void PushUndo()
+        {
+            try {
+                UndoStack.Add(SerializeState());
+                if (UndoStack.Count > 20) UndoStack.RemoveAt(0);
+                RedoStack.Clear();
+            } catch { }
+        }
+
+        public void PerformUndo()
+        {
+            if (UndoStack.Count == 0) return;
+            string state = UndoStack.Last();
+            UndoStack.RemoveAt(UndoStack.Count - 1);
+            
+            RedoStack.Add(SerializeState());
+            RestoreState(state);
+            Redraw(true);
+        }
+
+        public void PerformRedo()
+        {
+            if (RedoStack.Count == 0) return;
+            string state = RedoStack.Last();
+            RedoStack.RemoveAt(RedoStack.Count - 1);
+            
+            UndoStack.Add(SerializeState());
+            RestoreState(state);
+            Redraw(true);
+        }
+
+        private string SerializeState()
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(GerberLayoutSet));
+            using (StringWriter writer = new StringWriter())
+            {
+                serializer.Serialize(writer, ThePanel.TheSet);
+                return writer.ToString();
+            }
+        }
+
+        private void RestoreState(string state)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(GerberLayoutSet));
+            using (StringReader reader = new StringReader(state))
+            {
+                GerberLayoutSet set = (GerberLayoutSet)serializer.Deserialize(reader);
+                ThePanel.TheSet = set;
+                // We need to restore selected instances references?
+                // IDs? They are new objects.
+                SelectedInstances.Clear();
+                SelectedInstance = null;
+                SetSelectedInstance(null);
+                ThePanel.UpdateShape(new StandardConsoleLog());
+            }
+        }
+
+        public class ClipboardData
+        {
+            public List<GerberInstance> Instances = new List<GerberInstance>();
+            public List<BreakTab> Tabs = new List<BreakTab>();
+        }
+
         private void autofitCanvasToolStripMenuItem_Click(object sender, EventArgs e)
         {
             AutofitDialog D = new AutofitDialog(this);
@@ -1193,6 +1578,7 @@ namespace GerberCombinerBuilder
 
         public void PerformAutofit(double margin, double moat)
         {
+            PushUndo();
             if (ThePanel.TheSet.Instances.Count == 0) return;
 
             double minX = double.MaxValue;

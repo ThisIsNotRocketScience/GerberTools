@@ -102,6 +102,37 @@ namespace GerberCombinerBuilder
             //}
           
             
+            
+            // Add Edit Menu programmatically
+            ToolStripMenuItem editMenu = new ToolStripMenuItem("&Edit");
+            
+            ToolStripMenuItem undoItem = new ToolStripMenuItem("&Undo", null, UndoToolStripMenuItem_Click);
+            undoItem.ShortcutKeys = Keys.Control | Keys.Z;
+            
+            ToolStripMenuItem redoItem = new ToolStripMenuItem("&Redo", null, RedoToolStripMenuItem_Click);
+            redoItem.ShortcutKeys = Keys.Control | Keys.Y;
+
+            ToolStripMenuItem cutItem = new ToolStripMenuItem("Cu&t", null, CutToolStripMenuItem_Click);
+            cutItem.ShortcutKeys = Keys.Control | Keys.X;
+
+            ToolStripMenuItem copyItem = new ToolStripMenuItem("&Copy", null, CopyToolStripMenuItem_Click);
+            copyItem.ShortcutKeys = Keys.Control | Keys.C;
+
+            ToolStripMenuItem pasteItem = new ToolStripMenuItem("&Paste", null, PasteToolStripMenuItem_Click);
+            pasteItem.ShortcutKeys = Keys.Control | Keys.V;
+
+            ToolStripMenuItem deleteItem = new ToolStripMenuItem("&Delete", null, DeleteToolStripMenuItem_Click);
+            deleteItem.ShortcutKeys = Keys.Delete;
+
+            editMenu.DropDownItems.Add(undoItem);
+            editMenu.DropDownItems.Add(redoItem);
+            editMenu.DropDownItems.Add(new ToolStripSeparator());
+            editMenu.DropDownItems.Add(cutItem);
+            editMenu.DropDownItems.Add(copyItem);
+            editMenu.DropDownItems.Add(pasteItem);
+            editMenu.DropDownItems.Add(deleteItem);
+
+            menuStrip.Items.Insert(1, editMenu);
         }
         public static int timesrun = 0;
 
@@ -153,14 +184,32 @@ namespace GerberCombinerBuilder
 
         private void CutToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (ActivePanelizeInstance != null) ActivePanelizeInstance.CutSelection();
         }
 
         private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (ActivePanelizeInstance != null) ActivePanelizeInstance.CopySelection();
         }
 
         private void PasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (ActivePanelizeInstance != null) ActivePanelizeInstance.PasteSelection();
+        }
+        
+        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+             if (ActivePanelizeInstance != null) ActivePanelizeInstance.DeleteSelection();
+        }
+
+        private void UndoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+             if (ActivePanelizeInstance != null) ActivePanelizeInstance.PerformUndo();
+        }
+
+        private void RedoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+             if (ActivePanelizeInstance != null) ActivePanelizeInstance.PerformRedo();
         }
 
         
