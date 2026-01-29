@@ -61,7 +61,9 @@
             this.addBreakTabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportBoardImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.autofitCanvasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateSilkscreenLayerOffsetArtToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateArtOffsetCurvesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateArtFieldLinesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -251,9 +253,10 @@
             this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addInstanceToolStripMenuItem,
-            this.addBreakTabToolStripMenuItem});
+            this.addBreakTabToolStripMenuItem,
+            this.autofitCanvasToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(176, 56);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(176, 78);
             // 
             // addInstanceToolStripMenuItem
             // 
@@ -268,6 +271,13 @@
             this.addBreakTabToolStripMenuItem.Size = new System.Drawing.Size(175, 26);
             this.addBreakTabToolStripMenuItem.Text = "Add Breaktab";
             this.addBreakTabToolStripMenuItem.Click += new System.EventHandler(this.addBreakTabToolStripMenuItem_Click);
+            // 
+            // autofitCanvasToolStripMenuItem
+            // 
+            this.autofitCanvasToolStripMenuItem.Name = "autofitCanvasToolStripMenuItem";
+            this.autofitCanvasToolStripMenuItem.Size = new System.Drawing.Size(175, 26);
+            this.autofitCanvasToolStripMenuItem.Text = "Autofit Canvas";
+            this.autofitCanvasToolStripMenuItem.Click += new System.EventHandler(this.autofitCanvasToolStripMenuItem_Click);
             // 
             // contextMenuStrip2
             // 
@@ -500,6 +510,7 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem addInstanceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addBreakTabToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem autofitCanvasToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStrip1;

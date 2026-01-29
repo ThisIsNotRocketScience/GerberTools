@@ -1185,6 +1185,81 @@ namespace GerberCombinerBuilder
              ZoomAnimationTimer.Enabled = true;
         }
 
+        private void autofitCanvasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AutofitDialog D = new AutofitDialog(this);
+            D.Show();
+        }
+
+        public void PerformAutofit(double margin, double moat)
+        {
+            if (ThePanel.TheSet.Instances.Count == 0) return;
+
+            double minX = double.MaxValue;
+            double minY = double.MaxValue;
+            double maxX = double.MinValue;
+            double maxY = double.MinValue;
+
+            foreach (var inst in ThePanel.TheSet.Instances)
+            {
+                var bb = inst.BoundingBox;
+                if (bb.TopLeft.X < minX) minX = bb.TopLeft.X;
+                if (bb.BottomRight.X > maxX) maxX = bb.BottomRight.X;
+                if (bb.TopLeft.Y < minY) minY = bb.TopLeft.Y;
+                if (bb.BottomRight.Y > maxY) maxY = bb.BottomRight.Y;
+            }
+
+            // Also check tabs if they are stored separately in the set (though typically they are attached to instances or in a separate list)
+            // Looking at GerberPanel.cs, Tabs are property of GerberInstance, but can also be added to TheSet?
+            // Actually BreakTabs are added to TheSet.Tabs? No, TheSet is GerberPanelSet? 
+            // In GerberPanel.cs: public BreakTab AddTab(PointD center) { ... TheSet.Tabs.Add(BT); ... }
+            // So we must check ThePanel.TheSet.Tabs as well.
+
+            foreach (var tab in ThePanel.TheSet.Tabs)
+            {
+                 // BreakTab has Center and Radius. Bounds are Center +/- Radius.
+                 // Assuming BreakTab : AngledThing
+                 
+                 double r = tab.Radius;
+                 if (tab.Center.X - r < minX) minX = tab.Center.X - r;
+                 if (tab.Center.X + r > maxX) maxX = tab.Center.X + r;
+                 if (tab.Center.Y - r < minY) minY = tab.Center.Y - r;
+                 if (tab.Center.Y + r > maxY) maxY = tab.Center.Y + r;
+            }
+
+            double targetX = margin + moat;
+            double targetY = margin + moat;
+            double shiftX = targetX - minX;
+            double shiftY = targetY - minY;
+
+            foreach (var inst in ThePanel.TheSet.Instances)
+            {
+                inst.Center.X += (float)shiftX;
+                inst.Center.Y += (float)shiftY;
+            }
+            
+            foreach (var tab in ThePanel.TheSet.Tabs)
+            {
+                tab.Center.X += (float)shiftX;
+                tab.Center.Y += (float)shiftY;
+            }
+
+
+            double contentWidth = maxX - minX;
+            double contentHeight = maxY - minY;
+            double totalPadding = 2 * (margin + moat);
+
+            ThePanel.TheSet.Width = contentWidth + totalPadding;
+            ThePanel.TheSet.Height = contentHeight + totalPadding;
+
+            ThePanel.UpdateShape(new StandardConsoleLog());
+            CheckAndResizeCanvas(); // Ensure consistency
+            UpdateScrollers();
+            CenterPoint = new PointD(ThePanel.TheSet.Width / 2, ThePanel.TheSet.Height / 2);
+            ZoomToFit();
+            Redraw(true, true);
+        }
+
         PointD ZoomAnimationCenter;
         
         private void ZoomAnimationTimer_Tick(object sender, EventArgs e)
