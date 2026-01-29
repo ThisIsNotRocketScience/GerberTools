@@ -115,7 +115,9 @@ GerberAnalyse <inputfile_or_folder>
 
 ## Building
 **Visual Studio:** Open `GerberProjects/GerberProjects.sln` and build.
+
 **Dependencies:** Ensure NuGet packages are restored.
+
 **Linux/Mono:** The tools are standard C# and generally compatible with Mono. Run `./build.sh`. Dependencies should be automatically fetched.
 
 ## License
