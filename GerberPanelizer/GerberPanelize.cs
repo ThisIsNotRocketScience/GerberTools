@@ -861,14 +861,14 @@ namespace GerberCombinerBuilder
             GL.Hint(HintTarget.PointSmoothHint, HintMode.Nicest);
 
             
-            ThePanel.DrawBoardBitmap(1.0f, GI, glControl1.Width, glControl1.Height, SelectedInstance, HoverShape, SnapDistance());
+            ThePanel.DrawBoardBitmap(1.0f, GI, glControl1.Width, glControl1.Height, SelectedInstance, HoverShape, SnapDistance(), Zoom);
     
     // Highlight other selected instances
     foreach(var inst in SelectedInstances)
     {
         if (inst != SelectedInstance)
         {
-             ThePanel.RenderInstance(GI, DrawingScale, Color.Black, inst, false, true);
+             ThePanel.RenderInstance(GI, DrawingScale, Color.Black, inst, false, true, false, Zoom);
         }
     }
 

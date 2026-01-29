@@ -646,7 +646,7 @@ namespace GerberLibrary
         /// <param name="b"></param>
         /// <param name="errors"></param>
         /// <param name="active"></param>
-        public void RenderInstance(GraphicsInterface G, float PW, Color C, AngledThing b, bool errors = false, bool active = false, bool hover = false)
+        public void RenderInstance(GraphicsInterface G, float PW, Color C, AngledThing b, bool errors = false, bool active = false, bool hover = false, double GlobalZoom = 1.0)
         {
             if (b == null) return;
             var T = G.Transform.Clone();
@@ -670,7 +670,7 @@ namespace GerberLibrary
                     DrawShapeBG(G, ErrorP, Circle);
                     for (int i = 0; i < BT.Errors.Count; i++)
                     {
-                        G.DrawString(new PointD(BT.Radius + 1, PW * 2 * i), BT.Errors[i], PW, false);
+                        G.DrawString(new PointD(BT.Radius + 1, PW * 2 * i), BT.Errors[i], 20.0 / GlobalZoom, false);
                     }
                 }
                 else
@@ -760,7 +760,7 @@ namespace GerberLibrary
 
 
 
-                    G.DrawString(new PointD(ox, oy), Path.GetFileName(GI.GerberPath), Z * 30, true, R, Gf, B, A);
+                    G.DrawString(new PointD(ox, oy), Path.GetFileName(GI.GerberPath), 20.0/GlobalZoom, true, R, Gf, B, A);
 
 
                 }
@@ -814,7 +814,7 @@ namespace GerberLibrary
         /// <param name="targetwidth"></param>
         /// <param name="targetheight"></param>
         /// <param name="SelectedInstance"></param>
-        public void DrawBoardBitmap(float PW = 1, GraphicsInterface G = null, int targetwidth = 0, int targetheight = 0, AngledThing SelectedInstance = null, AngledThing Hoverinstance = null, double snapdistance = 1)
+        public void DrawBoardBitmap(float PW = 1, GraphicsInterface G = null, int targetwidth = 0, int targetheight = 0, AngledThing SelectedInstance = null, AngledThing Hoverinstance = null, double snapdistance = 1, double GlobalZoom = 1.0)
         {
             if (G == null)
             {
@@ -849,18 +849,18 @@ namespace GerberLibrary
                 if (b.Errors.Count > 0)
                 {
 
-                    RenderInstance(G, PW, Color.Gray, b, true);
+                    RenderInstance(G, PW, Color.Gray, b, true, false, false, GlobalZoom);
                 }
                 else
                 {
-                    RenderInstance(G, PW, Color.Gray, b, false);
+                    RenderInstance(G, PW, Color.Gray, b, false, false, false, GlobalZoom);
                 }
             }
 
 
             foreach (var b in TheSet.Instances)
             {
-                RenderInstance(G, PW, Color.DarkGray, b);
+                RenderInstance(G, PW, Color.DarkGray, b, false, false, false, GlobalZoom);
             }
 
             foreach (var b in TheSet.Instances)
@@ -899,13 +899,13 @@ namespace GerberLibrary
 
             if (Hoverinstance != null)
             {
-                RenderInstance(G, PW, Color.Blue, Hoverinstance, false, false);
+                RenderInstance(G, PW, Color.Blue, Hoverinstance, false, false, false, GlobalZoom);
             }
 
             if (SelectedInstance != null)
             {
-                RenderInstance(G, PW * 2, Color.Black, null, false, true);
-                RenderInstance(G, PW, Color.Black, SelectedInstance, false, true);
+                RenderInstance(G, PW * 2, Color.Black, null, false, true, false, GlobalZoom);
+                RenderInstance(G, PW, Color.Black, SelectedInstance, false, true, false, GlobalZoom);
             }
 
         }
