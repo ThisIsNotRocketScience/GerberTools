@@ -578,7 +578,7 @@ namespace GerberLibrary
             {
                 RemoveInstance("???_negative");
 
-                var Neg = GenerateNegativePolygon(TheSet.FillOffset, TheSet.Smoothing);
+                var Neg = GenerateNegativePolygon(TheSet.FillOffset+0.001, TheSet.Smoothing);
                 var G = new GerberOutline(log, "");
                 G.TheGerber.Name = "???_negative";
                 G.TheGerber.OutlineShapes = Neg;
@@ -654,35 +654,36 @@ namespace GerberLibrary
             G.TranslateTransform((float)b.Center.X, (float)b.Center.Y);
             G.RotateTransform(b.Angle);
             Pen P = new Pen(C, PW) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
-            Pen ActiveP = new Pen(Color.FromArgb(200, 150, 20), PW * 2) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
-            Pen ActivePD = new Pen(Color.Green, PW * 1) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
+            Pen ActiveP = new Pen(Color.Blue, PW * 3) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
+            Pen ActivePD = new Pen(Color.Green, PW * 2) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
 
             Pen ErrorP = new Pen(Color.Red, PW * 2.5f) { LineJoin = System.Drawing.Drawing2D.LineJoin.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round, StartCap = System.Drawing.Drawing2D.LineCap.Round };
             if (b.GetType() == typeof(BreakTab))
             {
                 BreakTab BT = b as BreakTab;
                 if (BT.Errors.Count > 0) errors = true;
-                DrawMarker(errors, G, new PointD(0, 0), 1, PW, errors ? ErrorP : P);
+                DrawMarkerBG(errors, G, new PointD(0, 0), 1, PW, errors ? ErrorP : P);
                 PolyLine Circle = new PolyLine(PolyLine.PolyIDs.GFXTemp);
                 Circle.MakeCircle((b as BreakTab).Radius);
                 if (errors)
                 {
-                    DrawShape(G, ErrorP, Circle);
+                    DrawShapeBG(G, ErrorP, Circle);
                     for (int i = 0; i < BT.Errors.Count; i++)
                     {
-                        G.DrawString(new PointD(BT.Radius + 1, PW * 10 * i), BT.Errors[i], PW, false);
+                        G.DrawString(new PointD(BT.Radius + 1, PW * 2 * i), BT.Errors[i], PW, false);
                     }
                 }
                 else
                 {
-                    DrawShape(G, P, Circle);
+                    DrawShapeBG(G, P, Circle);
                 }
                 if (active)
                 {
-                    DrawShape(G, errors ? ErrorP : ActivePD, Circle);
-                    DrawMarker(errors, G, new PointD(0, 0), 1, PW, errors ? ErrorP : ActivePD);
-                    DrawShape(G, ActiveP, Circle);
-                    DrawMarker(errors, G, new PointD(0, 0), 1, PW, ActiveP);
+                    DrawShapeBG(G, errors ? ErrorP : ActivePD, Circle);
+                    
+                    DrawMarkerBG(errors, G, new PointD(0, 0), 1, PW, errors ? ErrorP : ActivePD);
+                    DrawShapeBG(G, ActiveP, Circle);
+                    DrawMarkerBG(errors, G, new PointD(0, 0), 1, PW, ActiveP);
 
                 }
                 if (hover)
@@ -734,7 +735,7 @@ namespace GerberLibrary
                         }
                         if (active)
                         {
-                            DrawShape(G, ActivePD, Shape);
+                            DrawShapeBG(G, ActivePD, Shape);
                             //  DrawShapeNormals(G, ActivePD, Shape);
                         }
                         else
@@ -920,7 +921,16 @@ namespace GerberLibrary
             // todo: cache the triangulated polygon!
             //G.FillShape(BR, Shape);
         }
-
+        private static void DrawMarkerBG(bool cross, GraphicsInterface G, PointD pointD, float crossize, float PW, Pen P = null)
+        {
+            if (P == null)
+            {
+                P = new Pen(Color.White, PW);
+            }
+            //DrawMarker(cross, G, pointD, crossize, PW, new Pen(Color.FromArgb(50, 0, 0, 0), P.Width *3));
+            DrawMarker(cross, G, pointD, crossize, PW, P);
+            
+         }
         /// <summary>
         /// Render a marker-cross
         /// </summary>
@@ -950,6 +960,13 @@ namespace GerberLibrary
                     (float)pointD.X - crossize, (float)pointD.Y);
             }
         }
+        private static void DrawShapeBG(GraphicsInterface G, Pen P, PolyLine Shape)
+        {
+         //   DrawShape(G, new Pen(Color.FromArgb(50,0,0,0), P.Width * 3), Shape);
+            DrawShape(G, P, Shape);
+        }
+
+
 
         /// <summary>
         /// Draw an open polygon
@@ -998,7 +1015,7 @@ namespace GerberLibrary
             if (intersects.Count < 4)
             {
                 t.Valid = false;
-                t.Errors.Add("not enough intersections!");
+                t.AddError("not enough intersections!");
                 return false;
             }
 
@@ -1039,7 +1056,7 @@ namespace GerberLibrary
                 }
                 if (Helpers.Distance(PStart, PEnd) < drillradius * 2)
                 {
-                    t.Errors.Add("distance closer than drillradius");
+                    t.AddError("distance closer than drillradius");
                     result = false;
                 }
 
@@ -1064,12 +1081,12 @@ namespace GerberLibrary
 
                 if (Math.Abs(AE - AS) >= Math.PI * 1.9)
                 {
-                    t.Errors.Add("angle too big");
+                    t.AddError("angle too big");
                     result = false;
                 }
                 if (Math.Abs(BE - BS) >= Math.PI * 1.9)
                 {
-                    t.Errors.Add("angle too big");
+                    t.AddError("angle too big");
                     result = false;
                 }
             }
@@ -1105,7 +1122,7 @@ namespace GerberLibrary
 
                 if (Helpers.Distance(PStart, PEnd) < drillradius * 2)
                 {
-                    t.Errors.Add("distance closer than drillradius");
+                    t.AddError("distance closer than drillradius");
                     result = false;
                 }
 
@@ -1132,12 +1149,12 @@ namespace GerberLibrary
 
                 if (Math.Abs(AE - AS) >= Math.PI * 2)
                 {
-                    t.Errors.Add("angle too big");
+                    t.AddError("angle too big");
                 }
 
                 if (Math.Abs(BE - BS) >= Math.PI * 2)
                 {
-                    t.Errors.Add("angle too big");
+                    t.AddError("angle too big");
                 }
                 //while (AS < 0 || AE < 0) { AS += Math.PI * 2; AE += Math.PI * 2; };
                 //while (BS < 0 || BE < 0) { BS += Math.PI * 2; BE += Math.PI * 2; };
@@ -1475,7 +1492,7 @@ namespace GerberLibrary
                 }
                 if (t.EvenOdd % 2 == 1)
                 {
-                    t.Errors.Add("inside a polygon!");
+                    t.AddError("inside a polygon!");
                     t.Valid = false;
 
                 }
@@ -2236,6 +2253,14 @@ namespace GerberLibrary
         [System.Xml.Serialization.XmlIgnore]
         public int EvenOdd;
 
+        internal void AddError(string v)
+        {
+            foreach(var a in Errors)
+            {
+                if (a == v) return;
+            }
+            Errors.Add(v);
+        }
     }
 
     public class GerberLayoutSet

@@ -233,7 +233,6 @@ namespace GerberCombinerBuilder
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 string filename = openFileDialog1.FileName;
-
                 LoadFile(filename);
             }
         }
@@ -597,6 +596,10 @@ namespace GerberCombinerBuilder
                         if (GI != null)
                         {
                             GI.RebuildTransformed(ThePanel.GerberOutlines[GI.GerberPath], ThePanel.TheSet.ExtraTabDrillDistance);
+                            fullRedraw = true;
+                        }
+                        if (inst is BreakTab)
+                        {
                             fullRedraw = true;
                         }
                     }
