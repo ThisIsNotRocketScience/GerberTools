@@ -759,8 +759,8 @@ namespace GerberLibrary
                     if (Ext.Y * Z > height) Z = height / Ext.Y;
 
 
-
-                    G.DrawString(new PointD(ox, oy), Path.GetFileName(GI.GerberPath), 20.0/GlobalZoom, true, R, Gf, B, A);
+                    if (GI.GerberPath.Contains("???_negative") == false)
+                        G.DrawString(new PointD(ox, oy), Path.GetFileName(GI.GerberPath), 20.0/GlobalZoom, true, R, Gf, B, A);
 
 
                 }
@@ -1706,11 +1706,33 @@ namespace GerberLibrary
             Logger.AddString("Starting export to " + targetfolder);
             List<string> GeneratedFiles = TheSet.SaveTo(targetfolder, GerberOutlines, Logger);
             List<String> FinalFiles = new List<string>();
+            List<string> removedoutlines = new List<string>();
+            string finalblended = "";
 
             if (SaveOutline)
             {
+                foreach(var s in GeneratedFiles)
+                {
+                    BoardLayer layer;
+                    BoardSide Side;
+
+                    Gerber.DetermineBoardSideAndLayer(s, out Side, out layer);
+                    if (layer == BoardLayer.Outline && Side == BoardSide.Both)
+                    {
+                        removedoutlines.Add(s);
+                    }
+
+
+
+                }
+                       
                 GeneratedFiles.AddRange(SaveOutlineTo(targetfolder, combinedfilename, Logger));
-                FinalFiles.Add(Path.Combine(targetfolder, combinedfilename + "_blended_outline.gko"));
+                finalblended = Path.Combine(targetfolder, combinedfilename + "_blended_outline.gko");
+                FinalFiles.Add(finalblended);                
+            }
+            else
+            {
+                // skip.
             }
 
             // TODO: use the new Gerber.DetermineFile to actually group based on layer/type instead of extentions only!
@@ -1811,16 +1833,31 @@ namespace GerberLibrary
             //}
             //zip.Dispose();
 
-            //Logger.AddString("Writing combined zipfile", 0.85f);
+            Logger.AddString("Writing combined zipfile", 0.85f);
 
-            //string CombinedZipFile = Path.Combine(targetfolder, BaseName + ".combined_boards.zip");
-            //if (File.Exists(CombinedZipFile)) File.Delete(CombinedZipFile);
-            //ZipArchive zip2 = ZipFile.Open(CombinedZipFile, ZipArchiveMode.Create);
-            //foreach (string file in FinalFiles)
-            //{
-            //    zip2.CreateEntryFromFile(file, Path.GetFileName(file), CompressionLevel.Optimal);
-            //}
-            //zip2.Dispose();
+            string CombinedZipFile = Path.Combine(targetfolder, BaseName + ".combined_boards.zip");
+            if (File.Exists(CombinedZipFile)) File.Delete(CombinedZipFile);
+            using (Ionic.Zip.ZipFile zip2 = new Ionic.Zip.ZipFile())
+            {
+                foreach (string file in FinalFiles)
+                {
+                    BoardLayer layer;
+                    BoardSide Side;
+
+                    Gerber.DetermineBoardSideAndLayer(file, out Side, out layer);
+                    bool add = true;
+
+                    if (Side == BoardSide.Both && layer == BoardLayer.Outline && file != finalblended)
+                    {
+                        add = false;
+                    }
+                    if (add)
+                    {
+                        zip2.AddFile(file, "");
+                    }
+                }
+                zip2.Save(CombinedZipFile);
+            }
 
             Logger.AddString("Deleting tempfiles", 0.9f);
 

@@ -324,7 +324,7 @@ namespace GerberCombinerBuilder
         public void ExportThreadFunc()
         {
 
-            ThePanel.SaveGerbersToFolder(BaseName, ExportFolder, new ProgressForward(ProgressDialog), ThePanel.TheSet.CopyOutlineToTopSilkscreen);
+            ThePanel.SaveGerbersToFolder(BaseName, ExportFolder, new ProgressForward(ProgressDialog), ThePanel.TheSet.CopyOutlineToTopSilkscreen,true,true, true, BaseName+"_combined");
         }
 
 
@@ -979,6 +979,7 @@ namespace GerberCombinerBuilder
                     if (Directory.Exists(S) || (File.Exists(S) && (Path.GetExtension(S).ToLower() == ".zip" || Path.GetExtension(S).ToLower() == "zip")))
                     {
                         Console.WriteLine("Adding dropped folder: {0}", S);
+                        if (BaseName == "Untitled") BaseName = Path.GetFileNameWithoutExtension(S);
                         var R = ThePanel.AddGerberFolder(new StandardConsoleLog(), S);
                         foreach (var s in R)
                         {
